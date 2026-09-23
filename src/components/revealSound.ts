@@ -1,6 +1,6 @@
 import {
+  getKineticGrid,
   getRevealCellTimes,
-  kineticGrid,
   revealDelay,
   shockLifetime,
   shockSpeed,
@@ -29,7 +29,16 @@ export interface PointerSounds {
   tick(height: number, speed: number, across: number): void;
   /** A firm clack where the pointer pressed, then clicks spreading out with the shockwave. */
   press(height: number, across: number): void;
+  /** A split-flap letter turning over; `landed` is the heavier final flap. */
+  flap(across: number, landed: boolean): void;
+  /**
+   * Intro moments: the greeting swapping for the name, the name landing, and the avatar
+   * arriving.
+   */
+  cue(cue: IntroCue): void;
 }
+
+export type IntroCue = "swap" | "land" | "arrive" | "tap";
 
 export function createPointerSounds(context: AudioContext): PointerSounds {
   const output = context.createGain();
@@ -69,6 +78,43 @@ export function createPointerSounds(context: AudioContext): PointerSounds {
       );
       playKnock(context, output, at, 0.12 * (1 - speed) * rested, pan * 0.5);
     },
+    cue(cue) {
+      const at = context.currentTime;
+      if (cue === "tap") {
+        // Hovering a nav item: a light, dry tick.
+        playClick(context, output, noise, at, 2600, 0.04);
+        playKnock(context, output, at, 0.03, 0, 220);
+        return;
+      }
+      if (cue === "arrive") {
+        // A soft, low set-down, like a figure placed on a table.
+        playKnock(context, output, at, 0.16, 0, 150);
+        playClick(context, output, noise, at, 1300, 0.05);
+        return;
+      }
+      if (cue === "swap") {
+        // Two quick clicks, like a card being turned over, with a soft body under them.
+        playClick(context, output, noise, at, 2600, 0.05);
+        playClick(context, output, noise, at + 0.045, 1900, 0.07);
+        playKnock(context, output, at + 0.045, 0.08, 0, 190);
+        return;
+      }
+      playPress(context, output, noise, at, 0.16);
+    },
+    flap(across, landed) {
+      const at = context.currentTime;
+      const pan = toPan(across) * 0.7;
+      playClick(
+        context,
+        output,
+        noise,
+        at,
+        landed ? 2200 : 3400 + Math.random() * 600,
+        (landed ? 0.06 : 0.018) * (0.8 + Math.random() * 0.2),
+        pan,
+      );
+      if (landed) playKnock(context, output, at, 0.05, pan * 0.5, 210);
+    },
     press(height, across) {
       const at = context.currentTime;
       playPress(context, output, noise, at, 0.22, toPan(across) * 0.6);
@@ -87,7 +133,7 @@ export function createPointerSounds(context: AudioContext): PointerSounds {
             ringAt + Math.random() * 0.01,
             frequency,
             volume,
-            toPan(saturate(across + (side * ring) / kineticGrid.cols)),
+            toPan(saturate(across + (side * ring) / currentGrid().cols)),
           );
         }
       }
@@ -209,10 +255,11 @@ function playRingClicks(
   start: number,
   duration: number,
 ) {
-  const maxRing = Math.ceil(Math.hypot(kineticGrid.cols / 2, kineticGrid.rows / 2));
+  const grid = currentGrid();
+  const maxRing = Math.ceil(Math.hypot(grid.cols / 2, grid.rows / 2));
   const clicksPerRing = new Map<number, number>();
 
-  for (const cell of getRevealCellTimes(duration)) {
+  for (const cell of getRevealCellTimes(duration, grid)) {
     const ring = Math.round(cell.distance);
     const played = clicksPerRing.get(ring) ?? 0;
     if (ring === 0 || played >= maxClicksPerRing) continue;
@@ -303,6 +350,11 @@ function getOutputBus(context: AudioContext) {
     outputBuses.set(context, bus);
   }
   return bus;
+}
+
+// The grid fills the hero, which is the size of the window.
+function currentGrid() {
+  return getKineticGrid(window.innerWidth, window.innerHeight);
 }
 
 function saturate(value: number) {

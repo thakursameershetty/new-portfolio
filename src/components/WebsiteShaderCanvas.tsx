@@ -45,6 +45,11 @@ export interface WebsiteShaderCanvasProps {
   revealDuration?: number;
   /** Holds the grid dark until this turns false, then plays the ripple. */
   revealPaused?: boolean;
+  /**
+   * While the reveal is paused, the grid waits turned and zoomed in this pose; when it
+   * starts, the grid unwinds to its resting pose over `seconds`.
+   */
+  introPose?: IntroPose;
   children?: ReactNode;
 }
 
@@ -61,6 +66,13 @@ interface WebsiteShaderBackgroundProps {
   tone?: "dark" | "light";
   revealDuration?: number;
   revealPaused?: boolean;
+  introPose?: IntroPose;
+}
+
+export interface IntroPose {
+  degrees: number;
+  scale: number;
+  seconds: number;
 }
 
 const vertexShaderSource = `
@@ -86,6 +98,10 @@ uniform float u_intensity;
 uniform float u_isLight;
 uniform float u_reveal;
 uniform vec4 u_shocks[4];
+// Columns and rows of square cells across the canvas.
+uniform vec2 u_gridSize;
+// Intro pose: rotation in radians and zoom, applied around the canvas center.
+uniform vec2 u_pose;
 
 float saturate(float value) {
   return clamp(value, 0.0, 1.0);
@@ -133,7 +149,20 @@ vec3 softLight(vec3 base, vec3 glow, float amount) {
 `;
 
 // Kinetic dots grid and opening-ripple tuning, shared by the shader and the reveal sound.
-export const kineticGrid = { cols: 18, rows: 12 };
+// Cells are square on every screen shape, with about this many of them on screen.
+const kineticCellCount = 216;
+
+/**
+ * The kinetic grid for a canvas of this size: square cells of `cell` px, `cols` × `rows` of
+ * them (fractional, so the edge cells are cut). The grid is laid out from the center, so four
+ * cells always meet exactly in the middle.
+ */
+export function getKineticGrid(width: number, height: number) {
+  const cell = Math.sqrt(
+    (Math.max(width, 1) * Math.max(height, 1)) / kineticCellCount,
+  );
+  return { cols: width / cell, rows: height / cell, cell };
+}
 // Pause before the ripple starts, in seconds.
 export const revealDelay = 0.25;
 const revealOvershoot = 3.0;
@@ -213,19 +242,26 @@ vec3 shaderColor(vec2 uv, vec2 p, float t, vec2 pointer, float intensity, float 
     },
     fragment: `
 vec3 shaderColor(vec2 uv, vec2 p, float t, vec2 pointer, float intensity, float isLight) {
-  vec2 gridSize = vec2(${glslFloat(kineticGrid.cols)}, ${glslFloat(kineticGrid.rows)});
-  vec2 gridUv = uv * gridSize;
+  // Intro pose: turn and zoom the whole grid about the center, in pixels so squares stay
+  // square. Drawn per pixel, so lines stay sharp at any angle and zoom.
+  vec2 posedPx = rotate2d(u_pose.x) * ((uv - 0.5) * u_resolution) / max(u_pose.y, 0.001);
+  uv = posedPx / u_resolution + 0.5;
+
+  // Cells are counted from the canvas center (cells -1 and 0 meet there on both axes).
+  vec2 gridSize = u_gridSize;
+  vec2 gridUv = (uv - 0.5) * gridSize;
   vec2 cell = floor(gridUv);
   vec2 local = fract(gridUv);
   vec2 centered = local - 0.5;
-  vec2 cellCenter = (cell + 0.5) / gridSize;
+  vec2 cellCenter = (cell + 0.5) / gridSize + 0.5;
   float seed = hash21(cell);
 
   float edge = min(min(local.x, 1.0 - local.x), min(local.y, 1.0 - local.y));
   float line = 1.0 - smoothstep(0.005, 0.032, edge);
   float box = smoothstep(0.5, 0.38, max(abs(centered.x), abs(centered.y)));
   float idle = pow(sin(seed * 6.2831 + t * 0.22) * 0.5 + 0.5, 13.0) * 0.014;
-  float hover = smoothstep(0.085, 0.0, distance((cellCenter - u_pointer) * vec2(1.0, 0.72), vec2(0.0))) * 0.42;
+  // Distances below are in cells, so the hover and trail cover the same cells on any screen.
+  float hover = smoothstep(1.5, 0.0, length((cellCenter - u_pointer) * gridSize)) * 0.42;
   float fill = hover;
   float trailAmount = 0.0;
   vec3 fillColor = vec3(0.0);
@@ -236,8 +272,8 @@ vec3 shaderColor(vec2 uv, vec2 p, float t, vec2 pointer, float intensity, float 
 
   for (int i = 0; i < 8; i++) {
     vec4 trail = u_trails[i];
-    float distanceToTrail = distance((cellCenter - trail.xy) * vec2(1.0, 0.72), vec2(0.0));
-    float trailFill = smoothstep(0.16, 0.0, distanceToTrail) * trail.z;
+    float distanceToTrail = length((cellCenter - trail.xy) * gridSize);
+    float trailFill = smoothstep(2.9, 0.0, distanceToTrail) * trail.z;
     trailFill *= 0.78 + hash21(cell + float(i) * 2.17) * 0.06;
     fill = max(fill, trailFill);
     trailAmount = max(trailAmount, trailFill);
@@ -278,7 +314,7 @@ vec3 shaderColor(vec2 uv, vec2 p, float t, vec2 pointer, float intensity, float 
   color += lightEdge * pressed * mix(0.04, 0.09, isLight);
   // Opening ripple: the four center cells switch on together, then the rest follow outward,
   // flashing as the wavefront passes. Jitter is kept off the center four so they stay in sync.
-  float cellDistance = length(cell + 0.5 - gridSize * 0.5);
+  float cellDistance = length(cell + 0.5);
   float revealJitter = seed * ${glslFloat(revealJitter)} * saturate(cellDistance - 1.0);
   float revealRadius = u_reveal * (length(gridSize * 0.5) + ${glslFloat(revealOvershoot)});
   float cellOn = saturate((revealRadius - cellDistance - revealJitter) / ${glslFloat(revealEdge)});
@@ -314,6 +350,7 @@ export function WebsiteShaderCanvas({
   trackWindowPointer = false,
   revealDuration = 0,
   revealPaused = false,
+  introPose,
   children,
 }: WebsiteShaderCanvasProps) {
   const revealStartRef = useRef<number | null>(null);
@@ -406,6 +443,8 @@ export function WebsiteShaderCanvas({
       const revealLocation = gl.getUniformLocation(program, "u_reveal");
       const trailUniform = new Float32Array(32);
       const shocksLocation = gl.getUniformLocation(program, "u_shocks[0]");
+      const gridSizeLocation = gl.getUniformLocation(program, "u_gridSize");
+      const poseLocation = gl.getUniformLocation(program, "u_pose");
       const shocksUniform = new Float32Array(maxShocks * 4);
 
       gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
@@ -498,8 +537,38 @@ export function WebsiteShaderCanvas({
         gl.uniform1f(intensityLocation, intensity);
         gl.uniform1f(isLightLocation, tone === "light" ? 1 : 0);
         gl.uniform1f(revealLocation, getRevealProgress(nowSeconds));
+        if (poseLocation) {
+          const pose = getPose(nowSeconds);
+          gl.uniform2f(poseLocation, pose.radians, pose.scale);
+        }
+        if (gridSizeLocation) {
+          const grid = getKineticGrid(canvasElement.width, canvasElement.height);
+          gl.uniform2f(gridSizeLocation, grid.cols, grid.rows);
+        }
         gl.drawArrays(gl.TRIANGLES, 0, 3);
       };
+
+      // The intro pose eases out (exponentially) from the reveal's start; call after
+      // getRevealProgress, which records that start.
+      function getPose(nowSeconds: number) {
+        const rest = { radians: 0, scale: 1 };
+        if (!introPose || !shouldAnimate) return rest;
+        const waiting = {
+          radians: (introPose.degrees * Math.PI) / 180,
+          scale: introPose.scale,
+        };
+        if (revealPausedRef.current || revealStartRef.current === null) {
+          return waiting;
+        }
+        const t = saturateNumber(
+          (nowSeconds - revealStartRef.current) / introPose.seconds,
+        );
+        const eased = t >= 1 ? 1 : 1 - Math.pow(2, -10 * t);
+        return {
+          radians: waiting.radians * (1 - eased),
+          scale: waiting.scale + (1 - waiting.scale) * eased,
+        };
+      }
 
       function getRevealProgress(nowSeconds: number) {
         if (!shouldAnimate || revealDuration <= 0) return 1;
@@ -580,6 +649,7 @@ export function WebsiteShaderCanvas({
     isInteractive,
     maxCanvasPixels,
     maxPixelRatio,
+    introPose,
     revealDuration,
     shouldAnimate,
     tone,
@@ -628,20 +698,31 @@ export function WebsiteShaderCanvas({
   useEffect(() => {
     if (!isInteractive || !trackWindowPointer) return;
 
+    // The canvas may cover only part of the page (the hero), so a pointer outside it
+    // leaves the grid alone instead of being clamped onto its nearest edge.
+    const containerRectAt = (event: PointerEvent) => {
+      const rect = containerRef.current?.getBoundingClientRect();
+      if (!rect) return null;
+      const inside =
+        event.clientX >= rect.left &&
+        event.clientX <= rect.right &&
+        event.clientY >= rect.top &&
+        event.clientY <= rect.bottom;
+      return inside ? rect : null;
+    };
+
     const handlePointerMove = (event: PointerEvent) => {
-      const container = containerRef.current;
-      if (!container) return;
-      updatePointer(
-        event.clientX,
-        event.clientY,
-        container.getBoundingClientRect(),
-      );
+      const rect = containerRectAt(event);
+      if (!rect) {
+        resetPointer();
+        return;
+      }
+      updatePointer(event.clientX, event.clientY, rect);
     };
 
     const handlePointerDown = (event: PointerEvent) => {
-      const container = containerRef.current;
-      if (!container) return;
-      addShock(event.clientX, event.clientY, container.getBoundingClientRect());
+      const rect = containerRectAt(event);
+      if (rect) addShock(event.clientX, event.clientY, rect);
     };
 
     window.addEventListener("pointermove", handlePointerMove, {
@@ -721,6 +802,7 @@ export function WebsiteShaderBackground({
   tone: toneOverride,
   revealDuration = 1.8,
   revealPaused,
+  introPose,
 }: WebsiteShaderBackgroundProps) {
   const themeTone = useShaderTone();
   const tone = toneOverride ?? themeTone;
@@ -734,6 +816,7 @@ export function WebsiteShaderBackground({
         trackWindowPointer
         revealDuration={revealDuration}
         revealPaused={revealPaused}
+        introPose={introPose}
         className={styles.backgroundCanvas}
       />
     </div>
@@ -783,14 +866,20 @@ export function WebsiteShaderDemo({
  * using the same easing and radius as the shader. Jitter is random, so it matches the look
  * of the shader's per-cell stagger rather than each exact cell.
  */
-export function getRevealCellTimes(duration: number) {
-  const { cols, rows } = kineticGrid;
+export function getRevealCellTimes(
+  duration: number,
+  grid: { cols: number; rows: number },
+) {
+  const { cols, rows } = grid;
   const maxRadius = Math.hypot(cols / 2, rows / 2) + revealOvershoot;
   const times: { time: number; distance: number; across: number }[] = [];
+  const halfCols = Math.ceil(cols / 2);
+  const halfRows = Math.ceil(rows / 2);
 
-  for (let y = 0; y < rows; y++) {
-    for (let x = 0; x < cols; x++) {
-      const distance = Math.hypot(x + 0.5 - cols / 2, y + 0.5 - rows / 2);
+  // Cells counted from the center, like the shader: -1 and 0 meet in the middle.
+  for (let y = -halfRows; y < halfRows; y++) {
+    for (let x = -halfCols; x < halfCols; x++) {
+      const distance = Math.hypot(x + 0.5, y + 0.5);
       const jitter =
         Math.random() * revealJitter * saturateNumber(distance - 1);
       const progress = saturateNumber(
@@ -801,7 +890,7 @@ export function getRevealCellTimes(duration: number) {
       times.push({
         time: revealDelay + t * duration,
         distance,
-        across: (x + 0.5) / cols,
+        across: saturateNumber(0.5 + (x + 0.5) / cols),
       });
     }
   }

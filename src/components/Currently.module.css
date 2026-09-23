@@ -1,0 +1,36 @@
+.currently {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: clamp(96px, 16vh, 180px) 24px;
+  background: var(--ground);
+}
+
+.label {
+  margin-bottom: 28px;
+  font-family: var(--font-hero), monospace;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+
+.statement {
+  max-width: 22em;
+  font-size: clamp(28px, 4vw, 48px);
+  font-weight: 500;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  text-wrap: pretty;
+}
+
+.statement strong {
+  font-weight: 700;
+}
+
+.muted {
+  color: var(--ink-muted);
+}

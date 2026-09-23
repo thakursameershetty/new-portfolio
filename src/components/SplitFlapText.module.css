@@ -1,0 +1,38 @@
+.line {
+  display: block;
+  white-space: pre;
+}
+
+.letter {
+  position: relative;
+  display: inline-block;
+}
+
+.sizer {
+  visibility: hidden;
+}
+
+.face {
+  position: absolute;
+  inset: 0;
+  text-align: center;
+}
+
+.flipping {
+  animation: flap 50ms ease-out;
+}
+
+.hidden {
+  visibility: hidden;
+}
+
+@keyframes flap {
+  from {
+    transform: perspective(400px) rotateX(-75deg);
+    opacity: 0.55;
+  }
+  to {
+    transform: none;
+    opacity: 1;
+  }
+}

@@ -1,3 +1,21 @@
+.grid {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100svh;
+  overflow: hidden;
+}
+
+/* Parallax, back layer: the grid trails the page the most (35vh behind by the time the
+   hero has scrolled away), so it reads as the farthest surface. Hero.tsx sets
+   --hero-scroll; the wrapper above clips it to the hero. */
+.gridLayer {
+  position: absolute;
+  inset: 0;
+  transform: translateY(calc(var(--hero-scroll, 0) * 35vh));
+  will-change: transform;
+}
 .gate {
   position: fixed;
   inset: 0;
@@ -7,7 +25,7 @@
   align-items: center;
   justify-content: center;
   gap: 16px;
-  font-family: var(--font-geist-mono), monospace;
+  font-family: var(--font-display), sans-serif;
   transition: opacity 400ms ease;
 }
 
@@ -60,38 +78,4 @@
 .silent:hover,
 .silent:focus-visible {
   color: rgba(245, 241, 234, 0.8);
-}
-
-.soundToggle {
-  position: fixed;
-  top: 20px;
-  right: 20px;
-  z-index: 40;
-  padding: 8px 14px;
-  border: 1px solid rgba(255, 255, 255, 0.28);
-  border-radius: 4px;
-  background: rgba(120, 24, 22, 0.35);
-  color: #f5f1ea;
-  font-family: var(--font-geist-mono), monospace;
-  font-size: 11px;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  cursor: pointer;
-  animation: fadeIn 400ms ease 2s both;
-  transition: background-color 200ms ease;
-}
-
-.soundToggle:hover,
-.soundToggle:focus-visible {
-  background: rgba(120, 24, 22, 0.6);
-  outline: none;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
 }

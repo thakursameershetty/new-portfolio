@@ -1,12 +1,15 @@
 import styles from "./page.module.css";
+import { Currently } from "@/components/Currently";
+import { Hero } from "@/components/Hero";
 import { SiteIntro } from "@/components/SiteIntro";
 
 export default function Home() {
   return (
     <SiteIntro>
-      <div className={styles.page}>
-        <main className={styles.main}></main>
-      </div>
+      <main className={styles.main}>
+        <Hero />
+        <Currently />
+      </main>
     </SiteIntro>
   );
 }

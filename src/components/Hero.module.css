@@ -1,0 +1,179 @@
+/* Text sits in the top half; the studio scene fills the bottom half. */
+.hero {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  min-height: 100svh;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 28px;
+  padding: clamp(120px, 20vh, 220px) 16px 96px;
+  color: #f5f1ea;
+  text-align: center;
+}
+
+/* Intro type sits over the viewport center, where the four center grid cells meet. */
+.introLayer {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+  user-select: none;
+}
+
+.hi,
+.bigName {
+  grid-area: 1 / 1;
+  font-family: var(--font-hero), monospace;
+  font-weight: 700;
+  letter-spacing: -0.05em;
+  opacity: 0;
+  white-space: nowrap;
+  transform-origin: 50% 100%;
+}
+
+/* Sized so the two letters fill the 2 × 2 block of center cells; --grid-cell is the cell
+   size SiteIntro publishes (the fallback is close to a laptop's). */
+.hi {
+  font-size: calc(var(--grid-cell, 86px) * 1.9);
+  line-height: 1;
+  text-box: trim-both cap alphabetic;
+}
+
+.bigName {
+  font-size: clamp(72px, 13vw, 200px);
+  line-height: 0.85;
+}
+
+/* Each word is its own line but only as wide as its text, so the flight into the small
+   name measures (and scales) each word by its real width. */
+.gone {
+  visibility: hidden;
+}
+
+.bigWord {
+  display: block;
+  width: fit-content;
+  margin-inline: auto;
+}
+
+/* Parallax, middle layer: the copy trails the page (15vh behind by the time the hero has
+   scrolled away) and fades out, so it feels further back than the scene. */
+.copy {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 28px;
+  opacity: calc(1 - var(--hero-scroll, 0) * 1.4);
+  transform: translateY(calc(var(--hero-scroll, 0) * 15vh));
+  will-change: transform, opacity;
+}
+
+.headline {
+  font-family: var(--font-hero), monospace;
+  font-weight: 700;
+  line-height: 1;
+}
+
+/* Same face and tracking as the big intro name, so each word scales onto it exactly. */
+/* Same face and tracking as the big intro name, so each word scales onto it exactly. */
+.name {
+  display: block;
+  margin-bottom: 0.3em;
+  font-size: clamp(26px, 4.2vw, 62px);
+  line-height: 0.85;
+  letter-spacing: -0.05em;
+}
+
+.nameWord + .nameWord {
+  margin-left: 0.3em;
+}
+
+.pending {
+  visibility: hidden;
+}
+
+.lines {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Disket Mono is wide, so tight tracking and leading keep the block compact. */
+.statement {
+  font-size: clamp(36px, 8vw, 120px);
+  line-height: 0.88;
+  letter-spacing: -0.05em;
+}
+
+.role {
+  font-family: var(--font-display), sans-serif;
+  font-size: 13px;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: rgba(245, 241, 234, 0.82);
+  opacity: 0;
+  transform: translateY(6px);
+  transition:
+    opacity 500ms ease,
+    transform 500ms ease;
+}
+
+.roleVisible {
+  opacity: 1;
+  transform: none;
+}
+
+/* The studio scene, spanning the width of the hero and standing on its bottom edge; the
+   bottom 10% (plants) sits below the fold. On very wide, short screens the width is capped
+   by the height (175vh) so the tallest plants and the drones stay below the text. */
+.scene {
+  --scene-drop: 10%;
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  width: min(100%, 175vh);
+  aspect-ratio: 1672 / 941;
+  opacity: 0;
+  transform: translate(-50%, calc(var(--scene-drop) + 32px));
+  pointer-events: none;
+  transition:
+    opacity 500ms ease,
+    transform 900ms cubic-bezier(0.34, 1.1, 0.64, 1);
+}
+
+.sceneVisible {
+  opacity: 1;
+  transform: translate(-50%, var(--scene-drop));
+}
+
+.sceneImage {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.fade {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 160px;
+  background: linear-gradient(to bottom, transparent, var(--ground));
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scene {
+    transition: none;
+  }
+}
+
+@media (max-width: 600px) {
+  .role {
+    font-size: 11px;
+    letter-spacing: 0.2em;
+  }
+}

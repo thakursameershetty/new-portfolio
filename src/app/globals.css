@@ -1,6 +1,10 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  /* The page below the hero: near-black ground, cream ink to match the hero type. */
+  --ground: #0a0a0a;
+  --ink: #f5f1ea;
+  --ink-muted: rgba(245, 241, 234, 0.55);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -14,6 +18,13 @@ html {
   height: 100%;
 }
 
+/* Nav links glide to their sections. */
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
 html,
 body {
   max-width: 100vw;
@@ -24,9 +35,10 @@ body {
   min-height: 100%;
   display: flex;
   flex-direction: column;
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  color: var(--ink);
+  background: var(--ground);
+  color-scheme: dark;
+  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
