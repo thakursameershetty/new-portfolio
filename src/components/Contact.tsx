@@ -105,7 +105,9 @@ export function Contact() {
 
         <footer className={styles.footer}>
           <span>© {new Date().getFullYear()} Thakur Sameer Shetty</span>
-          <span>Designed and built by me · Next.js, WebGL, Web Audio</span>
+          <span>
+            Designed and built by me · Next.js, Three.js, WebGL, Web Audio, Claude, Gemini
+          </span>
         </footer>
       </div>
     </section>
