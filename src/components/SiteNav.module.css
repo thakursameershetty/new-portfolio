@@ -13,23 +13,53 @@
     transform 550ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
+/* Return visit: the bar is simply there, no drop-in. */
+:global(html[data-intro-seen]) .nav {
+  transition: none;
+}
+
 .visible {
   opacity: 1;
   transform: translate(-50%, 0);
 }
 
-/* A lightly tinted dark plate over a strong blur, so whatever passes beneath (grid cells,
-   the scene, the page) shows through soft and out of focus rather than just darkened. */
+/* A black-tinted plate over a strong blur: whatever passes beneath (grid cells, the scene,
+   the page) shows through darkened and out of focus. */
 .plate {
   display: flex;
   padding: 4px;
-  border: 1px solid rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 6px;
-  background: rgba(40, 8, 7, 0.22);
+  background: rgba(0, 0, 0, 0.24);
   backdrop-filter: blur(20px);
+  transition:
+    background-color 300ms ease,
+    border-color 300ms ease;
 }
 
+.links {
+  position: relative;
+}
+
+/* The one tile that marks the active tab. It glides between tabs rather than each tab
+   switching its own background; SiteNav animates its position and width on a spring. */
+.indicator {
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  left: 0;
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.34);
+  pointer-events: none;
+  transition: background-color 300ms ease;
+}
+
+
 .link {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
   padding: 10px 16px;
   border-radius: 4px;
   font-family: var(--font-display), sans-serif;
@@ -46,13 +76,16 @@
 .link:hover,
 .link:focus-visible {
   color: #f5f1ea;
-  background: rgba(255, 255, 255, 0.06);
+  background: rgba(0, 0, 0, 0.14);
   outline: none;
+}
+
+.icon {
+  flex: none;
 }
 
 .active {
   color: #f5f1ea;
-  background: rgba(245, 241, 234, 0.14);
 }
 
 .sound {
@@ -66,8 +99,28 @@
 
 .sound:hover,
 .sound:focus-visible {
-  background: rgba(40, 8, 7, 0.4);
+  background: rgba(0, 0, 0, 0.38);
   outline: none;
+}
+
+/* Over the black page: a faintly lighter bar, and a cream tile so the active tab shows. */
+.onDark .plate {
+  border-color: rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.onDark .indicator {
+  background: rgba(245, 241, 234, 0.14);
+}
+
+.onDark .link:hover,
+.onDark .link:focus-visible {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.onDark .sound:hover,
+.onDark .sound:focus-visible {
+  background: rgba(255, 255, 255, 0.12);
 }
 
 @media (max-width: 600px) {
@@ -76,9 +129,37 @@
   }
 
   .link {
+    gap: 5px;
     padding: 9px 10px;
     font-size: 10px;
     letter-spacing: 0.1em;
+  }
+
+  .icon {
+    width: 13px;
+    height: 13px;
+  }
+}
+
+/* Narrow phones: the labels don't fit beside the icons, so the bar goes icon-only; the
+   labels stay in the page for screen readers. */
+@media (max-width: 420px) {
+  .link {
+    padding: 9px 13px;
+  }
+
+  .icon {
+    width: 18px;
+    height: 18px;
+  }
+
+  .label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
   }
 }
 

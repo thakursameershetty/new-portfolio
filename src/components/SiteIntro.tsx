@@ -15,6 +15,7 @@ import {
   WebsiteShaderBackground,
   getKineticGrid,
   revealDelay,
+  type RevealFrom,
 } from "./WebsiteShaderCanvas";
 import {
   createPointerSounds,
@@ -22,6 +23,7 @@ import {
   type IntroCue,
   type PointerSounds,
 } from "./revealSound";
+import { ClickSpark } from "./ClickSpark";
 import { SiteNav } from "./SiteNav";
 import styles from "./SiteIntro.module.css";
 
@@ -31,6 +33,11 @@ const revealDuration = 1.8;
 const gridIntroPose = { degrees: 45, scale: 2, seconds: 2.2 };
 // How long after Enter the page stays locked to the hero: through the headline flip.
 const introLockMs = 4200;
+// Remembered in the browser: whether the intro has been entered before (then the Enter
+// screen is skipped), and whether sound was left on.
+const seenKey = "intro-seen";
+const soundKey = "sound";
+
 // Pointer speed, in px per ms, that counts as a full-speed sweep for the hover ticks.
 const fastPointerSpeed = 2.5;
 
@@ -41,6 +48,13 @@ interface SiteIntroProps {
 interface IntroState {
   /** True from the Enter click; content times its entrance from this moment. */
   entered: boolean;
+  /** A return visit: no intro, everything appears already in its finished state. */
+  instant: boolean;
+  soundOn: boolean;
+  /** The pointer sounds, once audio has started (for other grids' hover ticks). */
+  getSounds: () => PointerSounds | null;
+  /** Plays the grid ripple's sound (thump, ring clicks, swell) when sound is on. */
+  playRipple: (duration: number, from?: RevealFrom) => void;
   /** Plays a split-flap letter sound when sound is on; silent otherwise. */
   playFlap: (across: number, landed: boolean) => void;
   /** Plays an intro text cue when sound is on; silent otherwise. */
@@ -49,6 +63,10 @@ interface IntroState {
 
 const IntroContext = createContext<IntroState>({
   entered: true,
+  instant: false,
+  soundOn: false,
+  getSounds: () => null,
+  playRipple: () => {},
   playFlap: () => {},
   playCue: () => {},
 });
@@ -71,6 +89,7 @@ export function SiteIntro({ children }: SiteIntroProps) {
   const revealEndsAtRef = useRef(0);
   const soundOnRef = useRef(false);
   const [introDone, setIntroDone] = useState(false);
+  const [instant, setInstant] = useState(false);
   const gridRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -99,6 +118,10 @@ export function SiteIntro({ children }: SiteIntroProps) {
       root.style.overflow = "hidden";
       return;
     }
+    if (instant) {
+      root.style.removeProperty("overflow");
+      return;
+    }
     const timer = window.setTimeout(() => {
       root.style.removeProperty("overflow");
       setIntroDone(true);
@@ -107,7 +130,7 @@ export function SiteIntro({ children }: SiteIntroProps) {
       window.clearTimeout(timer);
       root.style.removeProperty("overflow");
     };
-  }, [entered]);
+  }, [entered, instant]);
 
   const playFlap = useCallback((across: number, landed: boolean) => {
     // A suspended context would queue these and play them all at once on resume.
@@ -120,69 +143,33 @@ export function SiteIntro({ children }: SiteIntroProps) {
     soundsRef.current?.cue(cue);
   }, []);
 
+  const playRipple = useCallback((duration: number, from?: RevealFrom) => {
+    const context = audioRef.current;
+    if (!soundOnRef.current || !context) return;
+    playRevealSound(context, duration, from);
+  }, []);
+
+  const getSounds = useCallback(() => soundsRef.current, []);
+
   const intro = useMemo(
-    () => ({ entered, playFlap, playCue }),
-    [entered, playFlap, playCue],
+    () => ({
+      entered,
+      instant,
+      soundOn,
+      getSounds,
+      playRipple,
+      playFlap,
+      playCue,
+    }),
+    [entered, instant, soundOn, getSounds, playRipple, playFlap, playCue],
   );
 
-  // After the ripple settles, each grid cell the cursor enters ticks (a little higher toward
-  // the top of the screen, lighter on fast sweeps) and each press clacks.
-  useEffect(() => {
-    if (!entered || !soundOn) return;
-
-    let lastCell = "";
-    let lastX = 0;
-    let lastY = 0;
-    let lastTime = 0;
-
-    const handlePointerMove = (event: PointerEvent) => {
-      const sounds = soundsRef.current;
-      const now = performance.now();
-      const elapsed = Math.max(now - lastTime, 1);
-      const speed = Math.min(
-        Math.hypot(event.clientX - lastX, event.clientY - lastY) /
-          elapsed /
-          fastPointerSpeed,
-        1,
-      );
-      lastX = event.clientX;
-      lastY = event.clientY;
-      lastTime = now;
-
-      const point = pointOnGrid(gridRef.current, event);
-      if (!point) {
-        lastCell = "";
-        return;
-      }
-      // Same cells as the shader: square, counted from the center of the grid.
-      const { cols, rows } = point.grid;
-      const col = Math.floor((point.across - 0.5) * cols);
-      const row = Math.floor((point.height - 0.5) * rows);
-      const cell = `${col},${row}`;
-      if (cell === lastCell) return;
-      lastCell = cell;
-
-      if (!sounds || now < revealEndsAtRef.current) return;
-      sounds.tick(point.height, speed, point.across);
-    };
-
-    // Pressing anywhere sends a shockwave through the grid; this is its sound.
-    const handlePointerDown = (event: PointerEvent) => {
-      const sounds = soundsRef.current;
-      const point = pointOnGrid(gridRef.current, event);
-      if (!sounds || !point || performance.now() < revealEndsAtRef.current) {
-        return;
-      }
-      sounds.press(point.height, point.across);
-    };
-
-    window.addEventListener("pointermove", handlePointerMove);
-    window.addEventListener("pointerdown", handlePointerDown);
-    return () => {
-      window.removeEventListener("pointermove", handlePointerMove);
-      window.removeEventListener("pointerdown", handlePointerDown);
-    };
-  }, [entered, soundOn]);
+  // After the ripple settles, each grid cell the cursor enters ticks and each press clacks.
+  const heroGridReady = useCallback(
+    () => performance.now() >= revealEndsAtRef.current,
+    [],
+  );
+  useGridPointerSounds(gridRef, entered && soundOn, getSounds, heroGridReady);
 
   // Must run inside a click so the browser lets the audio start.
   const startAudio = () => {
@@ -198,6 +185,7 @@ export function SiteIntro({ children }: SiteIntroProps) {
 
   const enter = (withSound: boolean) => {
     if (entered) return;
+    writeStorage(seenKey, "1");
     revealEndsAtRef.current =
       performance.now() + (revealDelay + revealDuration) * 1000;
 
@@ -205,6 +193,7 @@ export function SiteIntro({ children }: SiteIntroProps) {
       try {
         playRevealSound(startAudio(), revealDuration);
         setSoundOn(true);
+        writeStorage(soundKey, "on");
       } catch {
         // No Web Audio support: the ripple still plays, silently.
       }
@@ -217,16 +206,60 @@ export function SiteIntro({ children }: SiteIntroProps) {
     if (soundOn) {
       void audioRef.current?.suspend();
       setSoundOn(false);
+      writeStorage(soundKey, "off");
       return;
     }
 
     try {
       startAudio();
       setSoundOn(true);
+      writeStorage(soundKey, "on");
     } catch {
       // No Web Audio support: leave sound off.
     }
   };
+
+  // Return visits skip the Enter screen (hidden before paint by the script in the layout)
+  // and the whole intro: the hero loads already finished. Browsers only allow sound after a
+  // gesture, so if it was left on, it comes back on the visitor's first click or key press.
+  const enterRef = useRef(enter);
+  const startAudioRef = useRef(startAudio);
+  useEffect(() => {
+    enterRef.current = enter;
+    startAudioRef.current = startAudio;
+  });
+
+  useEffect(() => {
+    if (readStorage(seenKey) !== "1") return;
+    const frame = requestAnimationFrame(() => {
+      setInstant(true);
+      setGateGone(true);
+      setIntroDone(true);
+      enterRef.current(false);
+      revealEndsAtRef.current = 0;
+    });
+
+    if (readStorage(soundKey) !== "on") return () => cancelAnimationFrame(frame);
+    const resumeSound = () => {
+      try {
+        startAudioRef.current();
+        setSoundOn(true);
+      } catch {
+        // No Web Audio support: stay silent.
+      }
+      removeListeners();
+    };
+    const removeListeners = () => {
+      window.removeEventListener("pointerdown", resumeSound);
+      window.removeEventListener("keydown", resumeSound);
+    };
+    window.addEventListener("pointerdown", resumeSound);
+    window.addEventListener("keydown", resumeSound);
+    return () => {
+      cancelAnimationFrame(frame);
+      removeListeners();
+    };
+  }, []);
 
   return (
     <>
@@ -236,13 +269,14 @@ export function SiteIntro({ children }: SiteIntroProps) {
           <WebsiteShaderBackground
             preset="kinetic-dots"
             tone="light"
-            revealDuration={revealDuration}
+            revealDuration={instant ? 0 : revealDuration}
             revealPaused={!entered}
-            introPose={gridIntroPose}
+            introPose={instant ? undefined : gridIntroPose}
           />
         </div>
       </div>
       <IntroContext.Provider value={intro}>{children}</IntroContext.Provider>
+      <ClickSpark />
       <SiteNav
         visible={introDone}
         soundOn={soundOn}
@@ -299,4 +333,83 @@ function pointOnGrid(grid: HTMLElement | null, event: PointerEvent) {
     height: 1 - (event.clientY - rect.top) / rect.height,
     grid: getKineticGrid(rect.width, rect.height),
   };
+}
+
+/**
+ * Hover ticks and press clacks for a kinetic grid: each cell the cursor enters ticks (a
+ * little higher toward the top, lighter on fast sweeps) and each press clacks, using the
+ * same square cells the shader draws. `isReady` can hold them back, e.g. until a ripple ends.
+ */
+export function useGridPointerSounds(
+  gridRef: React.RefObject<HTMLElement | null>,
+  enabled: boolean,
+  getSounds: () => PointerSounds | null,
+  isReady: () => boolean = () => true,
+) {
+  useEffect(() => {
+    if (!enabled) return;
+
+    let lastCell = "";
+    let lastX = 0;
+    let lastY = 0;
+    let lastTime = 0;
+
+    const handlePointerMove = (event: PointerEvent) => {
+      const now = performance.now();
+      const elapsed = Math.max(now - lastTime, 1);
+      const speed = Math.min(
+        Math.hypot(event.clientX - lastX, event.clientY - lastY) /
+          elapsed /
+          fastPointerSpeed,
+        1,
+      );
+      lastX = event.clientX;
+      lastY = event.clientY;
+      lastTime = now;
+
+      const point = pointOnGrid(gridRef.current, event);
+      if (!point) {
+        lastCell = "";
+        return;
+      }
+      const { cols, rows } = point.grid;
+      const cell = `${Math.floor((point.across - 0.5) * cols)},${Math.floor((point.height - 0.5) * rows)}`;
+      if (cell === lastCell) return;
+      lastCell = cell;
+
+      const sounds = getSounds();
+      if (!sounds || !isReady()) return;
+      sounds.tick(point.height, speed, point.across);
+    };
+
+    const handlePointerDown = (event: PointerEvent) => {
+      const sounds = getSounds();
+      const point = pointOnGrid(gridRef.current, event);
+      if (!sounds || !point || !isReady()) return;
+      sounds.press(point.height, point.across);
+    };
+
+    window.addEventListener("pointermove", handlePointerMove);
+    window.addEventListener("pointerdown", handlePointerDown);
+    return () => {
+      window.removeEventListener("pointermove", handlePointerMove);
+      window.removeEventListener("pointerdown", handlePointerDown);
+    };
+  }, [enabled, getSounds, gridRef, isReady]);
+}
+
+function readStorage(key: string) {
+  try {
+    return window.localStorage.getItem(key);
+  } catch {
+    return null;
+  }
+}
+
+function writeStorage(key: string, value: string) {
+  try {
+    window.localStorage.setItem(key, value);
+  } catch {
+    // Storage blocked (private mode): the Enter screen just shows again next time.
+  }
 }

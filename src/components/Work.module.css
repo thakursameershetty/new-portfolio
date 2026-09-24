@@ -1,0 +1,415 @@
+.work {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: clamp(96px, 14vh, 160px) 24px;
+  background: var(--ground);
+}
+
+.label {
+  margin-bottom: 28px;
+  font-family: var(--font-hero), monospace;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+
+/* "SELECTED WORK" is about 8.3em wide in Disket Mono; this keeps it on one line. */
+.heading {
+  font-family: var(--font-hero), monospace;
+  font-size: min(84px, calc((100vw - 48px) / 8.6));
+  font-weight: 700;
+  line-height: 0.92;
+  letter-spacing: -0.05em;
+  color: var(--ink);
+}
+
+.headingLine {
+  white-space: pre;
+}
+
+.disks {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), 1fr));
+  gap: 44px 32px;
+  margin-top: 56px;
+  list-style: none;
+}
+
+/* The shadow lives on the list item, because the disk's cut corner (clip-path) would clip
+   a box-shadow on the disk itself. */
+.disks li {
+  filter: drop-shadow(0 14px 22px rgba(0, 0, 0, 0.45));
+  transition: filter 350ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.disks li:hover,
+.disks li:focus-within {
+  filter: drop-shadow(0 26px 34px rgba(0, 0, 0, 0.55));
+}
+
+/* ---- The floppy disk. Sizes inside it are in cqw (percent of the disk's width), so the
+   label and parts scale with the disk. ---- */
+.disk {
+  --lift: cubic-bezier(0.22, 1, 0.36, 1);
+  position: relative;
+  display: block;
+  width: 100%;
+  aspect-ratio: 1;
+  padding: 0;
+  border: none;
+  border-radius: 4.5%;
+  background:
+    linear-gradient(160deg, rgba(255, 255, 255, 0.14), transparent 38%),
+    linear-gradient(0deg, rgba(0, 0, 0, 0.14), transparent 30%),
+    var(--disk);
+  color: inherit;
+  container-type: inline-size;
+  /* The chamfered top-right corner. */
+  clip-path: polygon(0 0, 91% 0, 100% 9%, 100% 100%, 0 100%);
+  cursor: pointer;
+  transition: transform 350ms var(--lift);
+}
+
+.disk:hover,
+.disk:focus-visible {
+  transform: translateY(-8px) rotate(-1.5deg);
+  outline: none;
+}
+
+.disk:active {
+  transform: translateY(-3px) scale(0.98);
+}
+
+/* The dark magnetic media, seen through the shell's window once the shutter slides. */
+.media {
+  position: absolute;
+  top: 3.5%;
+  left: 38%;
+  width: 20%;
+  height: 27%;
+  border-radius: 1.5cqw;
+  background: radial-gradient(circle at 40% 35%, #5a4336, #2a1d17 70%);
+}
+
+.hub {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 55%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(circle, #d9dde0 30%, #9aa1a6 72%);
+  transform: translate(-50%, -50%);
+  opacity: 0.35;
+}
+
+/* The brushed-metal shutter. */
+.shutter {
+  position: absolute;
+  top: 0;
+  left: 22%;
+  width: 52%;
+  height: 34%;
+  border-radius: 0 0 1.8cqw 1.8cqw;
+  background: linear-gradient(90deg, #a9afb3, #eef0f1 42%, #c2c7ca 70%, #a4aaae);
+  box-shadow:
+    inset 0 -1px 0 rgba(0, 0, 0, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  transition: transform 380ms var(--lift);
+}
+
+/* The stamped window in the shutter. */
+.shutterWindow {
+  position: absolute;
+  top: 16%;
+  left: 12%;
+  width: 20%;
+  height: 64%;
+  border-radius: 1cqw;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.28), rgba(0, 0, 0, 0.12));
+}
+
+.disk:hover .shutter,
+.disk:focus-visible .shutter {
+  transform: translateX(44%);
+}
+
+/* The write-protect hole. */
+.protect {
+  position: absolute;
+  right: 5%;
+  bottom: 4%;
+  width: 7%;
+  height: 7%;
+  border-radius: 1cqw;
+  background: rgba(0, 0, 0, 0.55);
+}
+
+/* The paper label, with faint ruled lines. */
+.labelPaper {
+  position: absolute;
+  top: 42%;
+  right: 9%;
+  bottom: 0;
+  left: 9%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border-radius: 2cqw 2cqw 0 0;
+  background:
+    repeating-linear-gradient(
+      180deg,
+      transparent 0 calc(8cqw - 1px),
+      rgba(40, 60, 120, 0.12) calc(8cqw - 1px) 8cqw
+    ),
+    #f4f0e6;
+  color: #1a1a1a;
+  text-align: left;
+}
+
+.labelBand {
+  display: flex;
+  justify-content: space-between;
+  padding: 2.4cqw 5cqw;
+  background: var(--disk);
+  color: var(--disk-ink);
+  font-family: var(--font-hero), monospace;
+  font-size: 3.6cqw;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.labelTitle {
+  padding: 4cqw 5cqw 0;
+  font-family: var(--font-hero), monospace;
+  font-size: 7.2cqw;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.04em;
+  text-transform: uppercase;
+}
+
+.labelKind {
+  padding: 2cqw 5cqw 0;
+  font-family: var(--font-sans), sans-serif;
+  font-size: 4.6cqw;
+  line-height: 1.3;
+}
+
+.labelRole {
+  margin-top: auto;
+  padding: 0 5cqw 4cqw;
+  font-family: var(--font-display), sans-serif;
+  font-size: 3.4cqw;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(26, 26, 26, 0.6);
+}
+
+/* ---- The project window, opened when a disk is inserted. ---- */
+.window {
+  width: min(640px, calc(100vw - 32px));
+  max-width: none;
+  max-height: calc(100svh - 48px);
+  margin: auto;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: inherit;
+  overflow: visible;
+}
+
+.window::backdrop {
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(6px);
+  animation: backdropIn 300ms ease;
+  transition: opacity 300ms ease;
+}
+
+@keyframes backdropIn {
+  from {
+    opacity: 0;
+  }
+}
+
+/* Closing: the backdrop fades while the window shrinks back into its disk. */
+.closing::backdrop {
+  opacity: 0;
+}
+
+/* The block that grows from the disk into the window (and back); Work.tsx animates its box,
+   corners and colour. Fixed to the viewport, behind the panel. */
+.morph {
+  display: none;
+  position: fixed;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.window .panel {
+  position: relative;
+  z-index: 1;
+}
+
+.panel {
+  max-height: calc(100svh - 48px);
+  overflow: auto;
+  border-radius: 10px;
+  background: #f4f0e6;
+  color: #1a1a1a;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6);
+}
+
+.titleBar {
+  position: sticky;
+  top: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 10px 10px 16px;
+  background: var(--disk);
+  color: var(--disk-ink);
+  font-family: var(--font-hero), monospace;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+}
+
+.titleDisk {
+  width: 12px;
+  height: 12px;
+  border: 2px solid currentColor;
+  border-radius: 2px;
+  clip-path: polygon(0 0, 75% 0, 100% 25%, 100% 100%, 0 100%);
+}
+
+.fileName {
+  flex: 1;
+}
+
+.close {
+  width: 30px;
+  height: 30px;
+  border: none;
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.16);
+  color: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.close:hover,
+.close:focus-visible {
+  background: rgba(0, 0, 0, 0.3);
+  outline: none;
+}
+
+.body {
+  padding: 28px 28px 32px;
+}
+
+.meta {
+  font-family: var(--font-display), sans-serif;
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(26, 26, 26, 0.6);
+}
+
+.title {
+  margin: 10px 0 16px;
+  font-family: var(--font-hero), monospace;
+  font-size: clamp(28px, 5vw, 44px);
+  font-weight: 700;
+  line-height: 0.95;
+  letter-spacing: -0.04em;
+  text-transform: uppercase;
+}
+
+.summary {
+  font-size: 17px;
+  line-height: 1.55;
+}
+
+.highlights {
+  display: grid;
+  gap: 8px;
+  margin-top: 20px;
+  list-style: none;
+  font-size: 15px;
+  line-height: 1.45;
+}
+
+.highlights li {
+  position: relative;
+  padding-left: 22px;
+}
+
+.highlights li::before {
+  content: "→";
+  position: absolute;
+  left: 0;
+  color: rgba(26, 26, 26, 0.5);
+}
+
+.stack {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 24px;
+  list-style: none;
+}
+
+.stack li {
+  padding: 6px 10px;
+  border: 1px solid rgba(26, 26, 26, 0.2);
+  border-radius: 4px;
+  font-family: var(--font-hero), monospace;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.visit {
+  display: inline-flex;
+  margin-top: 26px;
+  padding: 12px 16px;
+  border-radius: 6px;
+  background: #1a1a1a;
+  color: #f5f1ea;
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.visit:hover,
+.visit:focus-visible {
+  background: #000;
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .disk,
+  .shutter,
+  .disks li {
+    transition: none;
+  }
+
+  .window::backdrop {
+    animation: none;
+  }
+}

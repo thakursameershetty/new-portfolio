@@ -50,6 +50,15 @@ export interface WebsiteShaderCanvasProps {
    * starts, the grid unwinds to its resting pose over `seconds`.
    */
   introPose?: IntroPose;
+  /** Rows at the top whose cells thin out at random into the dark, dissolving the edge. */
+  topEdgeRows?: number;
+  /** Where the reveal starts; the center by default. */
+  revealFrom?: RevealFrom;
+  /**
+   * Drives the reveal directly (0 dark to 1 fully revealed), e.g. from scroll, instead of
+   * playing it over `revealDuration`.
+   */
+  revealControl?: { current: number };
   children?: ReactNode;
 }
 
@@ -67,6 +76,9 @@ interface WebsiteShaderBackgroundProps {
   revealDuration?: number;
   revealPaused?: boolean;
   introPose?: IntroPose;
+  topEdgeRows?: number;
+  revealFrom?: RevealFrom;
+  revealControl?: { current: number };
 }
 
 export interface IntroPose {
@@ -102,6 +114,10 @@ uniform vec4 u_shocks[4];
 uniform vec2 u_gridSize;
 // Intro pose: rotation in radians and zoom, applied around the canvas center.
 uniform vec2 u_pose;
+// Rows at the top that dissolve into the dark (0 for a straight edge).
+uniform float u_topEdge;
+// 0: the reveal rings out from the center. 1: it pours down from the top edge.
+uniform float u_revealFrom;
 
 float saturate(float value) {
   return clamp(value, 0.0, 1.0);
@@ -167,6 +183,11 @@ export function getKineticGrid(width: number, height: number) {
 export const revealDelay = 0.25;
 const revealOvershoot = 3.0;
 const revealJitter = 0.8;
+// A top-down reveal staggers its cells more, so they tumble in one after another.
+const revealFlowJitter = 1.5;
+
+/** Where the reveal starts: rings out from the center, or pours down from the top edge. */
+export type RevealFrom = "center" | "top";
 const revealEdge = 1.4;
 const revealBackdrop = "#060605";
 // Click shockwaves: how fast the ring travels in cells per second, and how long it lives.
@@ -312,18 +333,49 @@ vec3 shaderColor(vec2 uv, vec2 p, float t, vec2 pointer, float intensity, float 
   float lightEdge = max(smoothstep(bevel, 0.0, local.y), smoothstep(bevel, 0.0, 1.0 - local.x));
   color *= 1.0 - shadowEdge * pressed * 0.28;
   color += lightEdge * pressed * mix(0.04, 0.09, isLight);
-  // Opening ripple: the four center cells switch on together, then the rest follow outward,
-  // flashing as the wavefront passes. Jitter is kept off the center four so they stay in sync.
-  float cellDistance = length(cell + 0.5);
-  float revealJitter = seed * ${glslFloat(revealJitter)} * saturate(cellDistance - 1.0);
-  float revealRadius = u_reveal * (length(gridSize * 0.5) + ${glslFloat(revealOvershoot)});
-  float cellOn = saturate((revealRadius - cellDistance - revealJitter) / ${glslFloat(revealEdge)});
-  vec3 darkColor = mix(vec3(0.022, 0.021, 0.016), vec3(0.14, 0.035, 0.03), line * 0.5);
-  color = mix(darkColor, color, cellOn);
-  color = mix(color, coral * 1.2, cellOn * (1.0 - cellOn) * 4.0 * box * 0.55 * isLight);
+  // Reveal. From the center: the four center cells switch on together, then the rest follow
+  // outward (jitter is kept off the center four so they stay in sync). From the top: cells
+  // pour down row by row from the top edge, each staggered so they tumble in one by one.
+  // Either way they flash as the wavefront passes.
+  float fromTop = step(0.5, u_revealFrom);
+  float cellDistance = mix(length(cell + 0.5), gridSize.y * 0.5 - (cell.y + 0.5), fromTop);
+  float revealSpan = mix(length(gridSize * 0.5), gridSize.y, fromTop);
+  float revealJitter = seed * mix(${glslFloat(revealJitter)}, ${glslFloat(revealFlowJitter)}, fromTop)
+    * mix(saturate(cellDistance - 1.0), 1.0, fromTop);
+  float revealRadius = u_reveal * (revealSpan + ${glslFloat(revealOvershoot)});
+  // A top-down front switches each cell on crisply, so no cell sits half-faded while the
+  // front pauses (it follows the scroll); the center ripple keeps its softer edge.
+  float cellOn = saturate((revealRadius - cellDistance - revealJitter) / mix(${glslFloat(revealEdge)}, 0.4, fromTop));
+  // Unlit cells: a dark grid (behind the Enter screen). A grid with a dissolving top edge sits
+  // against the page instead, so its unlit cells are the page's own black, without the grid
+  // lines, so it begins without a seam. 0.0296 is #0a0a0a before the output curve in main().
+  float lit = cellOn;
+  float blendsWithPage = step(0.001, u_topEdge);
+  vec3 darkColor = mix(
+    mix(vec3(0.022, 0.021, 0.016), vec3(0.14, 0.035, 0.03), line * 0.5),
+    vec3(0.0296),
+    blendsWithPage
+  );
 
-  color += (fbm(uv * 3.2) - 0.5) * 0.01;
-  color += (hash21(gl_FragCoord.xy) - 0.5) * 0.06 * isLight;
+  // Dissolving top edge: cells in the top rows switch off at random, fewer the further down,
+  // so the grid breaks up into the page above instead of stopping in a line.
+  if (u_topEdge > 0.0) {
+    float rowsFromTop = gridSize.y * 0.5 - (cell.y + 1.0);
+    lit *= step(hash21(cell + 17.3), rowsFromTop / u_topEdge);
+  }
+
+  color = mix(darkColor, color, lit);
+  float flash = cellOn * (1.0 - cellOn) * 4.0 * mix(1.0, lit, blendsWithPage);
+  color = mix(color, coral * 1.2, flash * box * 0.55 * isLight);
+
+  // Grain covers the whole grid. On a page-blended grid it fades in on the unlit cells from
+  // nothing at the grid's top edge to full strength below the dissolving rows, so the
+  // texture carries on from the black page above without a seam.
+  float rowsDown = gridSize.y * 0.5 - gridUv.y;
+  float grainFadeIn = smoothstep(0.0, u_topEdge + 1.5, rowsDown);
+  float grain = mix(1.0, max(lit, grainFadeIn), blendsWithPage);
+  color += (fbm(uv * 3.2) - 0.5) * 0.01 * grain;
+  color += (hash21(gl_FragCoord.xy) - 0.5) * 0.06 * isLight * grain;
   return color;
 }
 `,
@@ -351,6 +403,9 @@ export function WebsiteShaderCanvas({
   revealDuration = 0,
   revealPaused = false,
   introPose,
+  topEdgeRows = 0,
+  revealFrom = "center",
+  revealControl,
   children,
 }: WebsiteShaderCanvasProps) {
   const revealStartRef = useRef<number | null>(null);
@@ -445,6 +500,8 @@ export function WebsiteShaderCanvas({
       const shocksLocation = gl.getUniformLocation(program, "u_shocks[0]");
       const gridSizeLocation = gl.getUniformLocation(program, "u_gridSize");
       const poseLocation = gl.getUniformLocation(program, "u_pose");
+      const topEdgeLocation = gl.getUniformLocation(program, "u_topEdge");
+      const revealFromLocation = gl.getUniformLocation(program, "u_revealFrom");
       const shocksUniform = new Float32Array(maxShocks * 4);
 
       gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
@@ -537,6 +594,10 @@ export function WebsiteShaderCanvas({
         gl.uniform1f(intensityLocation, intensity);
         gl.uniform1f(isLightLocation, tone === "light" ? 1 : 0);
         gl.uniform1f(revealLocation, getRevealProgress(nowSeconds));
+        if (topEdgeLocation) gl.uniform1f(topEdgeLocation, topEdgeRows);
+        if (revealFromLocation) {
+          gl.uniform1f(revealFromLocation, revealFrom === "top" ? 1 : 0);
+        }
         if (poseLocation) {
           const pose = getPose(nowSeconds);
           gl.uniform2f(poseLocation, pose.radians, pose.scale);
@@ -572,6 +633,7 @@ export function WebsiteShaderCanvas({
 
       function getRevealProgress(nowSeconds: number) {
         if (!shouldAnimate || revealDuration <= 0) return 1;
+        if (revealControl) return saturateNumber(revealControl.current);
         if (revealPausedRef.current) return 0;
         revealStartRef.current ??= nowSeconds;
         const elapsed =
@@ -650,7 +712,10 @@ export function WebsiteShaderCanvas({
     maxCanvasPixels,
     maxPixelRatio,
     introPose,
+    revealControl,
     revealDuration,
+    revealFrom,
+    topEdgeRows,
     shouldAnimate,
     tone,
   ]);
@@ -803,6 +868,9 @@ export function WebsiteShaderBackground({
   revealDuration = 1.8,
   revealPaused,
   introPose,
+  topEdgeRows,
+  revealFrom,
+  revealControl,
 }: WebsiteShaderBackgroundProps) {
   const themeTone = useShaderTone();
   const tone = toneOverride ?? themeTone;
@@ -817,6 +885,9 @@ export function WebsiteShaderBackground({
         revealDuration={revealDuration}
         revealPaused={revealPaused}
         introPose={introPose}
+        topEdgeRows={topEdgeRows}
+        revealFrom={revealFrom}
+        revealControl={revealControl}
         className={styles.backgroundCanvas}
       />
     </div>
@@ -869,9 +940,12 @@ export function WebsiteShaderDemo({
 export function getRevealCellTimes(
   duration: number,
   grid: { cols: number; rows: number },
+  from: RevealFrom = "center",
 ) {
   const { cols, rows } = grid;
-  const maxRadius = Math.hypot(cols / 2, rows / 2) + revealOvershoot;
+  const fromTop = from === "top";
+  const maxRadius =
+    (fromTop ? rows : Math.hypot(cols / 2, rows / 2)) + revealOvershoot;
   const times: { time: number; distance: number; across: number }[] = [];
   const halfCols = Math.ceil(cols / 2);
   const halfRows = Math.ceil(rows / 2);
@@ -879,9 +953,12 @@ export function getRevealCellTimes(
   // Cells counted from the center, like the shader: -1 and 0 meet in the middle.
   for (let y = -halfRows; y < halfRows; y++) {
     for (let x = -halfCols; x < halfCols; x++) {
-      const distance = Math.hypot(x + 0.5, y + 0.5);
-      const jitter =
-        Math.random() * revealJitter * saturateNumber(distance - 1);
+      const distance = fromTop
+        ? rows / 2 - (y + 0.5)
+        : Math.hypot(x + 0.5, y + 0.5);
+      const jitter = fromTop
+        ? Math.random() * revealFlowJitter
+        : Math.random() * revealJitter * saturateNumber(distance - 1);
       const progress = saturateNumber(
         (distance + jitter + revealEdge / 2) / maxRadius,
       );

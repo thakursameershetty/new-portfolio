@@ -27,7 +27,7 @@ const easeOutExpo = "cubic-bezier(0.16, 1, 0.3, 1)";
 const easeOvershoot = "cubic-bezier(0.34, 1.1, 0.64, 1)";
 
 export function Hero() {
-  const { entered, playFlap, playCue } = useIntro();
+  const { entered, instant, playFlap, playCue } = useIntro();
   const reduceMotion = useReducedMotion();
   const [nameLanded, setNameLanded] = useState(false);
   const [statementActive, setStatementActive] = useState(false);
@@ -86,7 +86,7 @@ export function Hero() {
       return animation;
     };
 
-    if (reduceMotion) {
+    if (reduceMotion || instant) {
       at(0, () => {
         setNameLanded(true);
         setStatementActive(true);
@@ -158,7 +158,7 @@ export function Hero() {
       for (const timer of timers) window.clearTimeout(timer);
       for (const animation of animations) animation.cancel();
     };
-  }, [entered, playCue, reduceMotion]);
+  }, [entered, instant, playCue, reduceMotion]);
 
   return (
     <section id="top" className={styles.hero}>
@@ -197,6 +197,7 @@ export function Hero() {
             <SplitFlapText
               lines={statement}
               active={statementActive}
+            instant={instant}
               onFlap={playFlap}
               onDone={() => {
                 setStatementLanded(true);
@@ -220,6 +221,8 @@ export function Hero() {
           className={styles.sceneImage}
         />
       </div>
+      {/* The red part of the hero, above its fade, for the nav to know what's behind it. */}
+      <div aria-hidden="true" data-nav-surface="red" className={styles.redSurface} />
       {/* The red grid bleeds into the black page below. */}
       <div aria-hidden="true" className={styles.fade} />
     </section>

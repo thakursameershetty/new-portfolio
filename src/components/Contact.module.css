@@ -1,0 +1,345 @@
+/* Full-width over the red grid; the top padding leaves room for the grid's dissolving edge
+   (its first three rows) above the content. */
+.contact {
+  --on-red: #fff8f3;
+  --on-red-muted: rgba(255, 248, 243, 0.78);
+  position: relative;
+  z-index: 1;
+  overflow: hidden;
+  width: 100%;
+  background: var(--ground);
+  color: var(--on-red);
+}
+
+.grid {
+  position: absolute;
+  inset: 0;
+}
+
+/* Starts where the content does, below the dissolving edge (same as .inner's top padding). */
+.redSurface {
+  position: absolute;
+  top: clamp(220px, 32vh, 320px);
+  right: 0;
+  bottom: 0;
+  left: 0;
+  pointer-events: none;
+}
+
+.inner {
+  position: relative;
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: clamp(220px, 32vh, 320px) 24px 32px;
+  pointer-events: none;
+}
+
+/* Only the actual controls take the pointer; everywhere else it reaches the grid. */
+.inner a,
+.inner button {
+  pointer-events: auto;
+}
+
+.label {
+  margin-bottom: 28px;
+  font-family: var(--font-hero), monospace;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--on-red-muted);
+}
+
+/* "LET'S MAKE SOMETHING" is about 12.9em wide in Disket Mono; this keeps it on one line
+   inside the section's gutters on any screen. */
+.headline {
+  font-family: var(--font-hero), monospace;
+  font-size: min(84px, calc((100vw - 48px) / 13));
+  font-weight: 700;
+  line-height: 0.92;
+  letter-spacing: -0.05em;
+  color: var(--on-red);
+}
+
+.headlineLines {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.headlineLine {
+  white-space: pre;
+}
+
+/* Status line: availability with a live pulse, and the local time. */
+.status {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 32px;
+  margin-top: 40px;
+  font-family: var(--font-display), sans-serif;
+  font-size: 13px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--on-red-muted);
+}
+
+.available {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--on-red);
+}
+
+/* A bright green that stays clear on the red, ringed so it doesn't bleed into it. */
+.pulse {
+  position: relative;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #7dffb0;
+  box-shadow: 0 0 0 2px rgba(20, 60, 35, 0.35);
+}
+
+.pulse::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: #7dffb0;
+  animation: pulse 2s ease-out infinite;
+}
+
+@keyframes pulse {
+  from {
+    opacity: 0.7;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(3);
+  }
+}
+
+.place {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-variant-numeric: tabular-nums;
+  pointer-events: auto;
+}
+
+.pin {
+  flex: none;
+  color: var(--on-red);
+}
+
+.colon {
+  animation: blink 1s steps(1) infinite;
+}
+
+@keyframes blink {
+  50% {
+    opacity: 0.25;
+  }
+}
+
+/* Keycaps: a face sitting on a darker skirt (the solid shadow below it). Hover lifts the
+   key a touch; pressing sinks it onto its skirt. */
+.keys {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px;
+  margin-top: 48px;
+}
+
+.key {
+  max-width: 100%;
+  min-width: 0;
+  --face: #171717;
+  --skirt: #050505;
+  --edge: rgba(255, 255, 255, 0.08);
+  position: relative;
+  display: inline-flex;
+  align-items: stretch;
+  border: 1px solid var(--edge);
+  border-radius: 10px;
+  background: var(--face);
+  color: var(--ink);
+  box-shadow:
+    0 6px 0 var(--skirt),
+    0 14px 28px rgba(0, 0, 0, 0.45);
+  transition:
+    transform 110ms ease,
+    box-shadow 110ms ease,
+    background-color 150ms ease;
+}
+
+.key:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    0 8px 0 var(--skirt),
+    0 18px 32px rgba(0, 0, 0, 0.5);
+}
+
+.key:active,
+.key:has(:active) {
+  transform: translateY(5px);
+  box-shadow:
+    0 1px 0 var(--skirt),
+    0 4px 10px rgba(0, 0, 0, 0.45);
+}
+
+/* On the red grid the email key is cream with dark ink; LinkedIn stays a dark key. */
+.keyPrimary {
+  --face: #f5f1ea;
+  --skirt: #b9ad9c;
+  --edge: rgba(0, 0, 0, 0.06);
+  color: #1a0605;
+}
+
+.keyFace {
+  display: inline-flex;
+  flex: 1 1 auto;
+  min-width: 0;
+  align-items: center;
+  gap: 14px;
+  padding: 18px 22px;
+  border: none;
+  background: none;
+  color: inherit;
+  font-family: var(--font-sans), sans-serif;
+  font-size: 17px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.keyIcon {
+  display: flex;
+  flex: none;
+}
+
+/* Swapping the label (email ↔ "Copied ✓") flips the new one in like a card. */
+/* One line always; on a screen too narrow for the full address it ends in "…" rather than
+   pushing the key off the edge. */
+.keyLabel {
+  display: inline-block;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  animation: flipIn 280ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes flipIn {
+  from {
+    opacity: 0;
+    transform: perspective(300px) rotateX(-80deg);
+  }
+}
+
+.keyArrow {
+  display: flex;
+  align-items: center;
+  padding: 0 18px;
+  border-left: 1px solid rgba(0, 0, 0, 0.12);
+  color: inherit;
+  transition: background-color 150ms ease;
+}
+
+.keyArrow:hover {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+.keyArrow svg,
+.keyArrowInline {
+  transition:
+    transform 200ms ease,
+    opacity 200ms ease;
+}
+
+.keyArrow:hover svg,
+.key:hover .keyArrowInline {
+  transform: translate(2px, -2px);
+}
+
+.keyArrowInline {
+  display: flex;
+  margin-left: 4px;
+  opacity: 0.6;
+}
+
+.key:hover .keyArrowInline {
+  opacity: 1;
+}
+
+.keyFace:focus-visible,
+.keyArrow:focus-visible {
+  outline: 2px solid var(--on-red);
+  outline-offset: 3px;
+  border-radius: 8px;
+}
+
+.footer {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 12px 24px;
+  margin-top: clamp(96px, 16vh, 160px);
+  padding-top: 24px;
+  border-top: 1px solid rgba(255, 248, 243, 0.25);
+  font-family: var(--font-hero), monospace;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--on-red-muted);
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* Phones: the keys stack at full width, matching each other; LinkedIn's arrow moves to the
+   right edge to mirror the email key's. */
+@media (max-width: 600px) {
+  .keys {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 16px;
+  }
+
+  .key {
+    width: 100%;
+  }
+
+  .keyFace {
+    gap: 12px;
+    padding: 16px;
+    font-size: 15px;
+  }
+
+  .keyArrow {
+    padding: 0 16px;
+  }
+
+  .keyArrowInline {
+    margin-left: auto;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pulse::after,
+  .colon,
+  .keyLabel {
+    animation: none;
+  }
+
+  .key {
+    transition: none;
+  }
+}

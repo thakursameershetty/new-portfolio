@@ -1,20 +1,21 @@
 import type { Metadata } from "next";
-import { Google_Sans, Google_Sans_Flex } from "next/font/google";
 import localFont from "next/font/local";
 import { ThemeProvider } from "next-themes";
 import "./globals.css";
 
-const sans = Google_Sans_Flex({
+// Google Sans Flex (body) and Google Sans (headings, labels) are self-hosted variable fonts
+// (Latin subset, SIL Open Font License), so the build doesn't depend on Google Fonts and the
+// fallback font is measured from the files themselves.
+const sans = localFont({
   variable: "--font-sans",
-  subsets: ["latin"],
+  src: "../fonts/google-sans-flex-latin.woff2",
+  weight: "1 1000",
 });
 
-// Headline and uppercase labels. Loaded as a variable font so the intro can animate
-// its weight from regular to bold.
-const display = Google_Sans({
+const display = localFont({
   variable: "--font-display",
-  weight: "variable",
-  subsets: ["latin"],
+  src: "../fonts/google-sans-latin.woff2",
+  weight: "400 700",
 });
 
 // Hero type: "HI", the name and the statement lines.
@@ -41,6 +42,15 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="en" className={`${sans.variable} ${display.variable} ${hero.variable}`} suppressHydrationWarning>
+      <head>
+        {/* Before first paint: mark return visits so the Enter screen stays hidden. */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html:
+              'try{if(localStorage.getItem("intro-seen")==="1")document.documentElement.setAttribute("data-intro-seen","")}catch(e){}',
+          }}
+        />
+      </head>
       <body>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           {children}

@@ -1,6 +1,7 @@
 import {
   getKineticGrid,
   getRevealCellTimes,
+  type RevealFrom,
   revealDelay,
   shockLifetime,
   shockSpeed,
@@ -38,7 +39,13 @@ export interface PointerSounds {
   cue(cue: IntroCue): void;
 }
 
-export type IntroCue = "swap" | "land" | "arrive" | "tap";
+export type IntroCue =
+  | "swap"
+  | "land"
+  | "arrive"
+  | "tap"
+  | "shutter"
+  | "insert";
 
 export function createPointerSounds(context: AudioContext): PointerSounds {
   const output = context.createGain();
@@ -80,6 +87,20 @@ export function createPointerSounds(context: AudioContext): PointerSounds {
     },
     cue(cue) {
       const at = context.currentTime;
+      if (cue === "shutter") {
+        // A floppy's metal shutter: a thin slide, then the click as it stops.
+        playClick(context, output, noise, at, 4800, 0.02);
+        playClick(context, output, noise, at + 0.03, 4200, 0.02);
+        playClick(context, output, noise, at + 0.09, 3000, 0.045);
+        return;
+      }
+      if (cue === "insert") {
+        // Opening a disk's window: a soft, rising "zwip" in the spirit of classic Mac OS
+        // window sounds, a tone sliding up rather than noise, so it's clean, not crinkly.
+        playChirp(context, output, at, { from: 520, to: 1560, volume: 0.06 });
+        playChirp(context, output, at, { from: 260, to: 780, volume: 0.03 });
+        return;
+      }
       if (cue === "tap") {
         // Hovering a nav item: a light, dry tick.
         playClick(context, output, noise, at, 2600, 0.04);
@@ -146,7 +167,11 @@ export function createPointerSounds(context: AudioContext): PointerSounds {
  * switch on, a click for the cells in each ring, and a noise swell underneath.
  * Must be called from a user gesture so the browser allows audio.
  */
-export function playRevealSound(context: AudioContext, duration: number) {
+export function playRevealSound(
+  context: AudioContext,
+  duration: number,
+  from: RevealFrom = "center",
+) {
   const start = context.currentTime + 0.02;
   const master = context.createGain();
   master.gain.value = masterVolume;
@@ -158,7 +183,7 @@ export function playRevealSound(context: AudioContext, duration: number) {
   playPress(context, master, noise, start, 0.5);
   playThump(context, master, noise, start + revealDelay);
   playSwell(context, master, noise, start + revealDelay, duration);
-  playRingClicks(context, master, noise, start, duration);
+  playRingClicks(context, master, noise, start, duration, from);
 }
 
 function playThump(
@@ -254,12 +279,13 @@ function playRingClicks(
   noise: AudioBuffer,
   start: number,
   duration: number,
+  from: RevealFrom,
 ) {
   const grid = currentGrid();
   const maxRing = Math.ceil(Math.hypot(grid.cols / 2, grid.rows / 2));
   const clicksPerRing = new Map<number, number>();
 
-  for (const cell of getRevealCellTimes(duration, grid)) {
+  for (const cell of getRevealCellTimes(duration, grid, from)) {
     const ring = Math.round(cell.distance);
     const played = clicksPerRing.get(ring) ?? 0;
     if (ring === 0 || played >= maxClicksPerRing) continue;
@@ -302,6 +328,37 @@ function playKnock(
   oscillator.connect(gain).connect(panned(context, output, pan));
   oscillator.start(at);
   oscillator.stop(at + 0.08);
+}
+
+// A short tone gliding up in pitch, softened on top: a retro interface "zwip".
+function playChirp(
+  context: AudioContext,
+  output: AudioNode,
+  at: number,
+  {
+    from,
+    to,
+    volume,
+    duration = 0.14,
+  }: { from: number; to: number; volume: number; duration?: number },
+) {
+  const tone = context.createOscillator();
+  const filter = context.createBiquadFilter();
+  const gain = context.createGain();
+
+  tone.type = "triangle";
+  tone.frequency.setValueAtTime(from, at);
+  tone.frequency.exponentialRampToValueAtTime(to, at + duration * 0.8);
+  filter.type = "lowpass";
+  filter.frequency.value = 3200;
+  gain.gain.setValueAtTime(0.0001, at);
+  gain.gain.exponentialRampToValueAtTime(volume, at + 0.006);
+  gain.gain.setValueAtTime(volume, at + duration * 0.45);
+  gain.gain.exponentialRampToValueAtTime(0.0001, at + duration);
+
+  tone.connect(filter).connect(gain).connect(output);
+  tone.start(at);
+  tone.stop(at + duration + 0.02);
 }
 
 function playClick(

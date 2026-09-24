@@ -29,6 +29,12 @@
   transition: opacity 400ms ease;
 }
 
+/* Return visit: the layout's pre-paint script marks the page, so the Enter screen never
+   flashes before the intro starts on its own. */
+:global(html[data-intro-seen]) .gate {
+  display: none;
+}
+
 .gateHidden {
   opacity: 0;
   pointer-events: none;

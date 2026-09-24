@@ -21,6 +21,8 @@ interface SplitFlapTextProps {
   lines: SplitFlapLine[];
   /** Starts the flipping; letters stay hidden until then. */
   active: boolean;
+  /** Lands every letter at once, without flipping. */
+  instant?: boolean;
   /** Called as letters turn over; `across` is the letter's rough 0–1 horizontal position. */
   onFlap?: (across: number, landed: boolean) => void;
   onDone?: () => void;
@@ -41,6 +43,7 @@ interface Letter {
 export function SplitFlapText({
   lines,
   active,
+  instant = false,
   onFlap,
   onDone,
 }: SplitFlapTextProps) {
@@ -59,7 +62,7 @@ export function SplitFlapText({
   useEffect(() => {
     if (!active) return;
 
-    if (reduceMotion) {
+    if (reduceMotion || instant) {
       const landed = letters.map((letter) => letter.flips);
       const frame = requestAnimationFrame(() => {
         setSteps(landed);
@@ -112,7 +115,7 @@ export function SplitFlapText({
 
     frame = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(frame);
-  }, [active, letters, reduceMotion]);
+  }, [active, instant, letters, reduceMotion]);
 
   let index = 0;
   return (
