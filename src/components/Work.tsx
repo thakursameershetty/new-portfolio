@@ -261,6 +261,8 @@ function DiskBox({
   const reduceMotion = useReducedMotion();
   const [dealt, setDealt] = useState(false);
   const [scene, setScene] = useState<DiskBoxScene | null>(null);
+  // Set when the 3D box can't be built (no WebGL): the CSS box is then the box for good.
+  const [sceneFailed, setSceneFailed] = useState(false);
   const boxRef = useRef<HTMLButtonElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
@@ -270,6 +272,8 @@ function DiskBox({
   // The scene is built once; this lets its knocks always reach the current sound setting.
   const playCueRef = useRef(playCue);
   const movingRef = useRef(false);
+  // The box opens itself once per visit, and never again after the visitor closes it.
+  const openedRef = useRef(false);
 
   useLayoutEffect(() => {
     dealtRef.current = dealt;
@@ -319,7 +323,9 @@ function DiskBox({
             setScene(ready);
           })
           // No WebGL: the CSS box stays.
-          .catch(() => {});
+          .catch(() => {
+            if (!cancelled) setSceneFailed(true);
+          });
       },
       { rootMargin: "600px 0px" },
     );
@@ -442,6 +448,36 @@ function DiskBox({
     movingRef.current = false;
   }, [playCue, projects, reduceMotion, scene]);
 
+  // Opens by itself once the box has settled into view: mostly on screen for a moment, so it
+  // doesn't go off while someone flicks past. Side by side, the second box follows a beat
+  // after the first. Waits for the 3D box (unless it won't come), so the opening plays.
+  useEffect(() => {
+    const box = boxRef.current;
+    if (!box || openedRef.current || (!scene && !sceneFailed && !reduceMotion)) return;
+    let timer = 0;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        window.clearTimeout(timer);
+        if (!entry || entry.intersectionRatio < 0.6) return;
+        timer = window.setTimeout(
+          () => {
+            if (openedRef.current || movingRef.current || dealtRef.current) return;
+            openedRef.current = true;
+            observer.disconnect();
+            takeOut();
+          },
+          400 + place * 500,
+        );
+      },
+      { threshold: [0, 0.6] },
+    );
+    observer.observe(box);
+    return () => {
+      observer.disconnect();
+      window.clearTimeout(timer);
+    };
+  }, [place, reduceMotion, scene, sceneFailed, takeOut]);
+
   const hint = dealt ? "Click the box to put them back." : "Click the box to take them out.";
 
   return (
@@ -471,6 +507,8 @@ function DiskBox({
           onPointerLeave={() => scene?.leave()}
           onClick={() => {
             if (movingRef.current) return;
+            // Opened or closed by hand, it's the visitor's now: no more opening by itself.
+            openedRef.current = true;
             if (dealt) void putBack();
             else takeOut();
           }}
