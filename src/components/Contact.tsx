@@ -153,13 +153,19 @@ function useScrollReveal(
       if (!frame) frame = requestAnimationFrame(update);
     };
 
+    // Content above can also move the section without any scroll, like a disk box's list
+    // closing up; the page's height changes as it does, so follow that too.
+    const bodyObserver = new ResizeObserver(handleScroll);
+
     handleScroll();
     window.addEventListener("scroll", handleScroll, { passive: true });
     window.addEventListener("resize", handleScroll);
+    bodyObserver.observe(document.body);
     return () => {
       cancelAnimationFrame(frame);
       window.removeEventListener("scroll", handleScroll);
       window.removeEventListener("resize", handleScroll);
+      bodyObserver.disconnect();
     };
   }, [reveal, sectionRef]);
 

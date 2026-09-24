@@ -21,18 +21,11 @@ export function Currently() {
           height={684}
           className={styles.mark}
         />
-        <strong>Spotmies</strong>. I joined as a UI/UX
-        designer and grew into leading full stack builds:{" "}
+        <strong>Spotmies</strong>. I started as a UI/UX designer and now lead full stack
+        builds,{" "}
         <span className={styles.muted}>
-          web apps, mobile apps and immersive 3D experiences, shipped end to end.
-        </span>
-      </p>
-      <p className={styles.craft}>
-        What I care about most are the small moments: the click that confirms, the
-        transition that explains, the sound that makes a screen feel physical.{" "}
-        <strong>Micro-interactions</strong> are where a product starts to feel right.{" "}
-        <span className={styles.muted}>
-          This site is built out of them, so go ahead and click around.
+          with a soft spot for micro-interactions: the small moments that make a product feel
+          right.
         </span>
       </p>
     </section>

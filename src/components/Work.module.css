@@ -32,24 +32,540 @@
   white-space: pre;
 }
 
-.disks {
+/* ---- The two disk boxes, side by side (stacked on phones). Each box's disks deal out
+   below both boxes, full width. Scroll anchoring is off here, so the page doesn't jump
+   while the grids appear. ---- */
+.shelves {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), 1fr));
-  gap: 44px 32px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: clamp(24px, 4vw, 48px);
+  margin-top: 64px;
+  overflow-anchor: none;
+}
+
+/* The shelf wrapper only groups a box with its grid; both lay out in .shelves' grid. */
+.shelf {
+  display: contents;
+}
+
+.shelf[data-place="0"] .shelfCell {
+  grid-row: 1;
+  grid-column: 1;
+}
+
+.shelf[data-place="1"] .shelfCell {
+  grid-row: 1;
+  grid-column: 2;
+}
+
+.dealt {
+  grid-column: 1 / -1;
   margin-top: 56px;
+}
+
+.shelf[data-place="0"] .dealt {
+  grid-row: 2;
+}
+
+.shelf[data-place="1"] .dealt {
+  grid-row: 3;
+}
+
+.shelfCell {
+  display: flex;
+  flex-direction: column;
+}
+
+.shelfTitle {
+  font-family: var(--font-hero), monospace;
+  font-size: clamp(22px, 2.6vw, 30px);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  text-transform: uppercase;
+}
+
+.shelfNote,
+.dealtLabel {
+  margin-top: 6px;
+  font-family: var(--font-display), sans-serif;
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+
+.dealtLabel {
+  margin-top: 0;
+}
+
+/* The list of what's inside, so it reads without opening the box. */
+.shelfIndex {
+  margin-top: 20px;
+  font-size: 15px;
+  line-height: 1.55;
+}
+
+.shelfHint {
+  margin-top: 6px;
+  font-size: 14px;
+  color: var(--ink-muted);
+}
+
+/* The box itself. It's the button; the 3D canvas inside runs taller and a little wider than
+   it, so the lid and the rising disks have room, and passes the pointer through to it. */
+.box {
+  position: relative;
+  z-index: 2;
+  display: block;
+  width: 100%;
+  margin-top: clamp(56px, 7vw, 88px);
+  padding: 0;
+  border: none;
+  background: none;
+  color: inherit;
+  cursor: pointer;
+}
+
+.box:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 8px;
+  border-radius: 4px;
+}
+
+.stage {
+  position: absolute;
+  bottom: -6%;
+  left: -8.5%;
+  width: 117%;
+  height: 260%;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 400ms ease;
+}
+
+.box[data-3d] .stage {
+  opacity: 1;
+}
+
+/* ---- The CSS box: in place until the 3D one loads, and the whole box without WebGL or
+   with reduced motion. Its parts are sized in cqw of the box. ---- */
+.boxBody {
+  position: relative;
+  display: block;
+  aspect-ratio: 100 / 31;
+  container-type: inline-size;
+  transition: opacity 400ms ease;
+}
+
+.box[data-3d] .boxBody {
+  opacity: 0;
+}
+
+/* The hinged lid. Opening flips it up and back over the hinge at its top edge. */
+.lid {
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  height: 4.5cqw;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 1.2cqw 1.2cqw 0.4cqw 0.4cqw;
+  background: linear-gradient(180deg, rgba(150, 160, 170, 0.3), rgba(40, 46, 52, 0.45));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  transform-origin: 50% 0;
+  transition: transform 300ms cubic-bezier(0.34, 1.3, 0.64, 1);
+}
+
+/* The latch tab. */
+.lid::after {
+  content: "";
+  position: absolute;
+  bottom: -1.2cqw;
+  left: 50%;
+  width: 8cqw;
+  height: 1.6cqw;
+  border-radius: 0 0 0.6cqw 0.6cqw;
+  background: rgba(120, 128, 136, 0.55);
+  transform: translateX(-50%);
+}
+
+.box[aria-expanded="false"]:hover .lid {
+  transform: perspective(600px) rotateX(-18deg);
+}
+
+.shelf[data-dealt="true"] .lid {
+  transform: perspective(600px) rotateX(-170deg);
+}
+
+.boxBack {
+  position: absolute;
+  inset: 4.5cqw 1.5cqw 1.5cqw;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.025);
+}
+
+/* The disks, standing in a row of slots, each sitting a touch lower than the last. Scoped to
+   the box so they win over the plain .disk rules below. */
+.boxBody .ghost {
+  position: absolute;
+  top: calc(7.5cqw + var(--slot) * 0.3cqw);
+  left: calc(3.5cqw + var(--slot) * 15cqw);
+  z-index: 1;
+  width: 19cqw;
+  transition: transform 300ms cubic-bezier(0.22, 1, 0.36, 1);
+  transition-delay: calc(var(--slot) * 30ms);
+}
+
+.box[aria-expanded="false"]:hover .boxBody .ghost {
+  transform: translateY(-1.6cqw);
+}
+
+.shelf[data-dealt="true"] .boxBody .ghost {
+  opacity: 0;
+}
+
+/* The smoky clear front: a tint, a moulded base, and a streak of light across it. */
+.boxFront {
+  position: absolute;
+  inset: 4.5cqw 0 0;
+  z-index: 3;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 0.4cqw 0.4cqw 1.6cqw 1.6cqw;
+  background:
+    linear-gradient(112deg, transparent 18%, rgba(255, 255, 255, 0.09) 22%, transparent 30%),
+    linear-gradient(180deg, rgba(120, 130, 140, 0.12), rgba(18, 22, 26, 0.5));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.25),
+    inset 0 -3cqw 3cqw rgba(0, 0, 0, 0.35),
+    0 3cqw 5cqw rgba(0, 0, 0, 0.45);
+}
+
+.boxFront::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 3cqw;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 0 0 1.6cqw 1.6cqw;
+  background: rgba(30, 34, 38, 0.6);
+}
+
+/* The paper label stuck on the moulded base, clear of the disks. */
+.boxLabel {
+  position: absolute;
+  bottom: 0.5cqw;
+  left: 50%;
+  z-index: 1;
+  display: flex;
+  gap: 2cqw;
+  padding: 0.5cqw 1.4cqw;
+  white-space: nowrap;
+  border-radius: 0.4cqw;
+  background: #f4f0e6;
+  color: #1a1a1a;
+  font-family: var(--font-hero), monospace;
+  font-size: 2.2cqw;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  transform: translateX(-50%) rotate(-1deg);
+}
+
+@media (max-width: 720px) {
+  .shelves {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .shelf[data-place="0"] .shelfCell,
+  .shelf[data-place="1"] .shelfCell {
+    grid-column: 1;
+  }
+
+  .shelf[data-place="0"] .dealt {
+    grid-row: 2;
+  }
+
+  .shelf[data-place="1"] .shelfCell {
+    grid-row: 3;
+    margin-top: 72px;
+  }
+
+  .shelf[data-place="1"] .dealt {
+    grid-row: 4;
+  }
+}
+
+
+/* ---- The disks out of a box: one project per row, every row the same shape. A small disk,
+   then the title with a two-line summary, the role and stack, and the link; thin rules
+   between. On phones the side details drop under the summary. ---- */
+.dealt {
+  /* Its height is animated open and closed; the disks fly in over the edge. */
+  overflow: visible;
+}
+
+.entries {
+  margin-top: 20px;
+  border-top: 1px solid rgba(245, 241, 234, 0.1);
   list-style: none;
 }
 
-/* The shadow lives on the list item, because the disk's cut corner (clip-path) would clip
-   a box-shadow on the disk itself. */
-.disks li {
-  filter: drop-shadow(0 14px 22px rgba(0, 0, 0, 0.45));
+.entry {
+  display: grid;
+  grid-template-columns: 96px minmax(0, 1fr);
+  gap: 28px;
+  align-items: start;
+  padding: 26px 0;
+  border-bottom: 1px solid rgba(245, 241, 234, 0.1);
+}
+
+.entryCopy {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 240px 150px;
+  gap: 32px;
+  align-items: start;
+}
+
+/* The shadow lives on this wrapper, because the disk's cut corner (clip-path) would clip a
+   box-shadow on the disk itself. Flying disks pass over the box. */
+.entryDisk {
+  position: relative;
+  z-index: 3;
+  transform-origin: 0 0;
+  filter: drop-shadow(0 10px 16px rgba(0, 0, 0, 0.45));
   transition: filter 350ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-.disks li:hover,
-.disks li:focus-within {
-  filter: drop-shadow(0 26px 34px rgba(0, 0, 0, 0.55));
+.entry:hover .entryDisk,
+.entry:focus-within .entryDisk {
+  filter: drop-shadow(0 18px 24px rgba(0, 0, 0, 0.55));
+}
+
+/* Hovering anywhere on the row slides the disk's shutter. */
+.entry:hover .shutter {
+  transform: translateX(44%);
+}
+
+.entryTitle {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  /* Disket's space is a full monospace cell; pulled in, "TMN · SATARA NEWS" reads as one
+     name instead of three. */
+  word-spacing: -0.3em;
+  font-family: var(--font-hero), monospace;
+  font-size: clamp(20px, 2.1vw, 26px);
+  font-weight: 700;
+  line-height: 1.05;
+  letter-spacing: -0.04em;
+  text-transform: uppercase;
+}
+
+.entryNumber {
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  color: var(--ink-muted);
+}
+
+.entryOpen {
+  padding: 0;
+  border: none;
+  background: none;
+  color: inherit;
+  font: inherit;
+  letter-spacing: inherit;
+  word-spacing: inherit;
+  text-align: left;
+  text-transform: inherit;
+  cursor: pointer;
+  background-image: linear-gradient(currentColor, currentColor);
+  background-position: 0 100%;
+  background-repeat: no-repeat;
+  background-size: 0 2px;
+  transition: background-size 300ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.entryOpen:hover,
+.entryOpen:focus-visible {
+  background-size: 100% 2px;
+  outline: none;
+}
+
+.entryKind {
+  margin-top: 6px;
+  font-family: var(--font-display), sans-serif;
+  font-size: 14px;
+  color: var(--ink-muted);
+}
+
+/* Two lines at most, so every row keeps the same rhythm; the rest is in the window. */
+.entrySummary {
+  display: -webkit-box;
+  max-width: 58ch;
+  margin-top: 12px;
+  overflow: hidden;
+  font-size: 15px;
+  line-height: 1.55;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+}
+
+.entrySide {
+  padding-top: 4px;
+}
+
+.entryRole {
+  font-family: var(--font-display), sans-serif;
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.entryStack {
+  margin-top: 8px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--ink-muted);
+}
+
+.entryAction {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.entryLink {
+  display: inline-flex;
+  gap: 6px;
+  max-width: 100%;
+  padding: 8px 12px;
+  border-radius: 6px;
+  background: var(--ink);
+  box-shadow: 0 3px 0 #b9b2a6;
+  color: #1a1a1a;
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+  transition:
+    transform 120ms ease,
+    box-shadow 120ms ease;
+}
+
+.entryLinkLabel {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.entryLink:hover,
+.entryLink:focus-visible {
+  background: #fff;
+}
+
+.entryLink:active {
+  box-shadow: 0 1px 0 #b9b2a6;
+  transform: translateY(2px);
+}
+
+@media (max-width: 900px) {
+  .entryCopy {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 14px 24px;
+  }
+
+  .entryMain {
+    grid-column: 1 / -1;
+  }
+
+  .entrySide {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 4px 14px;
+    padding-top: 0;
+  }
+
+  .entryStack {
+    margin-top: 0;
+  }
+}
+
+/* Phones: the list is an index to scan. Each row is just the disk, the title and what it
+   is, with a small ↗ key for a live link; the summary, role and stack are in the project's
+   window (with its screenshots), which a tap anywhere on the row opens. */
+@media (max-width: 560px) {
+  .entry {
+    position: relative;
+    grid-template-columns: 52px minmax(0, 1fr);
+    gap: 16px;
+    align-items: center;
+    padding: 16px 0;
+  }
+
+  .entryDisk {
+    filter: drop-shadow(0 6px 10px rgba(0, 0, 0, 0.45));
+  }
+
+  .entryCopy {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 12px;
+    align-items: center;
+  }
+
+  .entryMain {
+    grid-column: auto;
+  }
+
+  .entrySummary,
+  .entrySide {
+    display: none;
+  }
+
+  .entryTitle {
+    gap: 10px;
+    font-size: 17px;
+    line-height: 1.15;
+  }
+
+  .entryNumber {
+    font-size: 10px;
+  }
+
+  .entryKind {
+    margin-top: 4px;
+    font-size: 13px;
+  }
+
+  /* The title's tap area covers the whole row; the disk and the link sit above it. */
+  .entryOpen::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+  }
+
+  .entryOpen:hover,
+  .entryOpen:focus-visible {
+    background-size: 0 2px;
+  }
+
+  .entryAction {
+    position: relative;
+    z-index: 1;
+  }
+
+  .entryLink {
+    width: 40px;
+    height: 40px;
+    justify-content: center;
+    align-items: center;
+    padding: 0;
+    font-size: 16px;
+  }
+
+  .entryLinkLabel {
+    display: none;
+  }
 }
 
 /* ---- The floppy disk. Sizes inside it are in cqw (percent of the disk's width), so the
@@ -75,13 +591,18 @@
   transition: transform 350ms var(--lift);
 }
 
-.disk:hover,
+.disk:not(.still):hover,
 .disk:focus-visible {
   transform: translateY(-8px) rotate(-1.5deg);
   outline: none;
 }
 
-.disk:active {
+/* A disk that's only a picture, in the CSS box. */
+.still {
+  cursor: inherit;
+}
+
+.disk:not(.still):active {
   transform: translateY(-3px) scale(0.98);
 }
 
@@ -332,6 +853,40 @@
   text-transform: uppercase;
 }
 
+/* Screenshots and clips in the window: a swipeable strip, the next one peeking in. */
+.mediaStrip {
+  display: flex;
+  gap: 10px;
+  margin: 4px -28px 22px;
+  padding: 0 28px;
+  overflow-x: auto;
+  scroll-padding: 0 28px;
+  scroll-snap-type: x mandatory;
+  list-style: none;
+  scrollbar-width: none;
+}
+
+.mediaItem {
+  position: relative;
+  flex: 0 0 86%;
+  aspect-ratio: 16 / 10;
+  overflow: hidden;
+  border-radius: 6px;
+  background: #1a1a1a;
+  scroll-snap-align: start;
+}
+
+.mediaItem:only-child {
+  flex-basis: 100%;
+}
+
+.mediaItem img,
+.mediaItem video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
 .summary {
   font-size: 17px;
   line-height: 1.55;
@@ -405,7 +960,10 @@
 @media (prefers-reduced-motion: reduce) {
   .disk,
   .shutter,
-  .disks li {
+  .entryDisk,
+  .lid,
+  .boxBody,
+  .boxBody .ghost {
     transition: none;
   }
 

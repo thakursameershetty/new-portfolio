@@ -1,0 +1,215 @@
+/* The floating preview monitor: a beige CRT with a curved, scanlined screen and a chin that
+   shows the channel (the project's number). CrtPreview.tsx moves it; this fades and scales
+   it in and out around its own top edge. */
+.monitor {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 40;
+  width: 320px;
+  pointer-events: none;
+  will-change: transform;
+}
+
+.body,
+.stand {
+  opacity: 0;
+  transform: scale(0.86) translateY(8px);
+  transform-origin: 50% 0;
+  transition:
+    opacity 180ms ease,
+    transform 260ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.monitor[data-visible] .body,
+.monitor[data-visible] .stand {
+  opacity: 1;
+  transform: none;
+}
+
+.body {
+  padding: 14px 14px 0;
+  border-radius: 18px 18px 12px 12px;
+  background:
+    linear-gradient(160deg, rgba(255, 255, 255, 0.35), transparent 40%),
+    linear-gradient(0deg, rgba(0, 0, 0, 0.12), transparent 35%),
+    #d8d0bf;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.6),
+    inset 0 -2px 0 rgba(0, 0, 0, 0.15),
+    0 24px 50px rgba(0, 0, 0, 0.6);
+}
+
+.screen {
+  position: relative;
+  overflow: hidden;
+  aspect-ratio: 16 / 10;
+  /* A barrel-ish tube: rounder corners than the bezel, and an inset shadow for depth. */
+  border-radius: 14px / 18px;
+  background: #0b0d0c;
+  box-shadow:
+    inset 0 0 0 3px #2b2926,
+    0 0 0 2px rgba(0, 0, 0, 0.25);
+}
+
+.media {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  /* A touch of CRT warmth and bloom. */
+  filter: saturate(1.1) contrast(1.05) brightness(0.95);
+  animation: mediaIn 380ms ease both;
+}
+
+@keyframes mediaIn {
+  from {
+    opacity: 0;
+  }
+}
+
+.noSignal {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-family: var(--font-hero), monospace;
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(245, 241, 234, 0.5);
+}
+
+/* Static between channels: a noise field jittering for a moment, then gone. */
+.static {
+  position: absolute;
+  inset: -40px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.85 0 0 0 0 0.85 0 0 0 0 0.85 0 0 0 1.4 -0.3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-color: #1a1a1a;
+  opacity: 0;
+  animation:
+    staticFlash 320ms ease-out,
+    staticJitter 90ms steps(3) 4;
+  pointer-events: none;
+}
+
+@keyframes staticFlash {
+  0%,
+  45% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes staticJitter {
+  0% {
+    transform: translate(0, 0);
+  }
+  33% {
+    transform: translate(-17px, 11px);
+  }
+  66% {
+    transform: translate(13px, -19px);
+  }
+  100% {
+    transform: translate(-7px, 23px);
+  }
+}
+
+.scanlines {
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    180deg,
+    rgba(0, 0, 0, 0.22) 0 1px,
+    transparent 1px 3px
+  );
+  mix-blend-mode: multiply;
+  pointer-events: none;
+}
+
+/* The glass: a vignette toward the curved edges and a soft reflection up top. */
+.glass {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background:
+    radial-gradient(ellipse 120% 90% at 50% 50%, transparent 55%, rgba(0, 0, 0, 0.55)),
+    linear-gradient(170deg, rgba(255, 255, 255, 0.14), transparent 35%);
+  pointer-events: none;
+}
+
+.chin {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 36px;
+  padding: 0 4px;
+  color: #3a3631;
+}
+
+.channel {
+  flex: none;
+  padding: 2px 6px;
+  border-radius: 3px;
+  background: #2b2926;
+  color: #9fe29a;
+  font-family: var(--font-hero), monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+
+.title {
+  flex: 1;
+  overflow: hidden;
+  font-family: var(--font-hero), monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.power {
+  flex: none;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #5bd35b;
+  box-shadow: 0 0 6px #5bd35b;
+}
+
+.stand {
+  width: 38%;
+  height: 12px;
+  margin: 0 auto;
+  border-radius: 0 0 10px 10px;
+  background: linear-gradient(180deg, #bdb4a2, #a39a88);
+}
+
+@media (hover: none) {
+  .monitor {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .body,
+  .stand {
+    transition: opacity 180ms ease;
+    transform: none;
+  }
+
+  .static {
+    animation: none;
+  }
+
+  .media {
+    animation: none;
+  }
+}

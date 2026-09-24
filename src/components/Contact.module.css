@@ -220,13 +220,10 @@
 }
 
 /* Swapping the label (email ↔ "Copied ✓") flips the new one in like a card. */
-/* One line always; on a screen too narrow for the full address it ends in "…" rather than
-   pushing the key off the edge. */
+/* Always the full label on one line; on phones it scales down to fit (see below). */
 .keyLabel {
   display: inline-block;
   min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
   white-space: nowrap;
   animation: flipIn 280ms cubic-bezier(0.22, 1, 0.36, 1);
 }
@@ -304,31 +301,38 @@
   white-space: nowrap;
 }
 
-/* Phones: the keys stack at full width, matching each other; LinkedIn's arrow moves to the
-   right edge to mirror the email key's. */
+/* Phones: the keys stack, each as wide as what's on it. The email address scales with the
+   screen so the whole of it stays on one line, at full size where there's room: its width
+   is about 14.2em, and the rest of the key (icon, gaps, padding, the arrow) plus the page's
+   gutters take about 152px. The
+   grid's dissolving edge is shorter here (its cells are smaller), so the content starts
+   higher. */
 @media (max-width: 600px) {
+  .inner {
+    padding-top: 170px;
+  }
+
+  .redSurface {
+    top: 170px;
+  }
+
   .keys {
     flex-direction: column;
-    align-items: stretch;
+    align-items: flex-start;
     gap: 16px;
   }
 
-  .key {
-    width: 100%;
+  .keyFace {
+    gap: 10px;
+    padding: 16px 12px 16px 14px;
   }
 
-  .keyFace {
-    gap: 12px;
-    padding: 16px;
-    font-size: 15px;
+  .keyPrimary .keyLabel {
+    font-size: min(1em, calc((100vw - 152px) / 14.2));
   }
 
   .keyArrow {
-    padding: 0 16px;
-  }
-
-  .keyArrowInline {
-    margin-left: auto;
+    padding: 0 14px;
   }
 }
 

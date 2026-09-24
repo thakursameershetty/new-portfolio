@@ -24,6 +24,8 @@ import {
   type PointerSounds,
 } from "./revealSound";
 import { ClickSpark } from "./ClickSpark";
+import { requestTilt } from "./deviceTilt";
+import { buzz } from "./haptics";
 import { SiteNav } from "./SiteNav";
 import styles from "./SiteIntro.module.css";
 
@@ -33,9 +35,45 @@ const revealDuration = 1.8;
 const gridIntroPose = { degrees: 45, scale: 2, seconds: 2.2 };
 // How long after Enter the page stays locked to the hero: through the headline flip.
 const introLockMs = 4200;
-// Remembered in the browser: whether the intro has been entered before (then the Enter
-// screen is skipped), and whether sound was left on.
+// Whether the intro has been entered in this tab (reloads then skip the Enter screen) is
+// kept only for the session, so a fresh visit gets the Enter screen again. Whether sound was
+// left on is kept for good.
 const seenKey = "intro-seen";
+
+// Haptic taps to go with the physical sounds (on phones that support them), each as
+// [delay, length] in ms, timed to the sound's hits: the lid's thock lands 0.4s into its
+// sound, the catch snaps 0.6s into the close, and a disk seats at the end of its slide in.
+// Every hit is its own short buzz, since starting one cancels any still running (the disks'
+// taps would otherwise cut the lid's thock short). Hover-only sounds get none.
+const cueHaptics: Partial<Record<IntroCue, [number, number][]>> = {
+  boxOpen: [
+    [0, 8],
+    [400, 22],
+  ],
+  boxClose: [[600, 20]],
+  diskOut: [[0, 6]],
+  diskIn: [[220, 12]],
+  diskTap: [[0, 5]],
+  insert: [[0, 10]],
+  land: [[0, 12]],
+  arrive: [[0, 14]],
+  swap: [
+    [0, 6],
+    [45, 10],
+  ],
+  tap: [[0, 4]],
+};
+
+// The grid rippling into place: a thump as the center cells switch on, then ticks for the
+// rings spreading out, lighter and further apart as the ripple slows toward the edges.
+function buzzRipple(duration: number) {
+  const pattern = [28];
+  const rings = 6;
+  for (let ring = 1; ring <= rings; ring++) {
+    pattern.push(Math.round(((duration * 1000) / rings) * (0.6 + ring * 0.12)), 9 - ring);
+  }
+  buzz(pattern, revealDelay * 1000);
+}
 const soundKey = "sound";
 
 // Pointer speed, in px per ms, that counts as a full-speed sweep for the hover ticks.
@@ -59,6 +97,8 @@ interface IntroState {
   playFlap: (across: number, landed: boolean) => void;
   /** Plays an intro text cue when sound is on; silent otherwise. */
   playCue: (cue: IntroCue) => void;
+  /** Fades the preview monitor's hum in or out (only heard while sound is on). */
+  setHum: (on: boolean) => void;
 }
 
 const IntroContext = createContext<IntroState>({
@@ -69,6 +109,7 @@ const IntroContext = createContext<IntroState>({
   playRipple: () => {},
   playFlap: () => {},
   playCue: () => {},
+  setHum: () => {},
 });
 
 export function useIntro() {
@@ -141,13 +182,26 @@ export function SiteIntro({ children }: SiteIntroProps) {
   const playCue = useCallback((cue: IntroCue) => {
     if (!soundOnRef.current) return;
     soundsRef.current?.cue(cue);
+    for (const [delay, length] of cueHaptics[cue] ?? []) buzz(length, delay);
   }, []);
 
   const playRipple = useCallback((duration: number, from?: RevealFrom) => {
     const context = audioRef.current;
     if (!soundOnRef.current || !context) return;
     playRevealSound(context, duration, from);
+    buzzRipple(duration);
   }, []);
+
+  // Remembered, so turning sound on while the monitor is up brings its hum in too.
+  const humWantedRef = useRef(false);
+  const setHum = useCallback((on: boolean) => {
+    humWantedRef.current = on;
+    soundsRef.current?.hum(on && soundOnRef.current);
+  }, []);
+
+  useEffect(() => {
+    soundsRef.current?.hum(soundOn && humWantedRef.current);
+  }, [soundOn]);
 
   const getSounds = useCallback(() => soundsRef.current, []);
 
@@ -160,8 +214,9 @@ export function SiteIntro({ children }: SiteIntroProps) {
       playRipple,
       playFlap,
       playCue,
+      setHum,
     }),
-    [entered, instant, soundOn, getSounds, playRipple, playFlap, playCue],
+    [entered, instant, soundOn, getSounds, playRipple, playFlap, playCue, setHum],
   );
 
   // After the ripple settles, each grid cell the cursor enters ticks and each press clacks.
@@ -185,13 +240,16 @@ export function SiteIntro({ children }: SiteIntroProps) {
 
   const enter = (withSound: boolean) => {
     if (entered) return;
-    writeStorage(seenKey, "1");
+    // A tap, so phones that ask before sharing their tilt (iOS) can ask now.
+    requestTilt();
+    writeStorage(seenKey, "1", "session");
     revealEndsAtRef.current =
       performance.now() + (revealDelay + revealDuration) * 1000;
 
     if (withSound) {
       try {
         playRevealSound(startAudio(), revealDuration);
+        buzzRipple(revealDuration);
         setSoundOn(true);
         writeStorage(soundKey, "on");
       } catch {
@@ -230,7 +288,7 @@ export function SiteIntro({ children }: SiteIntroProps) {
   });
 
   useEffect(() => {
-    if (readStorage(seenKey) !== "1") return;
+    if (readStorage(seenKey, "session") !== "1") return;
     const frame = requestAnimationFrame(() => {
       setInstant(true);
       setGateGone(true);
@@ -239,7 +297,16 @@ export function SiteIntro({ children }: SiteIntroProps) {
       revealEndsAtRef.current = 0;
     });
 
-    if (readStorage(soundKey) !== "on") return () => cancelAnimationFrame(frame);
+    // No Enter tap on a reload, so the first tap anywhere asks for the phone's tilt instead.
+    const askTilt = () => requestTilt();
+    window.addEventListener("click", askTilt, { once: true });
+
+    if (readStorage(soundKey) !== "on") {
+      return () => {
+        cancelAnimationFrame(frame);
+        window.removeEventListener("click", askTilt);
+      };
+    }
     const resumeSound = () => {
       try {
         startAudioRef.current();
@@ -258,6 +325,7 @@ export function SiteIntro({ children }: SiteIntroProps) {
     return () => {
       cancelAnimationFrame(frame);
       removeListeners();
+      window.removeEventListener("click", askTilt);
     };
   }, []);
 
@@ -398,17 +466,22 @@ export function useGridPointerSounds(
   }, [enabled, getSounds, gridRef, isReady]);
 }
 
-function readStorage(key: string) {
+type Lifetime = "session" | "lasting";
+
+const storage = (lifetime: Lifetime) =>
+  lifetime === "session" ? window.sessionStorage : window.localStorage;
+
+function readStorage(key: string, lifetime: Lifetime = "lasting") {
   try {
-    return window.localStorage.getItem(key);
+    return storage(lifetime).getItem(key);
   } catch {
     return null;
   }
 }
 
-function writeStorage(key: string, value: string) {
+function writeStorage(key: string, value: string, lifetime: Lifetime = "lasting") {
   try {
-    window.localStorage.setItem(key, value);
+    storage(lifetime).setItem(key, value);
   } catch {
     // Storage blocked (private mode): the Enter screen just shows again next time.
   }

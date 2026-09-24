@@ -2,6 +2,10 @@
 // states; add years, images and links as they're confirmed). `disk` is the disk's body
 // colour and `ink` the colour of anything printed on it.
 
+export type ProjectMedia =
+  | { type: "image"; src: string; alt: string }
+  | { type: "video"; src: string; poster: string; alt: string };
+
 export interface Project {
   id: string;
   title: string;
@@ -14,6 +18,8 @@ export interface Project {
   highlights: string[];
   stack: string[];
   link?: { href: string; label: string };
+  /** Screenshots and clips, shown on the preview monitor and in the project window. */
+  media?: ProjectMedia[];
   disk: string;
   ink: string;
 }
@@ -33,6 +39,11 @@ export const projects: Project[] = [
     ],
     stack: ["Design", "Frontend", "Backend"],
     link: { href: "https://raobahadur.in", label: "raobahadur.in" },
+    // Placeholder media: swap for real screenshots and clips.
+    media: [
+      { type: "image", src: "/work/raobahadur-1.jpg", alt: "Rao Bahadur screenshot 1" },
+      { type: "image", src: "/work/raobahadur-2.jpg", alt: "Rao Bahadur screenshot 2" },
+    ],
     disk: "#1f1f1f",
     ink: "#f5f1ea",
   },
@@ -49,6 +60,14 @@ export const projects: Project[] = [
       "Built the frontend in React Native with efficient state management",
     ],
     stack: ["React Native", "UX architecture"],
+    // Placeholder: swap for the real link.
+    link: { href: "https://example.com", label: "example.com" },
+    // Placeholder media: swap for real screenshots and clips.
+    media: [
+      { type: "video", src: "/work/demo-flower.mp4", poster: "/work/demo-flower.jpg", alt: "Mutiny Talent demo" },
+      { type: "image", src: "/work/mutiny-1.jpg", alt: "Mutiny Talent screenshot 1" },
+      { type: "image", src: "/work/mutiny-2.jpg", alt: "Mutiny Talent screenshot 2" },
+    ],
     disk: "#e54b45",
     ink: "#fff8f3",
   },
@@ -65,6 +84,11 @@ export const projects: Project[] = [
       "Micro-interactions that hold up on every screen size",
     ],
     stack: ["Next.js", "Micro-interactions"],
+    // Placeholder media: swap for real screenshots and clips.
+    media: [
+      { type: "image", src: "/work/spotmies-web-1.jpg", alt: "Spotmies · Amerox screenshot 1" },
+      { type: "image", src: "/work/spotmies-web-2.jpg", alt: "Spotmies · Amerox screenshot 2" },
+    ],
     disk: "#e9e2d4",
     ink: "#1a1a1a",
   },
@@ -81,6 +105,11 @@ export const projects: Project[] = [
       "Owned the project from concept to release",
     ],
     stack: ["Roblox", "Environment design"],
+    // Placeholder media: swap for real screenshots and clips.
+    media: [
+      { type: "image", src: "/work/peddi-1.jpg", alt: "Peddi screenshot 1" },
+      { type: "image", src: "/work/peddi-2.jpg", alt: "Peddi screenshot 2" },
+    ],
     disk: "#2f6f5e",
     ink: "#f5f1ea",
   },
@@ -97,6 +126,11 @@ export const projects: Project[] = [
       "Worked directly with developers on implementing the interactions",
     ],
     stack: ["UI/UX strategy", "Micro-interactions"],
+    // Placeholder media: swap for real screenshots and clips.
+    media: [
+      { type: "image", src: "/work/tmn-1.jpg", alt: "TMN · Satara News screenshot 1" },
+      { type: "image", src: "/work/tmn-2.jpg", alt: "TMN · Satara News screenshot 2" },
+    ],
     disk: "#f0c44c",
     ink: "#1a1a1a",
   },
@@ -113,6 +147,14 @@ export const projects: Project[] = [
       "Fluid micro-interactions at 210ms latency",
     ],
     stack: ["Three.js", "IBM Qiskit"],
+    // Placeholder: swap for the real link.
+    link: { href: "https://example.com", label: "example.com" },
+    // Placeholder media: swap for real screenshots and clips.
+    media: [
+      { type: "video", src: "/work/demo-flower.mp4", poster: "/work/demo-flower.jpg", alt: "SamudraGupt-Q demo" },
+      { type: "image", src: "/work/samudragupt-1.jpg", alt: "SamudraGupt-Q screenshot 1" },
+      { type: "image", src: "/work/samudragupt-2.jpg", alt: "SamudraGupt-Q screenshot 2" },
+    ],
     disk: "#23395b",
     ink: "#f5f1ea",
   },
@@ -129,6 +171,12 @@ export const projects: Project[] = [
       "Spatial, 3D interfaces for shopping and music playback",
     ],
     stack: ["Three.js", "AI hand tracking"],
+    // Placeholder media: swap for real screenshots and clips.
+    media: [
+      { type: "video", src: "/work/demo-friday.mp4", poster: "/work/demo-friday.jpg", alt: "Gesture Shop · Aura demo" },
+      { type: "image", src: "/work/gesture-1.jpg", alt: "Gesture Shop · Aura screenshot 1" },
+      { type: "image", src: "/work/gesture-2.jpg", alt: "Gesture Shop · Aura screenshot 2" },
+    ],
     disk: "#7a5cc7",
     ink: "#f5f1ea",
   },
@@ -145,6 +193,11 @@ export const projects: Project[] = [
       "Detailed micro-interactions, layout stacks and state transitions",
     ],
     stack: ["Design system", "Prototyping"],
+    // Placeholder media: swap for real screenshots and clips.
+    media: [
+      { type: "image", src: "/work/nova-1.jpg", alt: "Nova UPI screenshot 1" },
+      { type: "image", src: "/work/nova-2.jpg", alt: "Nova UPI screenshot 2" },
+    ],
     disk: "#3d8bd6",
     ink: "#f5f1ea",
   },
@@ -161,6 +214,12 @@ export const projects: Project[] = [
       "Live data streamed through a custom backend",
     ],
     stack: ["Python", "OpenCV", "MediaPipe", "Flask"],
+    // Placeholder media: swap for real screenshots and clips.
+    media: [
+      { type: "video", src: "/work/demo-friday.mp4", poster: "/work/demo-friday.jpg", alt: "AI Gym Trainer demo" },
+      { type: "image", src: "/work/gym-1.jpg", alt: "AI Gym Trainer screenshot 1" },
+      { type: "image", src: "/work/gym-2.jpg", alt: "AI Gym Trainer screenshot 2" },
+    ],
     disk: "#ef7d3c",
     ink: "#1a1a1a",
   },

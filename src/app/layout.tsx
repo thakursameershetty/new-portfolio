@@ -43,11 +43,12 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="en" className={`${sans.variable} ${display.variable} ${hero.variable}`} suppressHydrationWarning>
       <head>
-        {/* Before first paint: mark return visits so the Enter screen stays hidden. */}
+        {/* Before first paint: mark reloads within this visit (tab session) so the Enter
+            screen stays hidden. */}
         <script
           dangerouslySetInnerHTML={{
             __html:
-              'try{if(localStorage.getItem("intro-seen")==="1")document.documentElement.setAttribute("data-intro-seen","")}catch(e){}',
+              'try{if(sessionStorage.getItem("intro-seen")==="1")document.documentElement.setAttribute("data-intro-seen","")}catch(e){}',
           }}
         />
       </head>
