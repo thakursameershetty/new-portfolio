@@ -50,7 +50,8 @@ export type IntroCue =
   | "tap"
   | "shutter"
   | "insert"
-  | "channel"
+  | "driveEject"
+  | "driveLoad"
   | "boxOpen"
   | "boxClose"
   | "diskOut"
@@ -232,12 +233,24 @@ export function createPointerSounds(context: AudioContext): PointerSounds {
         playChirp(context, output, at, { from: 260, to: 780, volume: 0.03 });
         return;
       }
-      if (cue === "channel") {
-        // The preview monitor changing channel: a knob's detent and a hiss of static.
-        playClick(context, output, noise, at, 2000, 0.05);
-        playClick(context, output, noise, at + 0.012, 5200, 0.012);
-        playClick(context, output, noise, at + 0.03, 4600, 0.01);
-        playKnock(context, output, at, 0.03, 0, 260);
+      if (cue === "driveEject") {
+        // The preview monitor's drive ejecting: the spring's release, a dull plastic chunk,
+        // and the disk's edge ticking out past the slot.
+        playClick(context, output, noise, at, 1500, 0.05);
+        playKnock(context, output, at, 0.05, 0, 170);
+        playClick(context, output, noise, at + 0.05, 3800, 0.018);
+        return;
+      }
+      if (cue === "driveLoad") {
+        // A disk seating in the drive: the latch clacks shut, then the head seeks, a quick
+        // run of low steps.
+        playClick(context, output, noise, at, 1900, 0.06);
+        playKnock(context, output, at, 0.07, 0, 140);
+        for (let step = 0; step < 4; step++) {
+          const stepAt = at + 0.06 + step * 0.022;
+          playKnock(context, output, stepAt, 0.028, 0, 95 + step * 8);
+          playClick(context, output, noise, stepAt, 900, 0.012);
+        }
         return;
       }
       if (cue === "tap") {

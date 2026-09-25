@@ -1,6 +1,6 @@
-/* The floating preview monitor: a beige CRT with a curved, scanlined screen and a chin that
-   shows the channel (the project's number). CrtPreview.tsx moves it; this fades and scales
-   it in and out around its own top edge. */
+/* The floating preview monitor: a beige CRT with a curved, scanlined screen, a floppy drive
+   in its top and a chin that shows the channel (the project's number). CrtPreview.tsx moves
+   it and slides the disks; this fades and scales it in and out around its own top edge. */
 .monitor {
   position: fixed;
   top: 0;
@@ -11,6 +11,7 @@
   will-change: transform;
 }
 
+.drive,
 .body,
 .stand {
   opacity: 0;
@@ -21,13 +22,17 @@
     transform 260ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
+.monitor[data-visible] .drive,
 .monitor[data-visible] .body,
 .monitor[data-visible] .stand {
   opacity: 1;
   transform: none;
 }
 
+/* Above the drive, so the monitor's top edge hides the part of the disk that's inside. */
 .body {
+  position: relative;
+  z-index: 1;
   padding: 14px 14px 0;
   border-radius: 18px 18px 12px 12px;
   background:
@@ -38,6 +43,92 @@
     inset 0 1px 0 rgba(255, 255, 255, 0.6),
     inset 0 -2px 0 rgba(0, 0, 0, 0.15),
     0 24px 50px rgba(0, 0, 0, 0.6);
+}
+
+/* ---- The floppy drive: a slot in the top, right of centre, and a mini disk behind the
+   body that CrtPreview.tsx slides down into it (and back out). The disk goes in the way a
+   real one does, shutter first, so it's upside down: shutter at the bottom, chamfered corner
+   bottom left, and the label end left sticking out of the slot (its text kept upright). ---- */
+.drive {
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  height: 0;
+}
+
+.disk {
+  position: absolute;
+  top: 0;
+  left: 58%;
+  width: 84px;
+  aspect-ratio: 1;
+  border-radius: 3px;
+  background:
+    linear-gradient(160deg, rgba(255, 255, 255, 0.16), transparent 38%),
+    linear-gradient(0deg, rgba(0, 0, 0, 0.16), transparent 30%),
+    var(--disk, #1f1f1f);
+  /* The disks' chamfered corner, turned with the disk to the bottom left. */
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 9% 100%, 0 91%);
+  /* Out of the drive until a disk is loaded. */
+  opacity: 0;
+  transform: translateY(-92px);
+}
+
+.diskShutter {
+  position: absolute;
+  bottom: 0;
+  left: 26%;
+  width: 52%;
+  height: 34%;
+  border-radius: 2px 2px 0 0;
+  background: linear-gradient(90deg, #a4aaae, #c2c7ca 30%, #eef0f1 58%, #a9afb3);
+  box-shadow: inset 0 1px 0 rgba(0, 0, 0, 0.25);
+}
+
+.diskLabel {
+  position: absolute;
+  top: 0;
+  right: 9%;
+  bottom: 42%;
+  left: 9%;
+  overflow: hidden;
+  border-radius: 0 0 2px 2px;
+  background: #f4f0e6;
+  color: #1a1a1a;
+  font-family: var(--font-hero), monospace;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.diskBand {
+  display: block;
+  padding: 2px 4px;
+  background: var(--disk, #1f1f1f);
+  color: var(--disk-ink, #f5f1ea);
+  font-size: 6px;
+  letter-spacing: 0.06em;
+}
+
+.diskTitle {
+  display: block;
+  padding: 3px 4px 0;
+  overflow: hidden;
+  font-size: 7px;
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+
+/* The slot's mouth, a dark notch in the top edge the disk sinks into. */
+.slot {
+  position: absolute;
+  top: 0;
+  left: calc(58% - 6px);
+  width: 96px;
+  height: 5px;
+  border-radius: 0 0 3px 3px;
+  background: linear-gradient(180deg, #1c1a17, #3a3631);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.45);
 }
 
 .screen {
@@ -119,6 +210,17 @@
   }
 }
 
+/* Snow while a disk loads: the same noise, held and jittering until the picture comes up. */
+.snow {
+  position: absolute;
+  inset: -40px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.85 0 0 0 0 0.85 0 0 0 0 0.85 0 0 0 1.4 -0.3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-color: #1a1a1a;
+  opacity: 0.85;
+  animation: staticJitter 90ms steps(3) infinite;
+  pointer-events: none;
+}
+
 .scanlines {
   position: absolute;
   inset: 0;
@@ -175,6 +277,27 @@
   white-space: nowrap;
 }
 
+/* The drive's activity light: dark until a disk loads, then flickering amber. */
+.activity {
+  flex: none;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #5a4a2c;
+}
+
+.monitor[data-loading] .activity {
+  background: #ffb347;
+  box-shadow: 0 0 6px #ffb347;
+  animation: activity 80ms steps(2) infinite;
+}
+
+@keyframes activity {
+  50% {
+    opacity: 0.45;
+  }
+}
+
 .power {
   flex: none;
   width: 7px;
@@ -199,13 +322,16 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .drive,
   .body,
   .stand {
     transition: opacity 180ms ease;
     transform: none;
   }
 
-  .static {
+  .static,
+  .snow,
+  .monitor[data-loading] .activity {
     animation: none;
   }
 

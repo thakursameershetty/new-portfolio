@@ -68,7 +68,8 @@ export function Work() {
   const hideTimerRef = useRef(0);
 
   // The monitor follows the hovered row. Leaving waits a beat, so sliding from one row to
-  // the next changes channel instead of switching the monitor off and on.
+  // the next changes disk instead of switching the monitor off and on (the monitor plays
+  // the drive's own sounds as each disk goes in).
   const showPreview = useCallback(
     (next: { project: Project; number: number } | null) => {
       window.clearTimeout(hideTimerRef.current);
@@ -80,12 +81,10 @@ export function Work() {
         }, 140);
         return;
       }
-      // Switching on, or changing channel.
+      // Switching on.
       if (!previewIdRef.current) {
         playCue("crtOn");
         setHum(true);
-      } else if (next.project.id !== previewIdRef.current) {
-        playCue("channel");
       }
       previewIdRef.current = next.project.id;
       setPreview(next);
