@@ -8,7 +8,7 @@
   align-items: center;
   justify-content: flex-start;
   gap: 28px;
-  padding: clamp(120px, 20vh, 220px) 16px 96px;
+  padding: clamp(88px, 20vh, 220px) 16px 96px;
   color: #f5f1ea;
   text-align: center;
 }
@@ -77,12 +77,13 @@
   line-height: 1;
 }
 
-/* Same face and tracking as the big intro name, so each word scales onto it exactly. */
-/* Same face and tracking as the big intro name, so each word scales onto it exactly. */
+/* Same face and tracking as the big intro name, so each word scales onto it exactly.
+   Capped by height as well as width: on wide, short screens (e.g. a Windows laptop at 125%
+   scaling) the scene is sized by height, so the type must be too or it runs into the scene. */
 .name {
   display: block;
   margin-bottom: 0.3em;
-  font-size: clamp(26px, 4.2vw, 62px);
+  font-size: clamp(26px, min(4.2vw, 6.5vh), 62px);
   line-height: 0.85;
   letter-spacing: -0.05em;
 }
@@ -103,7 +104,7 @@
 
 /* Disket Mono is wide, so tight tracking and leading keep the block compact. */
 .statement {
-  font-size: clamp(36px, 8vw, 120px);
+  font-size: clamp(36px, min(8vw, 12.5vh), 120px);
   line-height: 0.88;
   letter-spacing: -0.05em;
 }
