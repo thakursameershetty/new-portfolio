@@ -8,7 +8,7 @@ import styles from "./SplitFlapText.module.css";
 const flapCharset = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 const flipSeconds = 0.05;
 const letterStagger = 0.035;
-const lineGap = 0.32;
+const defaultLineGap = 0.32;
 // Mid-flip clicks from many letters at once would buzz, so they share this minimum spacing.
 const flipSoundGapSeconds = 0.025;
 
@@ -23,6 +23,8 @@ interface SplitFlapTextProps {
   active: boolean;
   /** Lands every letter at once, without flipping. */
   instant?: boolean;
+  /** Seconds between one line starting and the next (words, when each word is a line). */
+  lineGap?: number;
   /** Called as letters turn over; `across` is the letter's rough 0–1 horizontal position. */
   onFlap?: (across: number, landed: boolean) => void;
   onDone?: () => void;
@@ -44,11 +46,12 @@ export function SplitFlapText({
   lines,
   active,
   instant = false,
+  lineGap = defaultLineGap,
   onFlap,
   onDone,
 }: SplitFlapTextProps) {
   const reduceMotion = useReducedMotion();
-  const letters = useMemo(() => scheduleLetters(lines), [lines]);
+  const letters = useMemo(() => scheduleLetters(lines, lineGap), [lineGap, lines]);
   // How many flips each letter has made; -1 means not started, flips means landed.
   const [steps, setSteps] = useState<number[]>(() => letters.map(() => -1));
   const onFlapRef = useRef(onFlap);
@@ -152,7 +155,7 @@ export function SplitFlapText({
   );
 }
 
-function scheduleLetters(lines: SplitFlapLine[]): Letter[] {
+function scheduleLetters(lines: SplitFlapLine[], lineGap: number): Letter[] {
   return lines.flatMap((line, lineIndex) => {
     const chars = Array.from(line.text);
     return chars.map((final, charIndex) => {

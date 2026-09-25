@@ -315,6 +315,35 @@
   background: linear-gradient(180deg, #bdb4a2, #a39a88);
 }
 
+/* Under the stand: what a click on the row does, in the site's frosted pill. */
+.hint {
+  width: fit-content;
+  margin: 12px auto 0;
+  padding: 7px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 999px;
+  background: rgba(20, 20, 20, 0.5);
+  -webkit-backdrop-filter: blur(10px) saturate(1.4);
+  backdrop-filter: blur(10px) saturate(1.4);
+  color: #f5f1ea;
+  font-family: var(--font-hero), monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  opacity: 0;
+  transform: translateY(-4px);
+  transition:
+    opacity 180ms ease 120ms,
+    transform 260ms cubic-bezier(0.22, 1, 0.36, 1) 120ms;
+}
+
+.monitor[data-visible] .hint {
+  opacity: 1;
+  transform: none;
+}
+
 @media (hover: none) {
   .monitor {
     display: none;

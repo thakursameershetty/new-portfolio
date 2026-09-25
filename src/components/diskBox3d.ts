@@ -608,9 +608,9 @@ export async function createDiskBoxScene(
 
 // ---- Drawing the disk faces and the sticker, in the site's own fonts. ----
 
-type Fonts = { hero: string; sans: string; display: string };
+export type Fonts = { hero: string; sans: string; display: string };
 
-async function loadFonts(element: Element): Promise<Fonts> {
+export async function loadFonts(element: Element): Promise<Fonts> {
   const style = getComputedStyle(element);
   const read = (name: string, fallback: string) =>
     style.getPropertyValue(name).trim() || fallback;
@@ -745,7 +745,7 @@ function drawSticker(text: string, fonts: Fonts) {
   return texture;
 }
 
-function roundRect(
+export function roundRect(
   ctx: CanvasRenderingContext2D,
   x: number,
   y: number,
@@ -758,12 +758,12 @@ function roundRect(
   ctx.fill();
 }
 
-function setSpacing(ctx: CanvasRenderingContext2D, px: number) {
+export function setSpacing(ctx: CanvasRenderingContext2D, px: number) {
   // letterSpacing is newer than the rest of canvas text; without it, text is just tighter.
   if ("letterSpacing" in ctx) ctx.letterSpacing = `${px}px`;
 }
 
-function wrap(ctx: CanvasRenderingContext2D, text: string, maxWidth: number) {
+export function wrap(ctx: CanvasRenderingContext2D, text: string, maxWidth: number) {
   const lines: string[] = [];
   let line = "";
   for (const word of text.split(/\s+/)) {

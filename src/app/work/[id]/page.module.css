@@ -1,0 +1,5 @@
+/* The standalone file fills the screen in its cream, however short its content. */
+.page {
+  min-height: 100svh;
+  background: #f4f0e6;
+}

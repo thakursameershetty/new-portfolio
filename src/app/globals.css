@@ -25,10 +25,12 @@ html {
   }
 }
 
+/* Clip, not hide: hidden would make the body a scroll container of its own, and anything
+   sticky inside it (the project page's bar and monitor) would never stick. */
 html,
 body {
   max-width: 100vw;
-  overflow-x: hidden;
+  overflow-x: clip;
 }
 
 body {

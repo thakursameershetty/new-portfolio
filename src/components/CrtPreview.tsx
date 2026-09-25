@@ -276,6 +276,7 @@ export function CrtPreview({
         </div>
       </div>
       <div className={styles.stand} />
+      <p className={styles.hint}>Click to open the case study</p>
     </div>
   );
 }

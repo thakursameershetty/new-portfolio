@@ -3,13 +3,14 @@
 import {
   useCallback,
   useEffect,
+  useImperativeHandle,
   useLayoutEffect,
   useRef,
   useState,
   type CSSProperties,
+  type Ref,
 } from "react";
 import { flushSync } from "react-dom";
-import Image from "next/image";
 import { useReducedMotion } from "framer-motion";
 import clsx from "clsx";
 import { CrtPreview } from "./CrtPreview";
@@ -17,6 +18,7 @@ import { useIntro } from "./SiteIntro";
 import { SplitFlapText } from "./SplitFlapText";
 import type { DiskBoxScene, ScreenRect } from "./diskBox3d";
 import { onTilt } from "./deviceTilt";
+import { ProjectView } from "./ProjectView";
 import { projects, type Project } from "./projects";
 import { useInView } from "./useInView";
 import styles from "./Work.module.css";
@@ -52,15 +54,37 @@ const padNumber = (number: number) => String(number).padStart(2, "0");
 /**
  * Projects as 3.5" floppy disks, kept in two clear plastic disk boxes: Spotmies client work,
  * and personal work. Opening a box deals its disks out; choosing a disk "inserts" it, which
- * morphs it into its file window (and back on close).
+ * morphs it into its file, full screen (and back on close). The open file has its own URL,
+ * /work/<id>, pushed onto the history so Back closes it; the same path loads a standalone
+ * page (src/app/work/[id]) when visited directly.
  */
 export function Work() {
   const { playFlap, playCue, setHum } = useIntro();
   const sectionRef = useRef<HTMLElement>(null);
   const inView = useInView(sectionRef, 0.2);
-  const [open, setOpen] = useState<{ project: Project; disk: HTMLElement } | null>(
+  const [open, setOpen] = useState<{ project: Project; disk: HTMLElement | null } | null>(
     null,
   );
+  const windowRef = useRef<DiskWindowHandle>(null);
+  const openIdRef = useRef<string | null>(null);
+  useEffect(() => {
+    openIdRef.current = open?.project.id ?? null;
+  }, [open]);
+
+  // The open file follows the history: Back closes it (with the morph), Forward reopens it.
+  useEffect(() => {
+    const handlePop = () => {
+      const id = viewedProject();
+      if (!id) {
+        if (openIdRef.current) windowRef.current?.close();
+        return;
+      }
+      const project = projects.find((entry) => entry.id === id);
+      if (project && id !== openIdRef.current) setOpen({ project, disk: findDisk(project) });
+    };
+    window.addEventListener("popstate", handlePop);
+    return () => window.removeEventListener("popstate", handlePop);
+  }, []);
   const [preview, setPreview] = useState<{ project: Project; number: number } | null>(
     null,
   );
@@ -130,6 +154,7 @@ export function Work() {
               setPreview(null);
               setHum(false);
               setOpen({ project, disk });
+              window.history.pushState({ projectView: project.id }, "", `/work/${project.id}`);
             }}
             onPreview={showPreview}
           />
@@ -139,9 +164,15 @@ export function Work() {
       <CrtPreview project={preview?.project ?? null} number={preview?.number ?? 0} />
 
       <DiskWindow
+        ref={windowRef}
         project={open?.project ?? null}
         disk={open?.disk ?? null}
         onClosed={() => setOpen(null)}
+        onSelect={(project) => {
+          // Paging to a neighbour swaps the file in place, and its URL with it.
+          window.history.replaceState({ projectView: project.id }, "", `/work/${project.id}`);
+          setOpen({ project, disk: findDisk(project) });
+        }}
       />
     </section>
   );
@@ -565,6 +596,15 @@ function DiskBox({
                   }
                 }}
                 onPointerLeave={() => onPreview(null)}
+                onClick={(event) => {
+                  // Anywhere on the row opens the case study, growing out of its disk; the
+                  // row's own buttons and links do their own thing.
+                  if ((event.target as HTMLElement).closest("a, button")) return;
+                  const disk = diskRefs.current[index]?.querySelector("button");
+                  if (!disk) return;
+                  playCue("insert");
+                  onOpen(project, disk);
+                }}
               >
                 <div
                   ref={(disk) => {
@@ -625,7 +665,11 @@ function EntryCopy({
             type="button"
             className={styles.entryOpen}
             onMouseEnter={() => playCue("tap")}
-            onClick={onOpen}
+            onClick={() => {
+              playCue("insert");
+              onOpen();
+            }}
+            aria-label={`${project.title}: open the case study`}
           >
             {project.title}
           </button>
@@ -676,6 +720,7 @@ function FloppyDisk({
       type="button"
       className={styles.disk}
       style={diskColors(project)}
+      data-disk={project.id}
       onMouseEnter={() => playCue("shutter")}
       onFocus={() => playCue("shutter")}
       onPointerDown={() => {
@@ -697,36 +742,61 @@ function FloppyDisk({
   );
 }
 
-// The project's file, in a small retro window. Opening, the disk dissolves into a block of
-// its colour that grows from the disk's exact spot into the window, turning cream and rounding
-// its corners, and the contents fade in as it lands; closing plays it in reverse, back into
-// the disk. A native <dialog> handles focus, Esc and the backdrop.
+// The project's file, full screen. Opening, the disk dissolves into a block of its colour
+// that grows from the disk's exact spot to fill the screen, turning cream, and the file fades
+// in as it lands; closing plays it in reverse, back into the disk (or simply fades, if that
+// disk isn't on screen). A native <dialog> handles focus, Esc and the page behind.
 const morphOpen = { duration: 480, easing: "cubic-bezier(0.22, 1, 0.36, 1)" };
 const morphClose = { duration: 380, easing: "cubic-bezier(0.4, 0, 0.2, 1)" };
 const windowColor = "#f4f0e6";
+
+type DiskWindowHandle = { close: () => void };
+
+// The project the current history entry shows, if it's one this page pushed.
+function viewedProject(): string | null {
+  const state: unknown = window.history.state;
+  if (state && typeof state === "object" && "projectView" in state) {
+    return typeof state.projectView === "string" ? state.projectView : null;
+  }
+  return null;
+}
+
+// A project's disk in the dealt-out lists, if its box is open.
+function findDisk(project: Project) {
+  return document.querySelector<HTMLElement>(`[data-disk="${project.id}"]`);
+}
+
+function onScreen(element: HTMLElement | null): element is HTMLElement {
+  if (!element?.isConnected) return false;
+  const rect = element.getBoundingClientRect();
+  return rect.bottom > 0 && rect.top < window.innerHeight && rect.width > 0;
+}
 
 function DiskWindow({
   project,
   disk,
   onClosed,
+  onSelect,
+  ref,
 }: {
   project: Project | null;
   disk: HTMLElement | null;
   onClosed: () => void;
+  onSelect: (project: Project) => void;
+  ref: Ref<DiskWindowHandle>;
 }) {
   const dialogRef = useRef<HTMLDialogElement>(null);
-  const panelRef = useRef<HTMLDivElement>(null);
+  const panelRef = useRef<HTMLElement>(null);
   const morphRef = useRef<HTMLDivElement>(null);
   const closingRef = useRef(false);
+  const shownIdRef = useRef<string | null>(null);
   const { playCue } = useIntro();
   const reduceMotion = useReducedMotion();
 
-  // The disk's box and the window's box, as keyframes for the morphing block.
+  // The disk's box and the screen's, as keyframes for the morphing block.
   const boxes = useCallback(() => {
-    const panel = panelRef.current;
-    if (!disk || !panel) return null;
+    if (!onScreen(disk)) return null;
     const from = disk.getBoundingClientRect();
-    const to = panel.getBoundingClientRect();
     return {
       disk: {
         left: `${from.left}px`,
@@ -737,11 +807,11 @@ function DiskWindow({
         backgroundColor: project?.disk ?? windowColor,
       },
       window: {
-        left: `${to.left}px`,
-        top: `${to.top}px`,
-        width: `${to.width}px`,
-        height: `${to.height}px`,
-        borderRadius: "10px",
+        left: "0px",
+        top: "0px",
+        width: `${window.innerWidth}px`,
+        height: `${window.innerHeight}px`,
+        borderRadius: "0px",
         backgroundColor: windowColor,
       },
     };
@@ -751,14 +821,28 @@ function DiskWindow({
     const dialog = dialogRef.current;
     const panel = panelRef.current;
     const morph = morphRef.current;
-    if (!dialog || !project || !disk || !panel || !morph || dialog.open) return;
+    if (!dialog || !project || !panel || !morph) return;
+
+    // Already open: paged to another project, so start it from the top and fade it in.
+    if (dialog.open) {
+      if (shownIdRef.current === project.id) return;
+      shownIdRef.current = project.id;
+      dialog.scrollTop = 0;
+      if (!reduceMotion) panel.animate({ opacity: [0, 1] }, { duration: 220 });
+      return;
+    }
 
     closingRef.current = false;
+    shownIdRef.current = project.id;
     dialog.showModal();
+    dialog.scrollTop = 0;
     if (reduceMotion) return;
 
     const box = boxes();
-    if (!box) return;
+    if (!box || !disk) {
+      dialog.animate({ opacity: [0, 1] }, { duration: 220 });
+      return;
+    }
     morph.style.display = "block";
     disk.animate({ opacity: [1, 0] }, { duration: 140, fill: "forwards" });
     const grow = morph.animate([box.disk, box.window], { ...morphOpen, fill: "forwards" });
@@ -777,21 +861,29 @@ function DiskWindow({
     const dialog = dialogRef.current;
     const panel = panelRef.current;
     const morph = morphRef.current;
-    if (!dialog || closingRef.current) return;
+    if (!dialog?.open || closingRef.current) return;
     closingRef.current = true;
 
     const finish = () => {
       dialog.close();
       dialog.classList.remove(styles.closing);
+      for (const animation of dialog.getAnimations()) animation.cancel();
       if (disk) {
         for (const animation of disk.getAnimations()) animation.cancel();
       }
+      shownIdRef.current = null;
       onClosed();
     };
 
-    const box = boxes();
-    if (reduceMotion || !panel || !morph || !disk || !box) {
+    if (reduceMotion || !panel || !morph) {
       finish();
+      return;
+    }
+    const box = boxes();
+    if (!box || !disk) {
+      dialog
+        .animate({ opacity: [1, 0] }, { duration: 200, fill: "forwards" })
+        .finished.then(finish, finish);
       return;
     }
 
@@ -812,112 +904,39 @@ function DiskWindow({
       .catch(finish);
   };
 
-  const fileName = project
-    ? `${project.title.toUpperCase().replace(/[^A-Z0-9]+/g, "_").replace(/^_|_$/g, "")}.DSK`
-    : "";
+  useImperativeHandle(ref, () => ({ close }));
+
+  // Closing from the file itself steps back through the history when it pushed an entry, so
+  // Back and the close button agree; the popstate that follows runs the close.
+  const requestClose = () => {
+    if (viewedProject()) window.history.back();
+    else close();
+  };
 
   return (
     <dialog
       ref={dialogRef}
       className={styles.window}
-      aria-labelledby="disk-window-title"
+      aria-labelledby="project-title"
       onCancel={(event) => {
         // Esc: close with the morph instead of instantly.
         event.preventDefault();
-        close();
-      }}
-      onClick={(event) => {
-        // A click on the backdrop (the dialog element itself, outside the panel) closes it.
-        if (event.target === event.currentTarget) close();
+        requestClose();
       }}
     >
-      {/* The block that morphs between the disk and the window. */}
+      {/* The block that morphs between the disk and the screen. */}
       <div ref={morphRef} aria-hidden="true" className={styles.morph} />
       {project && (
-        <div
+        <ProjectView
           ref={panelRef}
+          project={project}
           className={styles.panel}
-          style={{ "--disk": project.disk, "--disk-ink": project.ink } as CSSProperties}
-        >
-          <div className={styles.titleBar}>
-            <span className={styles.titleDisk} aria-hidden="true" />
-            <span className={styles.fileName}>{fileName}</span>
-            <button
-              type="button"
-              className={styles.close}
-              onClick={close}
-              onMouseEnter={() => playCue("tap")}
-              aria-label="Close project"
-            >
-              ✕
-            </button>
-          </div>
-
-          <div className={styles.body}>
-            <p className={styles.meta}>
-              {project.context === "Spotmies" ? "At Spotmies" : "Project"} · {project.role}
-            </p>
-            <h3 id="disk-window-title" className={styles.title}>
-              {project.title}
-            </h3>
-            {project.media && project.media.length > 0 && (
-              <MediaStrip media={project.media} />
-            )}
-            <p className={styles.summary}>{project.summary}</p>
-
-            <ul className={styles.highlights}>
-              {project.highlights.map((highlight) => (
-                <li key={highlight}>{highlight}</li>
-              ))}
-            </ul>
-
-            <ul className={styles.stack} aria-label="Tools">
-              {project.stack.map((item) => (
-                <li key={item}>{item}</li>
-              ))}
-            </ul>
-
-            {project.link && (
-              <a
-                href={project.link.href}
-                target="_blank"
-                rel="noreferrer noopener"
-                className={styles.visit}
-                onMouseEnter={() => playCue("tap")}
-              >
-                Visit {project.link.label} ↗
-                <span className={styles.srOnly}> (opens in a new tab)</span>
-              </a>
-            )}
-          </div>
-        </div>
+          onClose={requestClose}
+          onSelect={onSelect}
+          onTap={() => playCue("tap")}
+          onCue={playCue}
+        />
       )}
     </dialog>
-  );
-}
-
-// The project's screenshots and clips in the window, as a strip to swipe through. Clips only
-// load once played.
-function MediaStrip({ media }: { media: NonNullable<Project["media"]> }) {
-  return (
-    <ul className={styles.mediaStrip} aria-label="Screenshots and clips">
-      {media.map((item) => (
-        <li key={item.src} className={styles.mediaItem}>
-          {item.type === "video" ? (
-            <video
-              src={item.src}
-              poster={item.poster}
-              controls
-              muted
-              playsInline
-              preload="none"
-              aria-label={item.alt}
-            />
-          ) : (
-            <Image src={item.src} alt={item.alt} fill sizes="(min-width: 700px) 520px, 85vw" />
-          )}
-        </li>
-      ))}
-    </ul>
   );
 }

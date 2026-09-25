@@ -1,0 +1,205 @@
+/* The closer look: the tube's dark glass filling the window, the picture as large as fits,
+   and a faint trace of the CRT (scanlines, darker edges) over it. It fades in as the camera
+   finishes leaning in, so the monitor's screen seems to become it. */
+.viewer {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  gap: 14px;
+  padding: max(16px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right))
+    max(16px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
+  background: #0b0d0c;
+  color: #f5f1ea;
+  /* Scaled from its top left onto the monitor's screen, to grow out of it. */
+  transform-origin: 0 0;
+  overflow: hidden;
+}
+
+.top,
+.bottom {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  width: min(100%, 1400px);
+  margin: 0 auto;
+}
+
+.channel {
+  flex: 1;
+  font-family: var(--font-hero), monospace;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #9fe29a;
+}
+
+.count {
+  font-family: var(--font-hero), monospace;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: rgba(245, 241, 234, 0.6);
+}
+
+.close,
+.key {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-width: 44px;
+  height: 40px;
+  padding: 0 14px;
+  border: none;
+  border-radius: 8px;
+  background: #3d3f45;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.12),
+    0 2px 0 #18191b;
+  color: #f5f1ea;
+  font-family: var(--font-hero), monospace;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.close:active,
+.key:active {
+  transform: translateY(2px);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12);
+}
+
+.key:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.close:focus-visible,
+.key:focus-visible {
+  outline: 2px solid #9fe29a;
+  outline-offset: 2px;
+}
+
+/* The picture, as large as fits, on the tube's glass. */
+.frame {
+  position: relative;
+  width: min(100%, 1400px);
+  height: 100%;
+  min-height: 0;
+  margin: 0 auto;
+  overflow: hidden;
+  border-radius: 18px / 22px;
+  background: #050605;
+  touch-action: pan-y;
+}
+
+.media {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.glass {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background:
+    repeating-linear-gradient(180deg, rgba(0, 0, 0, 0.07) 0 1px, transparent 1px 3px),
+    radial-gradient(ellipse 120% 95% at 50% 50%, transparent 62%, rgba(0, 0, 0, 0.5));
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+  pointer-events: none;
+}
+
+/* A channel whose footage isn't in yet: its test card, full size. */
+.card {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-rows: 36% 1fr;
+}
+
+.bars {
+  background: linear-gradient(
+    90deg,
+    #c0c0c0 0 14.28%,
+    #c0c000 0 28.57%,
+    #00c0c0 0 42.85%,
+    #00c000 0 57.14%,
+    #c000c0 0 71.42%,
+    #c00000 0 85.71%,
+    #0000c0 0
+  );
+}
+
+.cardBody {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 14px;
+  padding: 0 clamp(20px, 6vw, 80px);
+  background: #111;
+}
+
+.cardChannel {
+  font-family: var(--font-hero), monospace;
+  font-size: clamp(12px, 1.6vw, 18px);
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #9fe29a;
+}
+
+.cardTitle {
+  font-family: var(--font-hero), monospace;
+  font-size: clamp(26px, 5vw, 64px);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.03em;
+  word-spacing: -0.3em;
+  text-transform: uppercase;
+}
+
+.cardNote {
+  font-size: clamp(14px, 1.6vw, 18px);
+  color: rgba(245, 241, 234, 0.6);
+}
+
+.caption {
+  flex: 1;
+  font-size: 14px;
+  line-height: 1.45;
+  color: rgba(245, 241, 234, 0.72);
+}
+
+.controls {
+  display: flex;
+  gap: 8px;
+}
+
+@media (max-width: 600px) {
+  .bottom {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .controls {
+    justify-content: space-between;
+  }
+
+  .controls .key {
+    flex: 1;
+  }
+
+  .closeLabel {
+    display: none;
+  }
+}
+

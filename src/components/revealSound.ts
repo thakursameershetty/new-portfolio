@@ -52,6 +52,7 @@ export type IntroCue =
   | "insert"
   | "driveEject"
   | "driveLoad"
+  | "remoteKey"
   | "boxOpen"
   | "boxClose"
   | "diskOut"
@@ -239,6 +240,12 @@ export function createPointerSounds(context: AudioContext): PointerSounds {
         playClick(context, output, noise, at, 1500, 0.05);
         playKnock(context, output, at, 0.05, 0, 170);
         playClick(context, output, noise, at + 0.05, 3800, 0.018);
+        return;
+      }
+      if (cue === "remoteKey") {
+        // A remote's rubber key: a soft, low press and the dome's small click under it.
+        playKnock(context, output, at, 0.06, 0, 170);
+        playClick(context, output, noise, at + 0.008, 1500, 0.03);
         return;
       }
       if (cue === "driveLoad") {

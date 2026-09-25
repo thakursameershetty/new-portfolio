@@ -55,6 +55,7 @@ const cueHaptics: Partial<Record<IntroCue, [number, number][]>> = {
   diskIn: [[220, 12]],
   diskTap: [[0, 5]],
   insert: [[0, 10]],
+  remoteKey: [[0, 6]],
   land: [[0, 12]],
   arrive: [[0, 14]],
   swap: [

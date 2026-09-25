@@ -312,13 +312,45 @@
   list-style: none;
 }
 
+/* The whole row opens its case study (Work.tsx), so the whole row answers the pointer: a
+   soft band behind it, the title underlined and the disk lifted, which also shows which row
+   the preview monitor is playing. */
 .entry {
+  position: relative;
+  isolation: isolate;
   display: grid;
   grid-template-columns: 96px minmax(0, 1fr);
   gap: 28px;
   align-items: start;
   padding: 26px 0;
   border-bottom: 1px solid rgba(245, 241, 234, 0.1);
+  cursor: pointer;
+}
+
+.entry::before {
+  content: "";
+  position: absolute;
+  inset: 6px -18px;
+  z-index: -1;
+  border-radius: 12px;
+  background: rgba(245, 241, 234, 0.05);
+  box-shadow: inset 0 0 0 1px rgba(245, 241, 234, 0.06);
+  opacity: 0;
+  transform: scale(0.99);
+  transition:
+    opacity 220ms ease,
+    transform 320ms cubic-bezier(0.22, 1, 0.36, 1);
+  pointer-events: none;
+}
+
+.entry:hover::before,
+.entry:focus-within::before {
+  opacity: 1;
+  transform: none;
+}
+
+.entry:hover .entryOpen {
+  background-size: 100% 2px;
 }
 
 .entryCopy {
@@ -733,22 +765,30 @@
   color: rgba(26, 26, 26, 0.6);
 }
 
-/* ---- The project window, opened when a disk is inserted. ---- */
+/* ---- The project's file, full screen, opened when a disk is inserted (its layout is in
+   ProjectView.module.css). The dialog is the scroll container; the page behind holds still. */
 .window {
-  width: min(640px, calc(100vw - 32px));
+  position: fixed;
+  inset: 0;
+  width: 100%;
   max-width: none;
-  max-height: calc(100svh - 48px);
-  margin: auto;
+  height: 100%;
+  max-height: none;
+  margin: 0;
   padding: 0;
   border: none;
   background: transparent;
   color: inherit;
-  overflow: visible;
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+
+:global(html):has(.window[open]) {
+  overflow: hidden;
 }
 
 .window::backdrop {
   background: rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(6px);
   animation: backdropIn 300ms ease;
   transition: opacity 300ms ease;
 }
@@ -759,13 +799,13 @@
   }
 }
 
-/* Closing: the backdrop fades while the window shrinks back into its disk. */
+/* Closing: the backdrop fades while the file shrinks back into its disk. */
 .closing::backdrop {
   opacity: 0;
 }
 
-/* The block that grows from the disk into the window (and back); Work.tsx animates its box,
-   corners and colour. Fixed to the viewport, behind the panel. */
+/* The block that grows from the disk to fill the screen (and back); Work.tsx animates its box,
+   corners and colour. Fixed to the viewport, behind the file. */
 .morph {
   display: none;
   position: fixed;
@@ -776,185 +816,6 @@
 .window .panel {
   position: relative;
   z-index: 1;
-}
-
-.panel {
-  max-height: calc(100svh - 48px);
-  overflow: auto;
-  border-radius: 10px;
-  background: #f4f0e6;
-  color: #1a1a1a;
-  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6);
-}
-
-.titleBar {
-  position: sticky;
-  top: 0;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 10px 10px 10px 16px;
-  background: var(--disk);
-  color: var(--disk-ink);
-  font-family: var(--font-hero), monospace;
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-}
-
-.titleDisk {
-  width: 12px;
-  height: 12px;
-  border: 2px solid currentColor;
-  border-radius: 2px;
-  clip-path: polygon(0 0, 75% 0, 100% 25%, 100% 100%, 0 100%);
-}
-
-.fileName {
-  flex: 1;
-}
-
-.close {
-  width: 30px;
-  height: 30px;
-  border: none;
-  border-radius: 4px;
-  background: rgba(0, 0, 0, 0.16);
-  color: inherit;
-  font-size: 13px;
-  cursor: pointer;
-}
-
-.close:hover,
-.close:focus-visible {
-  background: rgba(0, 0, 0, 0.3);
-  outline: none;
-}
-
-.body {
-  padding: 28px 28px 32px;
-}
-
-.meta {
-  font-family: var(--font-display), sans-serif;
-  font-size: 12px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: rgba(26, 26, 26, 0.6);
-}
-
-.title {
-  margin: 10px 0 16px;
-  font-family: var(--font-hero), monospace;
-  font-size: clamp(28px, 5vw, 44px);
-  font-weight: 700;
-  line-height: 0.95;
-  letter-spacing: -0.04em;
-  text-transform: uppercase;
-}
-
-/* Screenshots and clips in the window: a swipeable strip, the next one peeking in. */
-.mediaStrip {
-  display: flex;
-  gap: 10px;
-  margin: 4px -28px 22px;
-  padding: 0 28px;
-  overflow-x: auto;
-  scroll-padding: 0 28px;
-  scroll-snap-type: x mandatory;
-  list-style: none;
-  scrollbar-width: none;
-}
-
-.mediaItem {
-  position: relative;
-  flex: 0 0 86%;
-  aspect-ratio: 16 / 10;
-  overflow: hidden;
-  border-radius: 6px;
-  background: #1a1a1a;
-  scroll-snap-align: start;
-}
-
-.mediaItem:only-child {
-  flex-basis: 100%;
-}
-
-.mediaItem img,
-.mediaItem video {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.summary {
-  font-size: 17px;
-  line-height: 1.55;
-}
-
-.highlights {
-  display: grid;
-  gap: 8px;
-  margin-top: 20px;
-  list-style: none;
-  font-size: 15px;
-  line-height: 1.45;
-}
-
-.highlights li {
-  position: relative;
-  padding-left: 22px;
-}
-
-.highlights li::before {
-  content: "→";
-  position: absolute;
-  left: 0;
-  color: rgba(26, 26, 26, 0.5);
-}
-
-.stack {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 24px;
-  list-style: none;
-}
-
-.stack li {
-  padding: 6px 10px;
-  border: 1px solid rgba(26, 26, 26, 0.2);
-  border-radius: 4px;
-  font-family: var(--font-hero), monospace;
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-}
-
-.visit {
-  display: inline-flex;
-  margin-top: 26px;
-  padding: 12px 16px;
-  border-radius: 6px;
-  background: #1a1a1a;
-  color: #f5f1ea;
-  font-size: 15px;
-  font-weight: 500;
-}
-
-.visit:hover,
-.visit:focus-visible {
-  background: #000;
-}
-
-.srOnly {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip-path: inset(50%);
-  white-space: nowrap;
 }
 
 @media (prefers-reduced-motion: reduce) {
