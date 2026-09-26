@@ -327,6 +327,11 @@
   cursor: pointer;
 }
 
+/* While its disk flies to or from the box, the row rises over the box (Work.tsx). */
+.entry[data-flying] {
+  z-index: 3;
+}
+
 .entry::before {
   content: "";
   position: absolute;

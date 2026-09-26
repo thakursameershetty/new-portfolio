@@ -212,6 +212,13 @@ function placeOver(element: Element, rect: ScreenRect) {
   return `translate(${rect.left - now.left}px, ${rect.top - now.top}px) scale(${rect.width / now.width})`;
 }
 
+// Each row is its own stacking context, so a disk in flight lifts its whole row over the box.
+function flyOverBox(disk: HTMLElement) {
+  const row = disk.closest("li");
+  row?.setAttribute("data-flying", "");
+  return row;
+}
+
 const flight = { duration: 620, easing: "cubic-bezier(0.45, 0, 0.2, 1)" };
 const flightBack = { duration: 480, stagger: 70, easing: "cubic-bezier(0.45, 0, 0.2, 1)" };
 // The list's room opening and closing, so the page below glides instead of jumping.
@@ -420,7 +427,11 @@ function DiskBox({
         const copy = copyRefs.current[index];
         if (!disk) return;
         disk.style.opacity = "";
-        disk.animate([{ transform: placeOver(disk, rect) }, { transform: "none" }], flight);
+        const row = flyOverBox(disk);
+        disk
+          .animate([{ transform: placeOver(disk, rect) }, { transform: "none" }], flight)
+          .finished.catch(() => {})
+          .finally(() => row?.removeAttribute("data-flying"));
         // The details arrive as the disk lands.
         if (copy) showCopy(copy, flight.duration * 0.65);
       }, () => playCue("diskOut"))
@@ -457,6 +468,7 @@ function DiskBox({
         await new Promise((resolve) => window.setTimeout(resolve, flightBack.stagger * index));
         if (!disk) return;
         const over = placeOver(disk, scene.liftedRect(index));
+        flyOverBox(disk);
         await disk
           .animate([{ transform: "none" }, { transform: over }], {
             duration: flightBack.duration,
