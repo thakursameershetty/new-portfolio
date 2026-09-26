@@ -22,6 +22,8 @@ const fatigueResetPause = 0.6;
 const stereoWidth = 0.8;
 // The preview monitor's hum is meant to sit just at the edge of hearing.
 const humVolume = 0.003;
+// Changing channel swells the hum and its static to this many times its level, briefly.
+const channelSwell = 4;
 
 export interface PointerSounds {
   /**
@@ -60,7 +62,8 @@ export type IntroCue =
   | "rattle"
   | "diskTap"
   | "diskRattle"
-  | "crtOn";
+  | "crtOn"
+  | "static";
 
 export function createPointerSounds(context: AudioContext): PointerSounds {
   const output = context.createGain();
@@ -88,6 +91,7 @@ export function createPointerSounds(context: AudioContext): PointerSounds {
   };
 
   let humLevel: GainNode | null = null;
+  let humOn = false;
   let crackleTimer = 0;
   // Static on the glass: now and then a soft tick, at an uneven pace.
   const crackle = () => {
@@ -136,6 +140,7 @@ export function createPointerSounds(context: AudioContext): PointerSounds {
         if (!on) return;
         humLevel = startHum(context, output);
       }
+      humOn = on;
       const at = context.currentTime;
       humLevel.gain.cancelScheduledValues(at);
       humLevel.gain.setTargetAtTime(on ? humVolume : 0, at, on ? 0.12 : 0.06);
@@ -220,6 +225,20 @@ export function createPointerSounds(context: AudioContext): PointerSounds {
         playClick(context, output, noise, at + 0.025, 6200, 0.012);
         return;
       }
+      if (cue === "static") {
+        // The tube changing channel: its own hum and static surge while the picture flickers
+        // over, then settle back to their usual level.
+        if (!humLevel || !humOn) return;
+        const level = humLevel.gain;
+        level.cancelScheduledValues(at);
+        level.setValueAtTime(level.value, at);
+        level.linearRampToValueAtTime(humVolume * channelSwell, at + 0.05);
+        level.setTargetAtTime(humVolume, at + 0.2, 0.08);
+        for (let crack = 0; crack < 3; crack++) {
+          playClick(context, humLevel, noise, at + 0.03 + crack * 0.05 + Math.random() * 0.03, 3000 + Math.random() * 4000, 0.4 + Math.random() * 0.4);
+        }
+        return;
+      }
       if (cue === "shutter") {
         // A floppy's metal shutter: a thin slide, then the click as it stops.
         playClick(context, output, noise, at, 4800, 0.02);
@@ -243,9 +262,10 @@ export function createPointerSounds(context: AudioContext): PointerSounds {
         return;
       }
       if (cue === "remoteKey") {
-        // A remote's rubber key: a soft, low press and the dome's small click under it.
-        playKnock(context, output, at, 0.06, 0, 170);
-        playClick(context, output, noise, at + 0.008, 1500, 0.03);
+        // A remote's rubber key: a muffled press with no ring to it, and the dome's faint
+        // snap under the finger.
+        playMuffled(context, output, noise, at, 0.05);
+        playTick(context, output, noise, at + 0.006, 3000, 0.015);
         return;
       }
       if (cue === "driveLoad") {
@@ -518,6 +538,72 @@ function playChirp(
   tone.connect(filter).connect(gain).connect(output);
   tone.start(at);
   tone.stop(at + duration + 0.02);
+}
+
+/** A soft, dull press, like a finger on rubber: low noise only, no tone that could ring. */
+function playMuffled(
+  context: BaseAudioContext,
+  output: AudioNode,
+  noise: AudioBuffer,
+  at: number,
+  volume: number,
+) {
+  const source = context.createBufferSource();
+  const filter = context.createBiquadFilter();
+  const gain = context.createGain();
+  source.buffer = noise;
+  filter.type = "lowpass";
+  filter.frequency.value = 700;
+  filter.Q.value = 0.5;
+  gain.gain.setValueAtTime(0.0001, at);
+  gain.gain.exponentialRampToValueAtTime(volume, at + 0.004);
+  gain.gain.exponentialRampToValueAtTime(0.0001, at + 0.03);
+  source.connect(filter).connect(gain).connect(output);
+  source.start(at, Math.random() * (noise.duration - 0.05));
+  source.stop(at + 0.04);
+}
+
+/**
+ * A bright, very short snap with a faint fixed-pitch ring, like a key switch or a relay.
+ * No low body and no falling pitch — together those read as a slap rather than a click.
+ */
+function playTick(
+  context: BaseAudioContext,
+  output: AudioNode,
+  noise: AudioBuffer,
+  at: number,
+  frequency: number,
+  volume: number,
+  pan = 0,
+) {
+  const destination = panned(context, output, pan);
+
+  const source = context.createBufferSource();
+  const highpass = context.createBiquadFilter();
+  const band = context.createBiquadFilter();
+  const gain = context.createGain();
+  source.buffer = noise;
+  highpass.type = "highpass";
+  highpass.frequency.value = 2200;
+  band.type = "bandpass";
+  band.frequency.value = frequency;
+  band.Q.value = 9;
+  gain.gain.setValueAtTime(volume, at);
+  gain.gain.exponentialRampToValueAtTime(0.0001, at + 0.007);
+  source.connect(highpass).connect(band).connect(gain).connect(destination);
+  source.start(at, Math.random() * (noise.duration - 0.05));
+  source.stop(at + 0.015);
+
+  // A tiny steady ping gives the snap a hard, plastic edge.
+  const ping = context.createOscillator();
+  const pingGain = context.createGain();
+  ping.type = "sine";
+  ping.frequency.value = frequency * 0.62;
+  pingGain.gain.setValueAtTime(volume * 0.25, at);
+  pingGain.gain.exponentialRampToValueAtTime(0.0001, at + 0.012);
+  ping.connect(pingGain).connect(destination);
+  ping.start(at);
+  ping.stop(at + 0.02);
 }
 
 function playClick(

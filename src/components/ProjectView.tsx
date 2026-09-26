@@ -48,13 +48,13 @@ export function ProjectView({
   /** Hover tick for the controls (the overlay's sound). */
   onTap?: () => void;
   /** The monitor's own sounds: its keys, the disk going in and out, and looking closer. */
-  onCue?: (cue: "remoteKey" | "driveLoad" | "driveEject" | "insert") => void;
+  onCue?: (cue: "remoteKey" | "driveLoad" | "driveEject" | "insert" | "crtOn" | "static") => void;
   className?: string;
   ref?: Ref<HTMLElement>;
 }) {
   const router = useRouter();
   const reduceMotion = useReducedMotion();
-  const { playFlap } = useIntro();
+  const { playFlap, setHum } = useIntro();
   const sections = useMemo(() => caseSections(project), [project]);
   const number = diskNumber(project);
   const index = diskOrder.findIndex((entry) => entry.id === project.id);
@@ -179,6 +179,37 @@ export function ProjectView({
     else router.push("/#work");
   }, [onClose, router]);
 
+  // The set hums while its tube is lit: from the disk latching in until it's ejected or the
+  // case study closes. Each channel change crackles through a moment of snow.
+  const litRef = useRef(false);
+  const warmTimerRef = useRef(0);
+  const monitorCue = useCallback(
+    (cue: "remoteKey" | "driveLoad") => {
+      onCue?.(cue);
+      if (cue !== "driveLoad") return;
+      litRef.current = true;
+      setHum(true);
+      // The tube warming, once the drive's head has settled.
+      window.clearTimeout(warmTimerRef.current);
+      warmTimerRef.current = window.setTimeout(() => onCue?.("crtOn"), 180);
+    },
+    [onCue, setHum],
+  );
+  const powerDown = useCallback(() => {
+    litRef.current = false;
+    window.clearTimeout(warmTimerRef.current);
+    setHum(false);
+  }, [setHum]);
+  useEffect(() => powerDown, [powerDown]);
+
+  const shownChannelRef = useRef({ id: project.id, channel });
+  useEffect(() => {
+    const shown = shownChannelRef.current;
+    shownChannelRef.current = { id: project.id, channel };
+    if (shown.id !== project.id || shown.channel === channel || !litRef.current) return;
+    onCue?.("static");
+  }, [channel, onCue, project.id]);
+
   // Eject: the disk slides out of the monitor's drive and the tube goes dark, then the case
   // study closes (back into its disk in the list, or to the work on the home page).
   const ejectingRef = useRef(false);
@@ -186,13 +217,14 @@ export function ProjectView({
     if (ejectingRef.current) return;
     ejectingRef.current = true;
     onCue?.("driveEject");
+    powerDown();
     await Promise.race([
       ejectRef.current?.() ?? Promise.resolve(),
       new Promise((done) => window.setTimeout(done, 700)),
     ]);
     ejectingRef.current = false;
     close();
-  }, [close, onCue]);
+  }, [close, onCue, powerDown]);
 
   // Keys: ← and → change channel, 1–9 jump to a part.
   useEffect(() => {
@@ -382,7 +414,7 @@ export function ProjectView({
             ejectRef={ejectRef}
             onSelect={goTo}
             onPower={eject}
-            onCue={onCue}
+            onCue={monitorCue}
             onLookCloser={(item) => {
               onCue?.("insert");
               setLeaving(false);
