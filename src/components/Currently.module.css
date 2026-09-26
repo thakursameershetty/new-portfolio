@@ -31,8 +31,92 @@
   font-weight: 700;
 }
 
+/* The muted half of the line. Its colour is a two-tone gradient clipped to the text, parked
+   on the muted half; the switch slides it over to the cream half, so the light sweeps along
+   the words (and on down the next lines, since the fragments share one strip). */
 .muted {
-  color: var(--ink-muted);
+  background-image: linear-gradient(90deg, var(--ink) 50%, var(--ink-muted) 50%);
+  background-size: 200% 100%;
+  background-position: 100% 0;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-box-decoration-break: slice;
+  box-decoration-break: slice;
+  color: transparent;
+  transition: background-position 900ms cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+.mutedOn {
+  background-position: 0 0;
+}
+
+/* The switch sits in the line like a word, sized in em so it scales with the statement:
+   a dark track with a cream knob, turning red (the grid's red) when on. */
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 1.02em;
+  height: 0.58em;
+  margin-right: 0.24em;
+  padding: 0;
+  border: 0.045em solid rgba(245, 241, 234, 0.28);
+  border-radius: 1em;
+  background: rgba(245, 241, 234, 0.08);
+  font-size: inherit;
+  vertical-align: 0.02em;
+  cursor: pointer;
+  transition:
+    background-color 220ms ease,
+    border-color 220ms ease;
+}
+
+.switchKnob {
+  position: absolute;
+  top: 0.05em;
+  left: 0.05em;
+  width: 0.39em;
+  height: 0.39em;
+  border-radius: 50%;
+  background: var(--ink-muted);
+  box-shadow: 0 0.03em 0.08em rgba(0, 0, 0, 0.5);
+  transition:
+    transform 320ms cubic-bezier(0.34, 1.56, 0.64, 1),
+    background-color 220ms ease;
+}
+
+.switch:hover .switchKnob {
+  background: var(--ink);
+}
+
+.switchOn {
+  border-color: #e54b45;
+  background: #e54b45;
+}
+
+.switchOn .switchKnob {
+  background: var(--ink);
+  transform: translateX(0.44em);
+}
+
+/* Once in view: the knob tries the switch twice, as a hint that it moves. */
+.switchHint .switchKnob {
+  animation: nudge 900ms ease-in-out 700ms 1;
+}
+
+@keyframes nudge {
+  25%,
+  65% {
+    transform: translateX(0.13em);
+  }
+  45%,
+  85% {
+    transform: translateX(0);
+  }
+}
+
+.switch:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 4px;
 }
 
 /* Spotmies' "S" mark in front of the company name, at the height of the capitals and
@@ -43,4 +127,232 @@
   height: 0.74em;
   margin-right: 0.18em;
   vertical-align: -0.02em;
+}
+
+/* ---- Résumé key: the Contact section's cream keycap (face on a darker skirt; hover lifts
+   it a touch, pressing sinks it). ---- */
+.key {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 44px;
+  padding: 16px 20px;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 10px;
+  background: #f5f1ea;
+  color: #1a0605;
+  font-size: 17px;
+  font-weight: 500;
+  box-shadow:
+    0 6px 0 #b9ad9c,
+    0 14px 28px rgba(0, 0, 0, 0.45);
+  transition:
+    transform 110ms ease,
+    box-shadow 110ms ease;
+}
+
+.key:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    0 8px 0 #b9ad9c,
+    0 18px 32px rgba(0, 0, 0, 0.5);
+}
+
+.key:active {
+  transform: translateY(5px);
+  box-shadow:
+    0 1px 0 #b9ad9c,
+    0 4px 10px rgba(0, 0, 0, 0.45);
+}
+
+.key:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 4px;
+}
+
+.keyIcon {
+  display: flex;
+  flex: none;
+}
+
+.keyMeta {
+  font-family: var(--font-hero), monospace;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  opacity: 0.5;
+}
+
+.keyArrow {
+  opacity: 0.6;
+  transition:
+    transform 200ms ease,
+    opacity 200ms ease;
+}
+
+.key:hover .keyArrow {
+  opacity: 1;
+  transform: translate(2px, -2px);
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* ---- The record: ruled rows like the résumé, a small Disket heading on the left and the
+   entries on the right; the dates hang off the right edge so they line up. ---- */
+.record {
+  margin-top: clamp(72px, 12vh, 120px);
+}
+
+.group {
+  display: grid;
+  grid-template-columns: 180px 1fr;
+  gap: 24px;
+  padding: 28px 0;
+  border-top: 1px solid rgba(245, 241, 234, 0.14);
+}
+
+.groupHeading {
+  padding-top: 3px;
+  font-family: var(--font-hero), monospace;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+
+/* A key to the group's colour on the timeline, drawn like a short bar. */
+.swatch {
+  display: inline-block;
+  width: 12px;
+  height: 4px;
+  margin-right: 10px;
+  border-radius: 2px;
+  background: var(--tone);
+  vertical-align: 0.2em;
+}
+
+.entries {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  list-style: none;
+}
+
+.entry {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  column-gap: 24px;
+  row-gap: 4px;
+  transition: opacity 200ms ease;
+}
+
+/* While the timeline is scrubbed, what isn't running at that month steps back. */
+.entryDim {
+  opacity: 0.3;
+}
+
+.entryTitle {
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.entryWhen {
+  padding-top: 4px;
+  font-family: var(--font-hero), monospace;
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--ink-muted);
+}
+
+.entryDetail {
+  grid-column: 1;
+  max-width: 38em;
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--ink-muted);
+  text-wrap: pretty;
+}
+
+/* Phones: the heading sits above its entries, and each date moves under its title. */
+@media (max-width: 600px) {
+  .key {
+    margin-top: 36px;
+  }
+
+  .group {
+    grid-template-columns: 1fr;
+    gap: 16px;
+    padding: 24px 0;
+  }
+
+  .entry {
+    grid-template-columns: 1fr;
+  }
+
+  .entryTitle {
+    font-size: 17px;
+  }
+
+  .entryWhen {
+    grid-row: 2;
+    padding-top: 0;
+  }
+
+  .entryDetail {
+    font-size: 15px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .key,
+  .keyArrow,
+  .muted,
+  .switch,
+  .switchKnob {
+    transition: none;
+  }
+
+  .switchHint .switchKnob {
+    animation: none;
+  }
+}
+
+/* The toolkit: short label and its list side by side, so five lines read as one block. */
+.compact {
+  gap: 10px;
+}
+
+.compact .entry {
+  grid-template-columns: 96px 1fr;
+  align-items: baseline;
+}
+
+.compact .entryTitle {
+  font-size: 16px;
+}
+
+.compact .entryDetail {
+  grid-column: 2;
+}
+
+@media (max-width: 600px) {
+  .compact .entry {
+    grid-template-columns: 76px 1fr;
+    column-gap: 14px;
+  }
+
+  .compact .entryTitle {
+    font-size: 15px;
+  }
 }

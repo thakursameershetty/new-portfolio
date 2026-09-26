@@ -1,0 +1,139 @@
+/* Colours come from variables a page can set on its own class (--hint-ink, --key-face,
+   --key-ink, --key-skirt, --key-border): cream keys on the dark page by default, dark keys on a light one.
+   The defaults are fallbacks, not set here, so they never win over the page's. */
+.hints {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 32px;
+  font-family: var(--font-display), sans-serif;
+  font-size: 13px;
+  letter-spacing: 0.12em;
+  line-height: 1.5;
+  text-transform: uppercase;
+  color: var(--hint-ink, var(--ink-muted));
+}
+
+.hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.touch {
+  display: none;
+}
+
+@media (hover: none), (pointer: coarse) {
+  .mouse {
+    display: none;
+  }
+
+  .touch {
+    display: inline-flex;
+  }
+}
+
+.key {
+  flex: none;
+  display: inline-block;
+  padding: 4px 7px 3px;
+  border-radius: 5px;
+  border: var(--key-border, none);
+  background: var(--key-face, #f5f1ea);
+  color: var(--key-ink, #1a0605);
+  font-family: var(--font-hero), monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  box-shadow: 0 3px 0 var(--key-skirt, #b9ad9c);
+}
+
+/* Each key presses once, in turn, from --hint-start (a page can hold it back so separate
+   groups of hints take their turns in order). Hidden hints (the other device's) take their
+   turn too, which only leaves a slightly longer beat between the visible ones. */
+.active .key {
+  animation: press 380ms ease-in-out var(--hint-start, 900ms) 1;
+}
+
+.active .hint:nth-child(2) .key {
+  animation-delay: calc(var(--hint-start, 900ms) + 500ms);
+}
+
+.active .hint:nth-child(3) .key {
+  animation-delay: calc(var(--hint-start, 900ms) + 1000ms);
+}
+
+.active .hint:nth-child(n + 4) .key {
+  animation-delay: calc(var(--hint-start, 900ms) + 1500ms);
+}
+
+@keyframes press {
+  40%,
+  60% {
+    box-shadow: 0 1px 0 var(--key-skirt, #b9ad9c);
+    transform: translateY(2px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .active .key {
+    animation: none;
+  }
+}
+
+/* The hints' own switch: a small outlined chip in the hints' ink. */
+.toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 10px 5px 6px;
+  border: 1px solid var(--toggle-edge, rgba(245, 241, 234, 0.22));
+  border-radius: 999px;
+  background: none;
+  color: var(--hint-ink, var(--ink-muted));
+  font-family: var(--font-display), sans-serif;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  cursor: pointer;
+  pointer-events: auto;
+  transition:
+    color 150ms ease,
+    border-color 150ms ease;
+}
+
+/* Hover only where there's a pointer to hover with: phones would keep it lit after a tap. */
+.toggle:focus-visible {
+  border-color: currentColor;
+  color: var(--key-ink, #f5f1ea);
+  outline: none;
+}
+
+@media (hover: hover) {
+  .toggle:hover {
+    border-color: currentColor;
+    color: var(--key-ink, #f5f1ea);
+  }
+
+  .toggle:hover .toggleMark {
+    background: var(--key-ink, #f5f1ea);
+  }
+}
+
+.toggleMark {
+  display: grid;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--hint-ink, var(--ink-muted));
+  color: var(--toggle-cut, #0a0a0a);
+  font-family: var(--font-hero), monospace;
+  font-size: 10px;
+  font-weight: 700;
+  transition: background-color 150ms ease;
+}
+
+.toggle:focus-visible .toggleMark {
+  background: var(--key-ink, #f5f1ea);
+}

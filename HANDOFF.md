@@ -62,20 +62,21 @@ grain, darker idle cells). Features, each a prop or uniform:
 - **Reveal:** `revealDuration`, `revealPaused`, `revealFrom` (`"center"` ripple or `"top"`
   pour), `revealControl` (drive progress externally, e.g. from scroll).
 - **`introPose`:** grid waits rotated 45° and zoomed 2× (drawn in-shader, so it stays sharp),
-  unwinds on Enter.
+  unwinds when the intro starts.
 - **`topEdgeRows`:** dissolving top edge; on such grids unlit cells are exactly the page black
   with grain fading in from the top (no seam).
 - `trackWindowPointer`: listens on window, ignores pointer outside the canvas.
 - `WebsiteShaderBackground` wraps it for full-bleed use.
 
 ### Intro, sound state and shared context — `src/components/SiteIntro.tsx`
-- Enter screen (Enter / Enter without sound) over the dark rotated grid.
-- **Shown once per visit, like dsnikhil.com:** `intro-seen` lives in **sessionStorage** (it was
-  localStorage, which made the splash appear only once ever). Reloads in the same tab skip the
-  Enter screen and the hero loads finished (`instant` mode); a new tab / new visit shows it
-  again. The pre-paint script in `layout.tsx` reads sessionStorage and sets
-  `html[data-intro-seen]` so nothing flashes. The sound preference (`sound`) stays in
-  localStorage and is restored on the first click/keypress of a reload.
+- **No Enter screen** (removed: the owner felt it read as generic to recruiters). The intro
+  plays on its own ~300ms after `document.fonts.ready`: the dark rotated grid unwinds and the
+  hero timeline runs. It's **silent** (no gesture yet, so browsers block audio); the nav's
+  sound key turns sound on. Don't bring a click-to-enter gate back.
+- **Played once per visit:** `intro-seen` lives in **sessionStorage**. Reloads in the same tab
+  load the hero finished (`instant` mode); a new tab / new visit plays it again. The sound
+  preference (`sound`) stays in localStorage and, if on, is restored on the first
+  click/keypress.
 - Scroll is locked for ~4.2s during the intro.
 - Publishes `--grid-cell` (px) on `:root` for sizing type in cells.
 - `useIntro()` context: `entered`, `instant`, `soundOn`, `getSounds`, `playRipple`,
@@ -84,15 +85,16 @@ grain, darker idle cells). Features, each a prop or uniform:
 - **Haptics** are fired here, from `playCue` (per-cue table `cueHaptics`, each hit a separate
   `[delay, ms]` buzz so a later one can't cancel an earlier one) and from the ripple
   (`buzzRipple`). They follow the sound toggle: sound off → no haptics.
-- **Phone tilt permission** (`requestTilt` from `deviceTilt.ts`) is asked from the Enter tap,
-  or from the first click on a reload (iOS only allows the prompt from a gesture).
+- **Phone tilt permission** (`requestTilt` from `deviceTilt.ts`) is asked from the first tap on
+  the page (iOS only allows the prompt from a gesture).
 - Renders `SiteNav` and `ClickSpark`.
 
 ### Sound — `src/components/revealSound.ts`
 All synthesized, through one limiter bus. Character: **dry, mechanical, tactile** (relay clicks,
 thump, keycaps, split-flap, plastic). Pieces:
-- `playRevealSound(context, duration, from)`: Enter press clack, thump, ring clicks timed to the
-  reveal, noise swell.
+- `playRevealSound(context, duration, from)`: press clack, thump, ring clicks timed to the
+  reveal, noise swell (used by grids revealed while sound is on; the hero's intro now plays
+  before any gesture, so silently).
 - `createPointerSounds` → `tick` (hover per cell; speed-aware, stereo-panned, fatigue softening,
   `hoverVolume = 1.5`), `press` (shockwave clack + outward clicks), `flap` (split-flap),
   `hum(on)` (CRT monitor hum), and `cue(...)`:

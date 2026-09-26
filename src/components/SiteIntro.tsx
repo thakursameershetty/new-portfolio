@@ -10,7 +10,6 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import clsx from "clsx";
 import {
   WebsiteShaderBackground,
   getKineticGrid,
@@ -19,7 +18,10 @@ import {
 } from "./WebsiteShaderCanvas";
 import {
   createPointerSounds,
+  fadeSound,
   playRevealSound,
+  playSoundSwitch,
+  soundFadeOut,
   type IntroCue,
   type PointerSounds,
 } from "./revealSound";
@@ -30,14 +32,16 @@ import { SiteNav } from "./SiteNav";
 import styles from "./SiteIntro.module.css";
 
 const revealDuration = 1.8;
-// Behind the Enter screen the grid waits turned 45° and zoomed in, a field of diamonds;
-// entering unwinds it to rest while the ripple spreads.
+// Before the intro starts the grid waits turned 45° and zoomed in, a field of diamonds; the
+// intro unwinds it to rest while the ripple spreads.
 const gridIntroPose = { degrees: 45, scale: 2, seconds: 2.2 };
-// How long after Enter the page stays locked to the hero: through the headline flip.
+// How long after the intro starts the page stays locked to the hero: through the headline
+// flip.
 const introLockMs = 4200;
-// Whether the intro has been entered in this tab (reloads then skip the Enter screen) is
-// kept only for the session, so a fresh visit gets the Enter screen again. Whether sound was
-// left on is kept for good.
+const introStartDelayMs = 300;
+// Whether the intro has played in this tab (reloads then load the hero finished) is kept only
+// for the session, so a fresh visit plays it again. Whether sound was left on is kept for
+// good.
 const seenKey = "intro-seen";
 
 // Haptic taps to go with the physical sounds (on phones that support them), each as
@@ -63,6 +67,9 @@ const cueHaptics: Partial<Record<IntroCue, [number, number][]>> = {
     [45, 10],
   ],
   tap: [[0, 4]],
+  detent: [[0, 4]],
+  switchOn: [[28, 14]],
+  switchOff: [[28, 12]],
 };
 
 // The grid rippling into place: a thump as the center cells switch on, then ticks for the
@@ -85,7 +92,7 @@ interface SiteIntroProps {
 }
 
 interface IntroState {
-  /** True from the Enter click; content times its entrance from this moment. */
+  /** True from the moment the intro starts; content times its entrance from it. */
   entered: boolean;
   /** A return visit: no intro, everything appears already in its finished state. */
   instant: boolean;
@@ -118,13 +125,13 @@ export function useIntro() {
 }
 
 /**
- * Holds the page on a dark grid behind an Enter prompt. Entering is the user gesture that
- * lets the browser play sound, so the ripple and its sound start together, and the
- * cursor's hover ticks can play afterwards.
+ * Plays the intro on its own as the page loads: the dark grid unwinds and ripples red, and
+ * the hero's type takes its cue from `entered`. There's no gate to click through, so it
+ * plays silently; browsers only allow sound after a gesture, which the nav's sound key (or,
+ * if sound was left on last time, the first click or key press) provides.
  */
 export function SiteIntro({ children }: SiteIntroProps) {
   const [entered, setEntered] = useState(false);
-  const [gateGone, setGateGone] = useState(false);
   const [soundOn, setSoundOn] = useState(false);
   const audioRef = useRef<AudioContext | null>(null);
   const soundsRef = useRef<PointerSounds | null>(null);
@@ -151,8 +158,8 @@ export function SiteIntro({ children }: SiteIntroProps) {
     return () => window.removeEventListener("resize", update);
   }, []);
 
-  // No scrolling until the intro has played: the page stays on the hero behind the Enter
-  // screen, and the intro type flies to positions measured with the page at the top.
+  // No scrolling until the intro has played: the intro type flies to positions measured with
+  // the page at the top.
   useEffect(() => {
     const root = document.documentElement;
     if (!entered) {
@@ -239,38 +246,43 @@ export function SiteIntro({ children }: SiteIntroProps) {
     return context;
   };
 
-  const enter = (withSound: boolean) => {
+  const enter = () => {
     if (entered) return;
-    // A tap, so phones that ask before sharing their tilt (iOS) can ask now.
-    requestTilt();
     writeStorage(seenKey, "1", "session");
     revealEndsAtRef.current =
       performance.now() + (revealDelay + revealDuration) * 1000;
-
-    if (withSound) {
-      try {
-        playRevealSound(startAudio(), revealDuration);
-        buzzRipple(revealDuration);
-        setSoundOn(true);
-        writeStorage(soundKey, "on");
-      } catch {
-        // No Web Audio support: the ripple still plays, silently.
-      }
-    }
-
     setEntered(true);
+  };
+
+  // Sound switching on: the switch's click, then everything eases in from silence, so the
+  // first sounds after it (often set off by the very click that switched it on) can't burst.
+  const suspendTimerRef = useRef(0);
+  const bringSoundIn = (context: AudioContext) => {
+    window.clearTimeout(suspendTimerRef.current);
+    playSoundSwitch(context, true);
+    fadeSound(context, true);
+    buzz(10);
   };
 
   const toggleSound = () => {
     if (soundOn) {
-      void audioRef.current?.suspend();
+      const context = audioRef.current;
       setSoundOn(false);
       writeStorage(soundKey, "off");
+      if (!context) return;
+      // The switch clicks, the sound fades out, and only then does the audio stop.
+      playSoundSwitch(context, false);
+      fadeSound(context, false);
+      window.clearTimeout(suspendTimerRef.current);
+      suspendTimerRef.current = window.setTimeout(
+        () => void context.suspend(),
+        soundFadeOut * 1000 + 250,
+      );
       return;
     }
 
     try {
-      startAudio();
+      bringSoundIn(startAudio());
       setSoundOn(true);
       writeStorage(soundKey, "on");
     } catch {
@@ -278,53 +290,84 @@ export function SiteIntro({ children }: SiteIntroProps) {
     }
   };
 
-  // Return visits skip the Enter screen (hidden before paint by the script in the layout)
-  // and the whole intro: the hero loads already finished. Browsers only allow sound after a
-  // gesture, so if it was left on, it comes back on the visitor's first click or key press.
+  // A first visit plays the intro; a reload in the same tab skips it and the hero loads
+  // already finished. Sound is on by default, but browsers only allow it after a gesture (a
+  // click, tap or key press; scrolling doesn't count), so it switches on at the first one,
+  // unless the visitor has muted it before.
   const enterRef = useRef(enter);
   const startAudioRef = useRef(startAudio);
+  const bringSoundInRef = useRef(bringSoundIn);
   useEffect(() => {
     enterRef.current = enter;
     startAudioRef.current = startAudio;
+    bringSoundInRef.current = bringSoundIn;
   });
 
   useEffect(() => {
-    if (readStorage(seenKey, "session") !== "1") return;
-    const frame = requestAnimationFrame(() => {
-      setInstant(true);
-      setGateGone(true);
-      setIntroDone(true);
-      enterRef.current(false);
-      revealEndsAtRef.current = 0;
-    });
+    let frame = 0;
+    let wait = 0;
+    let cancelled = false;
+    if (readStorage(seenKey, "session") === "1") {
+      frame = requestAnimationFrame(() => {
+        setInstant(true);
+        setIntroDone(true);
+        enterRef.current();
+        revealEndsAtRef.current = 0;
+      });
+    } else {
+      // Once the fonts are in (the intro type is measured in them), and a beat after the
+      // waiting grid has painted, so the unwind is seen from the start.
+      void document.fonts.ready.then(() => {
+        if (cancelled) return;
+        wait = window.setTimeout(() => enterRef.current(), introStartDelayMs);
+      });
+    }
+    const stop = () => {
+      cancelled = true;
+      cancelAnimationFrame(frame);
+      window.clearTimeout(wait);
+    };
 
-    // No Enter tap on a reload, so the first tap anywhere asks for the phone's tilt instead.
+    // Phones that ask before sharing their tilt (iOS) only may from a tap: ask on the first.
     const askTilt = () => requestTilt();
     window.addEventListener("click", askTilt, { once: true });
 
-    if (readStorage(soundKey) !== "on") {
+    if (readStorage(soundKey) === "off") {
       return () => {
-        cancelAnimationFrame(frame);
+        stop();
         window.removeEventListener("click", askTilt);
       };
     }
-    const resumeSound = () => {
+    const resumeSound = (event: Event) => {
+      // Muted since, or already on (the nav's sound key turns it on itself).
+      if (readStorage(soundKey) === "off" || soundOnRef.current) {
+        removeListeners();
+        return;
+      }
+      // The sound key's own click would turn it straight back off: let the key do it.
+      if ((event.target as Element | null)?.closest?.("[data-sound-toggle]")) return;
       try {
-        startAudioRef.current();
-        setSoundOn(true);
+        const context = startAudioRef.current();
+        // A touch that starts a scroll isn't a gesture the browser accepts; keep listening
+        // until one is and the audio is actually running.
+        void context.resume().then(() => {
+          if (context.state !== "running" || soundOnRef.current) return;
+          bringSoundInRef.current(context);
+          setSoundOn(true);
+          removeListeners();
+        });
       } catch {
         // No Web Audio support: stay silent.
+        removeListeners();
       }
-      removeListeners();
     };
+    const gestures = ["pointerdown", "pointerup", "touchend", "keydown"] as const;
     const removeListeners = () => {
-      window.removeEventListener("pointerdown", resumeSound);
-      window.removeEventListener("keydown", resumeSound);
+      for (const type of gestures) window.removeEventListener(type, resumeSound);
     };
-    window.addEventListener("pointerdown", resumeSound);
-    window.addEventListener("keydown", resumeSound);
+    for (const type of gestures) window.addEventListener(type, resumeSound);
     return () => {
-      cancelAnimationFrame(frame);
+      stop();
       removeListeners();
       window.removeEventListener("click", askTilt);
     };
@@ -352,34 +395,6 @@ export function SiteIntro({ children }: SiteIntroProps) {
         onToggleSound={toggleSound}
         onHover={() => playCue("tap")}
       />
-      {!gateGone && (
-        <div
-          className={clsx(styles.gate, entered && styles.gateHidden)}
-          onTransitionEnd={(event) => {
-            // Ignore the buttons' own hover transitions bubbling up.
-            if (entered && event.target === event.currentTarget) {
-              setGateGone(true);
-            }
-          }}
-        >
-          <button
-            type="button"
-            className={styles.enter}
-            onClick={() => enter(true)}
-            autoFocus
-          >
-            Enter
-          </button>
-          <p className={styles.hint}>Best with sound on</p>
-          <button
-            type="button"
-            className={styles.silent}
-            onClick={() => enter(false)}
-          >
-            Enter without sound
-          </button>
-        </div>
-      )}
     </>
   );
 }
@@ -484,6 +499,6 @@ function writeStorage(key: string, value: string, lifetime: Lifetime = "lasting"
   try {
     storage(lifetime).setItem(key, value);
   } catch {
-    // Storage blocked (private mode): the Enter screen just shows again next time.
+    // Storage blocked (private mode): the intro just plays again next time.
   }
 }

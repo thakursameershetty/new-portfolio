@@ -85,6 +85,7 @@ export function SiteNav({ visible, soundOn, onToggleSound, onHover }: SiteNavPro
         type="button"
         className={clsx(styles.plate, styles.sound)}
         onClick={onToggleSound}
+        data-sound-toggle=""
         onMouseEnter={onHover}
         aria-pressed={soundOn}
         aria-label={soundOn ? "Turn sound off" : "Turn sound on"}

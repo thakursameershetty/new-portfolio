@@ -1,11 +1,26 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type Ref } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useSyncExternalStore,
+  type CSSProperties,
+  type Ref,
+} from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useReducedMotion } from "framer-motion";
 import clsx from "clsx";
 import { CaseMonitor } from "./CaseMonitor";
+import { GestureHints, HintsToggle, type GestureHint } from "./GestureHints";
+import {
+  readHintPreferenceOrMemory,
+  subscribeHintPreference,
+  writeHintPreference,
+} from "./hintPreference";
 import { ScreenViewer } from "./ScreenViewer";
 import { useIntro } from "./SiteIntro";
 import { SplitFlapText } from "./SplitFlapText";
@@ -13,6 +28,17 @@ import { caseSections, diskNumber, diskOrder, type Project } from "./projects";
 import styles from "./ProjectView.module.css";
 
 const padNumber = (number: number) => String(number).padStart(2, "0");
+
+// How to work the set: the remote and the screen take clicks from a mouse; touch screens
+// get the strip of channel keys and the Look closer button instead.
+const caseHints: GestureHint[] = [
+  { gesture: "Scroll", does: "the story to change the channel" },
+  { gesture: "Click", does: "a remote key to jump to a part", device: "mouse" },
+  { gesture: "Click", does: "the screen to look closer", device: "mouse" },
+  { gesture: "Drag", does: "the set to turn it round", device: "mouse" },
+  { gesture: "Tap", does: "a channel key to jump to a part", device: "touch" },
+  { gesture: "Tap", does: "Look closer to see it full size", device: "touch" },
+];
 
 // A part becomes the current channel once its top passes this far down the screen (or, when
 // the monitor is pinned above the story, a little below the monitor).
@@ -62,6 +88,19 @@ export function ProjectView({
   const next = diskOrder[(index + 1) % diskOrder.length];
 
   const [channel, setChannel] = useState(0);
+  // The how-to hints: shown until the set is first used, unless the visitor has chosen with
+  // the hints key, which then holds (on stays on through use; off stays off).
+  const hintPreference = useSyncExternalStore(
+    subscribeHintPreference,
+    readHintPreferenceOrMemory,
+    () => null,
+  );
+  const [triedSet, setTriedSet] = useState(false);
+  const hintsShown = hintPreference === "on" || (hintPreference === null && !triedSet);
+  const toggleHints = () => {
+    onCue?.("remoteKey");
+    writeHintPreference(hintsShown ? "off" : "on");
+  };
   // The item on the monitor being looked at closely, or null.
   const [closer, setCloser] = useState<number | null>(null);
   // Stepping back out of the closer look: the screen can move on again as the view shrinks.
@@ -318,6 +357,12 @@ export function ProjectView({
             <p className={styles.kind}>
               {project.kind} · {project.role}
             </p>
+            <div className={styles.titleHints}>
+              <HintsToggle shown={hintsShown} onToggle={toggleHints} onHover={onTap} />
+              <div className={styles.hintsHolder} data-hidden={!hintsShown || undefined}>
+                <GestureHints hints={caseHints} active={titleShown} className={styles.hints} />
+              </div>
+            </div>
           </div>
 
           <div className={styles.parts}>
@@ -414,6 +459,9 @@ export function ProjectView({
             ejectRef={ejectRef}
             onSelect={goTo}
             onPower={eject}
+            hintsShown={hintsShown}
+            onToggleHints={toggleHints}
+            onUsed={() => setTriedSet(true)}
             onCue={monitorCue}
             onLookCloser={(item) => {
               onCue?.("insert");

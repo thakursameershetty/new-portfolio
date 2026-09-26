@@ -28,6 +28,11 @@ export interface CrtSet {
   showItem(index: number): void;
   /** Where the screen is on the page. */
   screenRect(): DOMRect | null;
+  /**
+   * Where the remote, or the whole set (monitor, stand and remote), is on the page; null
+   * for the remote while it's put away (narrow screens).
+   */
+  partRect(part: "remote" | "set"): DOMRect | null;
   /** Eject: the disk slides back out of the drive as the tube powers down. */
   eject(): Promise<void>;
   dispose(): void;
@@ -566,6 +571,30 @@ export async function createCrtSet(
     return { mesh, corners };
   });
   const point = new THREE.Vector3();
+  // The page rectangle around these points in the world (callers bring the scene's matrices
+  // up to date first).
+  const pageRect = (worldPoints: THREE.Vector3[]) => {
+    const bounds = canvas.getBoundingClientRect();
+    if (!bounds.width || !worldPoints.length) return null;
+    camera.updateMatrixWorld();
+    let minX = Infinity;
+    let maxX = -Infinity;
+    let minY = Infinity;
+    let maxY = -Infinity;
+    for (const world of worldPoints) {
+      point.copy(world).project(camera);
+      minX = Math.min(minX, point.x);
+      maxX = Math.max(maxX, point.x);
+      minY = Math.min(minY, point.y);
+      maxY = Math.max(maxY, point.y);
+    }
+    return new DOMRect(
+      bounds.left + ((minX + 1) / 2) * bounds.width,
+      bounds.top + ((1 - maxY) / 2) * bounds.height,
+      ((maxX - minX) / 2) * bounds.width,
+      ((maxY - minY) / 2) * bounds.height,
+    );
+  };
   const placeCamera = () => {
     const pitch = compact ? 0.12 : rest.pitch;
     const up = new THREE.Vector3(0, Math.cos(pitch), -Math.sin(pitch));
@@ -877,34 +906,32 @@ export async function createCrtSet(
       powerLight.color.set(0x2d4a2d);
     },
     screenRect() {
-      const bounds = canvas.getBoundingClientRect();
-      if (!bounds.width) return null;
       scene.updateMatrixWorld();
-      camera.updateMatrixWorld();
-      let minX = Infinity;
-      let maxX = -Infinity;
-      let minY = Infinity;
-      let maxY = -Infinity;
-      for (const [x, y] of [
+      const corners = [
         [-1, -1],
         [1, -1],
         [1, 1],
         [-1, 1],
-      ]) {
-        point
-          .set((x * screenWidth) / 2, (y * screenHeight) / 2, 0.01)
-          .applyMatrix4(tube.matrixWorld)
-          .project(camera);
-        minX = Math.min(minX, point.x);
-        maxX = Math.max(maxX, point.x);
-        minY = Math.min(minY, point.y);
-        maxY = Math.max(maxY, point.y);
-      }
-      return new DOMRect(
-        bounds.left + ((minX + 1) / 2) * bounds.width,
-        bounds.top + ((1 - maxY) / 2) * bounds.height,
-        ((maxX - minX) / 2) * bounds.width,
-        ((maxY - minY) / 2) * bounds.height,
+      ].map(([x, y]) =>
+        new THREE.Vector3((x * screenWidth) / 2, (y * screenHeight) / 2, 0.01).applyMatrix4(
+          tube.matrixWorld,
+        ),
+      );
+      return pageRect(corners);
+    },
+    partRect(part) {
+      if (part === "remote" && !remote.visible) return null;
+      scene.updateMatrixWorld();
+      const meshes = fitParts.filter(
+        ({ mesh }) =>
+          (part === "remote" ? mesh === remoteBody : true) &&
+          mesh.visible &&
+          (mesh !== remoteBody || remote.visible),
+      );
+      return pageRect(
+        meshes.flatMap(({ mesh, corners }) =>
+          corners.map((corner) => corner.clone().applyMatrix4(mesh.matrixWorld)),
+        ),
       );
     },
     showItem(index) {

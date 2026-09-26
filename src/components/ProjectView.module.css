@@ -182,6 +182,39 @@
   transform: translateY(1px);
 }
 
+/* The hints under the title, with their switch above them; the list folds away when
+   they're put away, and the switch stays. */
+.titleHints {
+  --hint-ink: rgba(26, 26, 26, 0.6);
+  --key-ink: #1a1a1a;
+  --toggle-edge: rgba(26, 26, 26, 0.2);
+  --toggle-cut: #f4f0e6;
+  margin-top: 24px;
+}
+
+.titleHints .hints {
+  margin-top: 14px;
+}
+.hintsHolder {
+  display: grid;
+  grid-template-rows: 1fr;
+  transition:
+    grid-template-rows 300ms ease,
+    opacity 250ms ease;
+}
+
+/* Clipped while it folds away; the bottom padding keeps the last key's skirt in view. */
+.hintsHolder > * {
+  min-height: 0;
+  padding-bottom: 4px;
+  overflow: hidden;
+}
+
+.hintsHolder[data-hidden] {
+  grid-template-rows: 0fr;
+  opacity: 0;
+}
+
 .ejectIcon {
   width: 12px;
   height: 12px;
@@ -238,6 +271,14 @@
 .kind {
   font-size: 15px;
   color: rgba(26, 26, 26, 0.7);
+}
+
+/* How to work the set, under the title: dark keys on the light page. */
+.hints {
+  --key-face: #1a1a1a;
+  --key-ink: #f5f1ea;
+  --key-skirt: #000;
+  font-size: 12px;
 }
 
 /* ---- Arriving text. The title and headings flip in on the split-flap board (a word per
@@ -449,6 +490,78 @@
 .monitorHolder {
   position: absolute;
   inset: 0;
+}
+
+/* How to work the set, one caption under it (placed each frame by CaseMonitor): only on
+   wide screens with a mouse, where there's room around the set; elsewhere the hints sit
+   under the title. Its switch leads; the legend under it is quiet (outlined keys, like the
+   stack chips) and folds away once the set's been used or the visitor hides it, leaving
+   the switch. All of it steps aside while the screen is looked at closely. */
+.setCaption {
+  --hint-ink: rgba(26, 26, 26, 0.5);
+  --key-face: transparent;
+  --key-ink: rgba(26, 26, 26, 0.75);
+  --key-skirt: transparent;
+  --key-border: 1px solid rgba(26, 26, 26, 0.2);
+  --toggle-edge: rgba(26, 26, 26, 0.18);
+  --toggle-cut: #f4f0e6;
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: none;
+  pointer-events: none;
+  will-change: transform;
+  transition: opacity 250ms ease;
+}
+
+.setCaption[data-looking] {
+  opacity: 0;
+}
+
+.setCaption[data-looking] button {
+  pointer-events: none;
+}
+
+.captionList {
+  display: grid;
+  grid-template-rows: 1fr;
+  transition:
+    grid-template-rows 300ms ease,
+    opacity 250ms ease;
+}
+
+.captionList > * {
+  min-height: 0;
+  overflow: hidden;
+}
+
+.captionList[data-hidden] {
+  grid-template-rows: 0fr;
+  opacity: 0;
+}
+
+/* A short legend, one gesture per line, so it reads the same at any width. */
+.setCaption p {
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 12px;
+  font-size: 11px;
+}
+
+/* Keys of one width, so the three descriptions start on the same line. */
+.setCaption kbd {
+  min-width: 58px;
+  text-align: center;
+}
+
+@media (min-width: 1000px) and (hover: hover) and (pointer: fine) {
+  .setCaption {
+    display: block;
+  }
+
+  .intro .titleHints {
+    display: none;
+  }
 }
 
 .monitorCanvas {

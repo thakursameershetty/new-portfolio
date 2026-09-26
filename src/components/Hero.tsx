@@ -15,7 +15,7 @@ const statement = [
   { text: "FEEL RIGHT", className: styles.statement },
 ];
 
-// Intro timeline, in ms from the Enter click. "HI" lands on the thump as the four center
+// Intro timeline, in ms from the intro starting. "HI" lands on the thump as the four center
 // cells switch on, gives way to the name while the ripple spreads, and the name then
 // shrinks into place above the headline, which flips in right after.
 const hiAt = revealDelay * 1000;
@@ -225,6 +225,31 @@ export function Hero() {
       <div aria-hidden="true" data-nav-surface="red" className={styles.redSurface} />
       {/* The red grid bleeds into the black page below. */}
       <div aria-hidden="true" className={styles.fade} />
+      {/* A cue to scroll, once the hero has finished arriving; it fades as the page moves. */}
+      <a
+        href="#about"
+        className={clsx(styles.scrollCue, statementLanded && styles.scrollCueVisible)}
+        onMouseEnter={() => playCue("tap")}
+        onPointerDown={() => playCue("land")}
+      >
+        <svg
+          aria-hidden="true"
+          className={styles.scrollArrow}
+          width="14"
+          height="14"
+          viewBox="0 0 24 24"
+          fill="none"
+        >
+          <path
+            d="M12 4v16M5 13l7 7 7-7"
+            stroke="currentColor"
+            strokeWidth="2.2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+        Scroll
+      </a>
     </section>
   );
 }

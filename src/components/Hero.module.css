@@ -200,6 +200,74 @@
   pointer-events: none;
 }
 
+/* The scroll cue: a small pane of the nav's tinted glass at the bottom centre, so it reads
+   over the scene. It rises in with the scene, then fades out over the first sixth of the
+   hero scrolling away. Its arrow keeps dropping, like a nudge downward. */
+.scrollCue {
+  position: absolute;
+  bottom: 28px;
+  left: 50%;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px 10px 13px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.34);
+  backdrop-filter: blur(20px);
+  color: #f5f1ea;
+  font-family: var(--font-display), sans-serif;
+  font-size: 12px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  opacity: 0;
+  transform: translate(-50%, 16px);
+  pointer-events: none;
+  transition:
+    opacity 400ms ease,
+    transform 700ms cubic-bezier(0.34, 1.1, 0.64, 1),
+    background-color 150ms ease,
+    border-color 150ms ease;
+}
+
+.scrollCueVisible {
+  opacity: calc(1 - var(--hero-scroll, 0) * 6);
+  transform: translate(-50%, 0);
+  pointer-events: auto;
+  transition-delay: 300ms, 300ms, 0ms, 0ms;
+}
+
+.scrollCue:hover {
+  border-color: rgba(255, 255, 255, 0.24);
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.scrollCue:focus-visible {
+  outline: 2px solid #f5f1ea;
+  outline-offset: 3px;
+}
+
+.scrollArrow {
+  flex: none;
+  animation: drop 1.6s ease-in-out infinite;
+}
+
+@keyframes drop {
+  0% {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  30%,
+  70% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+}
+
 /* Very wide screens (wider than 1.75× their height): the scene stops at 175vh wide, short of
    the screen edges, so its cut-off ends soften into the grid instead of stopping hard. */
 @media (min-aspect-ratio: 7 / 4) {
@@ -248,12 +316,21 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .scene {
+  .scene,
+  .scrollCue {
     transition: none;
+  }
+
+  .scrollArrow {
+    animation: none;
   }
 }
 
 @media (max-width: 600px) {
+  .scrollCue {
+    bottom: 20px;
+  }
+
   .role {
     font-size: 11px;
     letter-spacing: 0.2em;

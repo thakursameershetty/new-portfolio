@@ -63,7 +63,10 @@ export type IntroCue =
   | "diskTap"
   | "diskRattle"
   | "crtOn"
-  | "static";
+  | "static"
+  | "detent"
+  | "switchOn"
+  | "switchOff";
 
 export function createPointerSounds(context: AudioContext): PointerSounds {
   const output = context.createGain();
@@ -278,6 +281,21 @@ export function createPointerSounds(context: AudioContext): PointerSounds {
           playKnock(context, output, stepAt, 0.028, 0, 95 + step * 8);
           playClick(context, output, noise, stepAt, 900, 0.012);
         }
+        return;
+      }
+      if (cue === "detent") {
+        // The timeline's pointer passing a year: a small, tight click, like a dial's detent.
+        playClick(context, output, noise, at, 3400 + Math.random() * 300, 0.03);
+        playKnock(context, output, at, 0.012, 0, 320);
+        return;
+      }
+      if (cue === "switchOn" || cue === "switchOff") {
+        // A toggle switch: the lever's short travel, then the spring snapping it over, a
+        // touch lower going off.
+        const low = cue === "switchOff" ? 0.85 : 1;
+        playClick(context, output, noise, at, 4200 * low, 0.015);
+        playClick(context, output, noise, at + 0.028, 2300 * low, 0.07);
+        playKnock(context, output, at + 0.028, 0.06, 0, 240 * low);
         return;
       }
       if (cue === "tap") {
@@ -633,10 +651,25 @@ function playClick(
 }
 
 const outputBuses = new WeakMap<AudioContext, AudioNode>();
+// The master volume after the limiter: every sound on the site passes through it, so
+// switching sound on can bring them all in gently, and muting can fade them all out.
+const masters = new WeakMap<AudioContext, GainNode>();
+
+function getMaster(context: AudioContext) {
+  let master = masters.get(context);
+  if (!master) {
+    master = context.createGain();
+    // Silent until sound is switched on, which fades it up.
+    master.gain.value = 0;
+    master.connect(context.destination);
+    masters.set(context, master);
+  }
+  return master;
+}
 
 /**
  * Every grid sound ends in one limiter, so overlapping sweeps, presses and the ripple
- * are held back from clipping instead of distorting.
+ * are held back from clipping instead of distorting. It plays through the master volume.
  */
 function getOutputBus(context: AudioContext) {
   let bus = outputBuses.get(context);
@@ -647,11 +680,53 @@ function getOutputBus(context: AudioContext) {
     limiter.ratio.value = 12;
     limiter.attack.value = 0.002;
     limiter.release.value = 0.15;
-    limiter.connect(context.destination);
+    limiter.connect(getMaster(context));
     bus = limiter;
     outputBuses.set(context, bus);
   }
   return bus;
+}
+
+// How long the site's sound takes to come in when switched on, and to go when muted.
+export const soundFadeIn = 1.6;
+export const soundFadeOut = 0.3;
+
+/**
+ * Brings the site's sound in (from silence, easing up, so whatever is already playing or
+ * about to can't burst in) or fades it out.
+ */
+export function fadeSound(context: AudioContext, on: boolean) {
+  const gain = getMaster(context).gain;
+  const at = context.currentTime;
+  gain.cancelScheduledValues(at);
+  gain.setValueAtTime(on ? 0 : gain.value, at);
+  if (on) {
+    // A beat after the switch's own click, then a slow ease in.
+    gain.setValueAtTime(0, at + 0.08);
+    gain.setTargetAtTime(1, at + 0.08, soundFadeIn / 4);
+  } else {
+    gain.linearRampToValueAtTime(0, at + soundFadeOut);
+  }
+}
+
+/**
+ * The sound key itself: a small power switch, heard straight away at a gentle level (it
+ * skips the master fade). On: the rocker's travel, its snap, and a faint relay tick as the
+ * sound comes alive. Off: the same switch, a touch lower, with no tick.
+ */
+export function playSoundSwitch(context: AudioContext, on: boolean) {
+  const output = context.createGain();
+  output.gain.value = 0.7;
+  output.connect(context.destination);
+  const noise = createNoiseBuffer(context, 0.2);
+  const at = context.currentTime + 0.01;
+  const low = on ? 1 : 0.8;
+  playClick(context, output, noise, at, 4600 * low, 0.012);
+  playClick(context, output, noise, at + 0.024, 2400 * low, 0.05);
+  playKnock(context, output, at + 0.024, 0.04, 0, 200 * low);
+  if (on) playClick(context, output, noise, at + 0.11, 5200, 0.01);
+  // Let go of the nodes once the switch has sounded.
+  window.setTimeout(() => output.disconnect(), 600);
 }
 
 // The grid fills the hero, which is the size of the window.

@@ -2,7 +2,7 @@
 // being held: that resting angle is learned from the first reading and then follows slowly,
 // so holding the phone still at any angle settles the box level again, and only a tilt moves
 // it. Touch screens only. iOS asks the visitor first, and only allows the question from a
-// tap, so `requestTilt` is called from one (the Enter button, or the first tap on a reload).
+// tap, so `requestTilt` is called from one (the first tap on the page).
 
 type Listener = (x: number, y: number) => void;
 

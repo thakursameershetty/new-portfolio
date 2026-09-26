@@ -5,6 +5,11 @@
   --ground: #0a0a0a;
   --ink: #f5f1ea;
   --ink-muted: rgba(245, 241, 234, 0.55);
+  /* The About timeline's kinds of entry: work in the grid's red, study in the ink, events
+     in the yellow of the TMN disk. */
+  --tone-work: #e54b45;
+  --tone-study: #f5f1ea;
+  --tone-event: #f0c44c;
 }
 
 @media (prefers-color-scheme: dark) {

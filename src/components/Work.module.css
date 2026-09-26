@@ -98,6 +98,34 @@
   margin-top: 0;
 }
 
+/* The open list's header: its name on the left, how to use it on the right, quiet (outlined
+   keys, like a caption) so it reads as a note on the list, not a heading. */
+.dealtHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px 24px;
+}
+
+.listHints {
+  --hint-ink: rgba(245, 241, 234, 0.42);
+  --key-face: transparent;
+  --key-ink: rgba(245, 241, 234, 0.75);
+  --key-skirt: transparent;
+  --key-border: 1px solid rgba(245, 241, 234, 0.22);
+  transition: opacity 400ms ease;
+}
+
+.listHints p {
+  gap: 8px 20px;
+  font-size: 11px;
+}
+
+.listHints[data-hidden] {
+  opacity: 0;
+}
+
 /* The list of what's inside, so it reads without opening the box. */
 .shelfIndex {
   margin-top: 20px;

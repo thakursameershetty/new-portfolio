@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useReducedMotion } from "framer-motion";
 import { onTilt } from "./deviceTilt";
+import { GestureHints, HintsToggle } from "./GestureHints";
 import type { CrtSet } from "./crtSet3d";
 import type { CaseSection, Project } from "./projects";
 import styles from "./ProjectView.module.css";
@@ -25,6 +26,9 @@ export function CaseMonitor({
   onPower,
   onCue,
   onLookCloser,
+  hintsShown,
+  onToggleHints,
+  onUsed,
   screenRectRef,
   ejectRef,
 }: {
@@ -39,6 +43,12 @@ export function CaseMonitor({
   onCue?: (cue: "remoteKey" | "driveLoad") => void;
   /** Look closer at the screen, starting from this item of the current channel. */
   onLookCloser: (item: number) => void;
+  /** Whether the how-to caption under the set shows. */
+  hintsShown: boolean;
+  /** Its switch, kept with it: hides the hints, or brings them back. */
+  onToggleHints: () => void;
+  /** The set was pressed (dragged, or its screen or a key clicked). */
+  onUsed: () => void;
   /** Filled with a way to find the screen on the page, for the closer look to grow from. */
   screenRectRef?: { current: (() => DOMRect | null) | null };
   /** Filled with the set's eject (the disk out, the tube off), to play before closing. */
@@ -49,6 +59,10 @@ export function CaseMonitor({
   const [set, setSet] = useState<CrtSet | null>(null);
   const [failed, setFailed] = useState(false);
   const [overScreen, setOverScreen] = useState(false);
+  const monitorRef = useRef<HTMLDivElement>(null);
+  // How to work the set, as one caption under it (wide screens with a mouse); whether it
+  // shows is the case study's call (the hints key, and whether the set's been used).
+  const captionRef = useRef<HTMLDivElement>(null);
   // The "Look closer" pill that stands in for the cursor over the screen, and where it's
   // heading (the pointer, inside the monitor's box).
   const pillRef = useRef<HTMLSpanElement>(null);
@@ -178,11 +192,36 @@ export function CaseMonitor({
     return () => cancelAnimationFrame(frame);
   }, [overScreen, reduceMotion]);
 
+  // The caption follows the set each frame, so it stays under it while it's dragged round
+  // and eases back: left-aligned with the set, a little below its foot.
+  useEffect(() => {
+    const monitor = monitorRef.current;
+    const caption = captionRef.current;
+    if (!set || !monitor || !caption) return;
+    let frame = 0;
+    const follow = () => {
+      frame = requestAnimationFrame(follow);
+      // Only drawn where there's room for it (see the CSS); skip the work otherwise.
+      if (!caption.offsetParent) return;
+      const whole = set.partRect("set");
+      if (!whole) return;
+      const box = monitor.getBoundingClientRect();
+      const left = Math.max(whole.left - box.left, 0);
+      const top = Math.min(whole.bottom - box.top + 24, box.height - caption.offsetHeight - 16);
+      caption.style.transform = `translate(${left}px, ${top}px)`;
+    };
+    frame = requestAnimationFrame(follow);
+    return () => cancelAnimationFrame(frame);
+  }, [set]);
+
   const fallback = sections[channel]?.screen.find((item) => item.type === "image");
 
   return (
     <div
+      ref={monitorRef}
       className={styles.monitor}
+      // Any press on the set (a drag, the screen, a key) shows it's been found.
+      onPointerDown={onUsed}
       onPointerMove={(event) => {
         const bounds = event.currentTarget.getBoundingClientRect();
         pointerRef.current = { x: event.clientX - bounds.left, y: event.clientY - bounds.top };
@@ -193,6 +232,25 @@ export function CaseMonitor({
       }}
     >
       <div ref={holderRef} className={styles.monitorHolder} />
+      <div
+        ref={captionRef}
+        className={styles.setCaption}
+        data-looking={looking || undefined}
+      >
+        <HintsToggle shown={hintsShown} onToggle={onToggleHints} />
+        <div aria-hidden="true" className={styles.captionList} data-hidden={!hintsShown || undefined}>
+          <GestureHints
+            hints={[
+              { gesture: "Drag", does: "to turn it" },
+              { gesture: "Click", does: "the screen to look closer" },
+              { gesture: "Click", does: "a key to change the channel" },
+              // The remote's red key; only on the wide set, where the remote is out.
+              { gesture: "Click", does: "the power button to eject and leave" },
+            ]}
+            active={Boolean(set)}
+          />
+        </div>
+      </div>
       <span
         ref={pillRef}
         className={styles.cursorPill}

@@ -1,0 +1,266 @@
+/* The ruler: a readout riding the needle at the top, a lane of bars per kind of entry, then
+   the axis of years with a small tick per month. Touch scrubs by dragging sideways; vertical
+   swipes still scroll the page. */
+.timeline {
+  position: relative;
+  padding-top: 36px;
+  cursor: ew-resize;
+  touch-action: pan-y;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.lanes {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.lane {
+  position: relative;
+  height: 28px;
+}
+
+/* Bars are drawn in currentColor, their kind's colour (so the dashed year-only ones follow
+   it too), held back until lit. */
+.bar {
+  position: absolute;
+  bottom: 0;
+  min-width: 6px;
+  height: 4px;
+  border-radius: 3px;
+  color: var(--tone);
+  background: currentColor;
+  opacity: 0.55;
+  transition:
+    opacity 200ms ease,
+    height 250ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Known only to the year: dashed across it. */
+.yearOnly {
+  background: repeating-linear-gradient(90deg, currentColor 0 4px, transparent 4px 7px);
+}
+
+/* A single month (a hackathon): a solid pill standing proud of the lane, drawn over any
+   dashed year it falls in. */
+.point {
+  bottom: -3px;
+  min-width: 10px;
+  height: 10px;
+  border-radius: 5px;
+  /* A ring of the page's black cuts it out of the dashed line under it. */
+  box-shadow: 0 0 0 2px var(--ground);
+  opacity: 0.9;
+}
+
+/* Still running: at full strength, as the "now" the needle rests on, with its end square,
+   since the needle stands on it. */
+.ongoing {
+  border-radius: 3px 0 0 3px;
+  opacity: 1;
+}
+
+.hasLit .bar:not(.lit) {
+  opacity: 0.2;
+}
+
+/* Lit bars grow in height upward from the lane's floor; points grow a little too. */
+.lit {
+  height: 6px;
+  opacity: 1;
+}
+
+.point.lit {
+  height: 12px;
+}
+
+/* Phones: a month is only ~4px wide, so the marks shrink to keep neighbours apart. */
+@media (max-width: 600px) {
+  .point {
+    bottom: -2px;
+    min-width: 7px;
+    height: 8px;
+    box-shadow: 0 0 0 1.5px var(--ground);
+  }
+
+  .point.lit {
+    height: 10px;
+  }
+}
+
+/* One label per run of overlapping entries, in their colour, clear of the needle (which
+   parks on a first month or a last). */
+.barLabel {
+  position: absolute;
+  bottom: 12px;
+  padding: 0 7px;
+  font-family: var(--font-hero), monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--tone);
+  opacity: 0.55;
+  transition: opacity 200ms ease;
+}
+
+.labelOngoing,
+.labelLit {
+  opacity: 1;
+}
+
+.hasLit .barLabel:not(.labelLit) {
+  opacity: 0.2;
+}
+
+/* A group's name (HACKATHONS) makes way while one of its members' names shows. */
+.hasLit .barLabel.labelAway {
+  opacity: 0;
+}
+
+/* A member's own name, centred over its mark, only while it's lit. */
+.memberLabel {
+  padding: 0;
+  opacity: 0;
+  transform: translate(-50%, 3px);
+  transition:
+    opacity 200ms ease,
+    transform 200ms ease;
+}
+
+.hasLit .barLabel.memberLabel:not(.memberShown) {
+  opacity: 0;
+}
+
+.memberShown,
+.hasLit .barLabel.memberShown {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+.axis {
+  position: relative;
+  height: 30px;
+  margin-top: 12px;
+  border-top: 1px solid rgba(245, 241, 234, 0.25);
+  background: linear-gradient(to right, rgba(245, 241, 234, 0.2) 1px, transparent 1px) 0 0 /
+    calc(100% / var(--months)) 5px repeat-x;
+}
+
+.year {
+  position: absolute;
+  top: 0;
+  padding: 11px 0 0 5px;
+  font-family: var(--font-hero), monospace;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  color: var(--ink-muted);
+  transition: color 150ms ease;
+}
+
+.year::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 1px;
+  height: 10px;
+  background: rgba(245, 241, 234, 0.5);
+}
+
+.yearLit {
+  color: var(--ink);
+}
+
+/* The needle ends on the axis line, where its handle sits. */
+.needle {
+  position: absolute;
+  top: 0;
+  bottom: 30px;
+  width: 0;
+  pointer-events: none;
+  --needle: var(--ink);
+  --needle-ink: #1a0605;
+}
+
+/* At rest the needle marks now, and takes the work red: it stands on the end of the red
+   bar, what's being done now. */
+.resting {
+  --needle: var(--tone-work);
+  --needle-ink: #fff8f3;
+}
+
+.needle::before {
+  content: "";
+  position: absolute;
+  top: 24px;
+  bottom: 0;
+  left: 0;
+  width: 1px;
+  background: var(--needle);
+  transition: background-color 200ms ease;
+}
+
+.readout {
+  position: absolute;
+  top: 0;
+  left: 0;
+  padding: 5px 7px 4px;
+  border-radius: 4px;
+  background: var(--needle);
+  color: var(--needle-ink);
+  font-family: var(--font-hero), monospace;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+  transition:
+    background-color 200ms ease,
+    color 200ms ease;
+}
+
+.handle {
+  position: absolute;
+  bottom: -5px;
+  left: -4px;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--needle);
+  box-shadow: 0 0 0 3px var(--ground);
+  transition: background-color 200ms ease;
+}
+
+/* At rest on "now", the handle is the live marker: a ring pulses out of it, like the Contact
+   section's status dot. */
+.resting .handle::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: var(--needle);
+  animation: live 2s ease-out infinite;
+}
+
+@keyframes live {
+  from {
+    opacity: 0.6;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(3.2);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .resting .handle::after {
+    animation: none;
+  }
+
+  .bar {
+    transition: none;
+  }
+}

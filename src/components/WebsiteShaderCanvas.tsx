@@ -346,7 +346,7 @@ vec3 shaderColor(vec2 uv, vec2 p, float t, vec2 pointer, float intensity, float 
   // A top-down front switches each cell on crisply, so no cell sits half-faded while the
   // front pauses (it follows the scroll); the center ripple keeps its softer edge.
   float cellOn = saturate((revealRadius - cellDistance - revealJitter) / mix(${glslFloat(revealEdge)}, 0.4, fromTop));
-  // Unlit cells: a dark grid (behind the Enter screen). A grid with a dissolving top edge sits
+  // Unlit cells: a dark grid (before the intro). A grid with a dissolving top edge sits
   // against the page instead, so its unlit cells are the page's own black, without the grid
   // lines, so it begins without a seam. 0.0296 is #0a0a0a before the output curve in main().
   float lit = cellOn;

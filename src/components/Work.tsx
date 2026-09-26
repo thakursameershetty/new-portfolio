@@ -14,6 +14,7 @@ import { flushSync } from "react-dom";
 import { useReducedMotion } from "framer-motion";
 import clsx from "clsx";
 import { CrtPreview } from "./CrtPreview";
+import { GestureHints, type GestureHint } from "./GestureHints";
 import { useIntro } from "./SiteIntro";
 import { SplitFlapText } from "./SplitFlapText";
 import type { DiskBoxScene, ScreenRect } from "./diskBox3d";
@@ -24,6 +25,11 @@ import { useInView } from "./useInView";
 import styles from "./Work.module.css";
 
 const heading = [{ text: "SELECTED WORK", className: styles.headingLine }];
+const workHints: GestureHint[] = [
+  { gesture: "Hover", does: "a project to preview it on the monitor", device: "mouse" },
+  { gesture: "Click", does: "to open its case study", device: "mouse" },
+  { gesture: "Tap", does: "a project to open its case study", device: "touch" },
+];
 
 const shelves = [
   {
@@ -94,6 +100,8 @@ export function Work() {
   // The monitor follows the hovered row. Leaving waits a beat, so sliding from one row to
   // the next changes disk instead of switching the monitor off and on (the monitor plays
   // the drive's own sounds as each disk goes in).
+  // The lists' how-to hints bow out once a project has been previewed or opened.
+  const [hintsDone, setHintsDone] = useState(false);
   const showPreview = useCallback(
     (next: { project: Project; number: number } | null) => {
       window.clearTimeout(hideTimerRef.current);
@@ -148,7 +156,9 @@ export function Work() {
             note={shelf.note}
             projects={shelf.projects}
             firstNumber={firstNumbers[index]}
+            hintsDone={hintsDone}
             onOpen={(project, disk) => {
+              setHintsDone(true);
               window.clearTimeout(hideTimerRef.current);
               previewIdRef.current = null;
               setPreview(null);
@@ -156,7 +166,10 @@ export function Work() {
               setOpen({ project, disk });
               window.history.pushState({ projectView: project.id }, "", `/work/${project.id}`);
             }}
-            onPreview={showPreview}
+            onPreview={(next) => {
+              if (next) setHintsDone(true);
+              showPreview(next);
+            }}
           />
         ))}
       </div>
@@ -284,6 +297,7 @@ function DiskBox({
   firstNumber,
   onOpen,
   onPreview,
+  hintsDone,
 }: {
   id: string;
   place: number;
@@ -293,6 +307,8 @@ function DiskBox({
   firstNumber: number;
   onOpen: (project: Project, disk: HTMLElement) => void;
   onPreview: (preview: { project: Project; number: number } | null) => void;
+  /** The visitor has previewed or opened a project, so the list's hints can go. */
+  hintsDone: boolean;
 }) {
   const { playCue } = useIntro();
   const reduceMotion = useReducedMotion();
@@ -594,9 +610,17 @@ function DiskBox({
 
       {dealt && (
         <div ref={listRef} className={styles.dealt}>
-          <p className={styles.dealtLabel}>
-            {title} · {note}
-          </p>
+          {/* The list's header: its name, and, on the right, how to use it for the device in
+              hand (mice get the monitor preview on hover; touch screens don't, so they're only
+              told about opening), until a project has been previewed or opened. */}
+          <div className={styles.dealtHead}>
+            <p className={styles.dealtLabel}>
+              {title} · {note}
+            </p>
+            <div className={styles.listHints} data-hidden={hintsDone || undefined}>
+              <GestureHints hints={workHints} active />
+            </div>
+          </div>
           <ul id={`${id}-disks`} className={styles.entries}>
             {projects.map((project, index) => (
               <li
