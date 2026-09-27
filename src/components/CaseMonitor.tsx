@@ -183,7 +183,9 @@ export function CaseMonitor({
     return () => cancelAnimationFrame(frame);
   }, [overScreen, reduceMotion]);
 
-  const fallback = channels[channel]?.screen.find((item) => item.type === "image");
+  const fallback = channels[channel]?.screen.find(
+    (item) => item.type === "image" || item.type === "youtube",
+  );
 
   return (
     <div
@@ -219,7 +221,7 @@ export function CaseMonitor({
       </button>
       {failed && (
         <div className={styles.flatScreen} aria-hidden="true">
-          {fallback?.type === "image" ? (
+          {fallback ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img src={fallback.src} alt="" />
           ) : (

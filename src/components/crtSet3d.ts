@@ -521,7 +521,8 @@ export async function createCrtSet(
     if (item.type === "card") {
       show(cardTexture(item, channel));
       itemTimer = window.setTimeout(advance, imageHold);
-    } else if (item.type === "image") {
+    } else if (item.type === "image" || item.type === "youtube") {
+      // A YouTube video shows its thumbnail; the closer look plays it.
       imageTexture(item.src)
         .then((map) => {
           if (token === showToken) show(map);

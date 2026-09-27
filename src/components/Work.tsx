@@ -20,7 +20,7 @@ import { SplitFlapText } from "./SplitFlapText";
 import type { DiskBoxScene, ScreenRect } from "./diskBox3d";
 import { onTilt } from "./deviceTilt";
 import { ProjectView } from "./ProjectView";
-import { projects, type Project } from "./projects";
+import { disciplines, projects, type Project } from "./projects";
 import { useInView } from "./useInView";
 import styles from "./Work.module.css";
 
@@ -717,6 +717,12 @@ function EntryCopy({
       <div className={styles.entrySide}>
         <p className={styles.entryRole}>{project.role}</p>
         <p className={styles.entryStack}>{project.stack.join(" · ")}</p>
+        <p className={styles.entryDisciplines}>
+          {disciplines
+            .filter((discipline) => project.disciplines.includes(discipline.id))
+            .map((discipline) => discipline.label)
+            .join(" · ")}
+        </p>
       </div>
 
       <div className={styles.entryAction}>

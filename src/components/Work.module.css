@@ -496,6 +496,17 @@
   color: var(--ink-muted);
 }
 
+/* What kinds of work it is: design, development, 3D. */
+.entryDisciplines {
+  margin-top: 10px;
+  font-family: var(--font-hero), monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+
 .entryAction {
   display: flex;
   justify-content: flex-end;

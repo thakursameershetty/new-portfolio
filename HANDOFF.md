@@ -158,6 +158,12 @@ feel right.*" The muted second half echoes the hero's "feel right". The Spotmies
 (`public/spotmies-mark.png`) sits inline like a letter.
 
 ### Work — `src/components/Work.tsx`, `diskBox3d.ts`, `CrtPreview.tsx`, `projects.ts`
+**Discipline tags:** each row shows DESIGN · DEV · 3D from `disciplines` in `projects.ts`. A
+"View by" lens filter (with disks shut away in the boxes, empty boxes docking beside the switch,
+a tuck key) was built and dropped: it barely narrowed the list (most projects are design and
+development) and made the section too complicated. Don't bring filtering back; the tags do
+that job.
+
 How it evolved (so nothing rejected comes back): featured rows → two boxes; 2-column
 disk+details grid → single-column rows; tap-to-open box → opens on arrival.
 
@@ -165,7 +171,7 @@ disk+details grid → single-column rows; tap-to-open box → opens on arrival.
 title, kind, role, `context` (`"Spotmies"` | `"Project"`), summary, highlights, stack, optional
 `link`, `media` (images/videos for the monitor and window), disk colours (`disk`, `ink`).
 Shelves are split by `context`: **Spotmies · Client work** (Rao Bahadur, Mutiny Talent,
-Spotmies · Amerox, Peddi, TMN · Satara News) and **Personal · Hobby & academic** (SamudraGupt-Q
+Spotmies · Amerox, Peddi, TMN · Satara Today) and **Personal · Hobby & academic** (SamudraGupt-Q
 — the final-year project —, Gesture Shop · Aura, Nova UPI, AI Gym Trainer). Disks are numbered
 01–09 straight through both.
 
@@ -224,11 +230,12 @@ edge). Screen: scanlines, vignette, glass reflection, a static burst on every ch
 the project's `media` (clip to its end, stills 1.8s each). Sounds: `crtOn`, `channel`, and the
 hum while visible. Hidden on `(hover: none)`.
 
-**Media are placeholders:** `public/work/<id>-1.jpg`, `<id>-2.jpg` (from picsum.photos,
-Unsplash-licensed) and two CC0 MDN clips re-encoded with ffmpeg (`demo-flower.mp4`,
-`demo-friday.mp4` + `.jpg` posters). Links for Mutiny Talent and SamudraGupt-Q are
-`example.com` placeholders; only `raobahadur.in` is real. Each is marked "Placeholder" in
-`projects.ts`. Recommended real clips: 5–10s, silent, ~640px wide H.264 MP4.
+**Media:** real for every project except AI Gym Trainer (still `demo-friday.mp4` and
+`gym-1/2.jpg` placeholders) and parts of SamudraGupt-Q (test cards, `samudragupt-1.jpg`).
+SamudraGupt-Q has no link until there's a real one. `public/` holds only what the code uses:
+raw originals (screen recordings, Figma exports, uncropped photos) were moved out on
+2026-09-27 (to the owner's Trash, `portfolio-unused-assets-2026-09-27`); keep new originals
+outside `public/`, which ships with the site.
 
 ### Contact — `src/components/Contact.tsx`
 - Its own red grid; the red **grows down with scroll** (`revealControl`, row ticks with `tap`
@@ -272,11 +279,26 @@ Unsplash-licensed) and two CC0 MDN clips re-encoded with ffmpeg (`demo-flower.mp
 
 ## Open items / next steps
 
-1. **Real media and links:** replace the placeholder images/clips in `public/work/` and the
-   `example.com` links (Mutiny Talent, SamudraGupt-Q) in `projects.ts`. The owner will supply
-   them.
+1. **Real media:** AI Gym Trainer's placeholders and SamudraGupt-Q's test cards, once the
+   owner supplies them.
 2. **Case studies (in progress):** one per project, written up in `projects.ts`
-   (`caseStudy`). Rao Bahadur is done (bar a line on what they'd change, and whether fans'
+   (`caseStudy`). Peddi (the Roblox world, made with Dworak) is written from the owner's
+   screenshots in `public/work/peddi/` (resized to 1680px, the player list blurred since it
+   shows other players' names); its outcome shows two YouTubers' videos as `youtube` items (a
+   local thumbnail in the story and on the monitor, the real player only in `ScreenViewer`).
+   It launched June 5, 2026 via @PeddiMovieOffl on X (post shown in the outcome, a 4:3 black-framed
+   copy for the monitor). A reflection and who did what with Dworak are still to confirm.
+   TMN · Satara Today is written from the owner's Figma recordings (`public/work/tmn-satara/`):
+   the website scrolls at 1280px, and each app clip as a 1200×900 board with the English (TMN)
+   and Marathi (Satara Today) phones side by side, the shorter clip holding its last frame. The app is
+   in production with the Spotmies dev team, who also built the website (unlinked until it launches on its own domain; its Vercel preview isn't shared). Designed
+   May 2026. Credits read Spotmies × TMN | Satara Today: `client` takes a list, split by a rule,
+   and a squarer mark can set its own `height`.
+   Gesture Shop · Aura is written from the owner's phone videos (`public/work/guesture-shop/`,
+   `guesture-aura/`, square, shown as a centred pair of one); Gesture Shop leads, with Aura as a
+   second link (`alsoLink`). A clearer Gesture Shop video is coming. Nova UPI is written from its
+   Figma recording (cut into three single-phone boards, 1200×900) and 52 screen exports (four
+   1600×1200 boards of three); design only, in 48 hours as a challenge the owner set themself (not a hackathon); date still to confirm. Also wireframes, a design-system sheet (colours, glass, icon and type composed on Figma grey) and three Mockuuups photo mockups (corners cropped, credited in captions). Rao Bahadur is done (bar a line on what they'd change, and whether fans'
    nicknames in screenshots should be blurred); SamudraGupt-Q is written; the rest fall back to
    a single overview. Layout (`ProjectView.tsx`), chosen over an earlier version where the
    story sat beside a sticky CRT and each part was a channel (the work was too small to see,
@@ -288,7 +310,13 @@ Unsplash-licensed) and two CC0 MDN clips re-encoded with ffmpeg (`demo-flower.mp
    keys tune the TV without scrolling the page, and its ◀ ▶ step through the channel's
    pictures); then a `brief` band across the page under the fold (label, value, note, 3
    across; after a reference the owner liked); then the story in a 680px column, each part's
-   `figures` large under its text (`layout`: wide, pair, grid or row), with a `caption` each.
+   `figures` large under its text (`layout`: wide, pair, grid, row, or carousel: one at a
+   time with a tab per picture, for clips that would compete side by side; the owner found two
+   scrolling clips playing together distracting); a part's `lead` shows one picture full width before its
+   figures (MutinyX's Submissions: the flow clip first, then the before → after pair side by
+   side; a carousel would never show both sides at once), with a `caption` each.
+   Spotmies work opens with a credits row of logos above the meta line (`public/logos/`:
+   Spotmies, darkened for the cream page, × the client's `caseStudy.client.logo`).
    A part's `act` names a new act of the story above it (The brief, The decisions, The build,
    What happened). Any picture, or the set's screen, opens `ScreenViewer`. The how-to hints
    live in the hero's empty top-right corner (a "? Hide hints" switch with a dark card of
@@ -299,15 +327,20 @@ Unsplash-licensed) and two CC0 MDN clips re-encoded with ffmpeg (`demo-flower.mp
    the hard part → outcome → reflection. Say plainly the work was solo. Don't quote numbers
    the client sets for marketing (Rao Bahadur's home page counter). The monitor's screen is
    4:3 and covers, so portrait pictures for the `reel` are paired side by side on black.
+   Phone screens are shown as 4:3 "boards" (`public/work/mutiny/boards/`): 1600×1200 on
+   Figma grey #1e1e1e, up to three screens (top 1748px of each 804px-wide 2x export) at
+   1008px tall with 64px rounded corners, 56px apart; portrait clips framed the same way at
+   1200×900. Built with ffmpeg (a rounded-rect mask via `geq`, then `alphamerge`); with a
+   looped still mask, pass `alphamerge=shortest=1` and `-t`, or it never ends. One shape
+   means the page and the monitor show the same picture, uncropped.
 3. Optional résumé download key in Contact (needs `public/resume.pdf`).
-4. `public/spotmies_banner.webp` is unused (kept as an asset).
-5. At 320px, the status line wraps awkwardly ("10:27 / PM" beside "IN VISAKHAPATNAM, / INDIA");
+4. At 320px, the status line wraps awkwardly ("10:27 / PM" beside "IN VISAKHAPATNAM, / INDIA");
    offered a tidy-up, not done.
-6. Optional: skip the splash for `prefers-reduced-motion` visitors (dsnikhil does); offered, not
+5. Optional: skip the splash for `prefers-reduced-motion` visitors (dsnikhil does); offered, not
    done.
-7. If the CRT hum or the hinge creak still don't feel real, swap in a short real recording
+6. If the CRT hum or the hinge creak still don't feel real, swap in a short real recording
    (loop it quietly / play it as a buffer through the same bus).
-8. Launch prep: performance check on low-end devices (3 WebGL contexts: hero, contact, two
+7. Launch prep: performance check on low-end devices (3 WebGL contexts: hero, contact, two
    boxes), social preview image, deployment (Vercel). **Test phone tilt (iOS permission
    prompt) and Android haptics on the deployed https site** — neither can be verified in
    headless Chrome.

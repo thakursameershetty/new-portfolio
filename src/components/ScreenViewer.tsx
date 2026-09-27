@@ -203,6 +203,17 @@ export function ScreenViewer({
             aria-label={current.alt}
           />
         )}
+        {current?.type === "youtube" && (
+          <iframe
+            key={current.id}
+            src={`https://www.youtube-nocookie.com/embed/${current.id}?autoplay=1&rel=0`}
+            title={current.alt}
+            className={styles.media}
+            allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
+            referrerPolicy="strict-origin-when-cross-origin"
+            allowFullScreen
+          />
+        )}
         {current?.type === "card" && (
           <div key={current.title} className={styles.card}>
             <span className={styles.bars} aria-hidden="true" />
@@ -213,7 +224,6 @@ export function ScreenViewer({
             </span>
           </div>
         )}
-        <span className={styles.glass} aria-hidden="true" />
       </div>
 
       <footer className={styles.bottom}>

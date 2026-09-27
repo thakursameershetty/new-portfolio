@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  Fragment,
   useCallback,
   useEffect,
   useMemo,
@@ -29,6 +30,7 @@ import {
   caseChannels,
   caseSections,
   diskNumber,
+  sectionPictures,
   diskOrder,
   type Project,
   type ScreenItem,
@@ -74,7 +76,7 @@ const readingMinutes = (project: Project) => {
       section.heading,
       ...section.paragraphs,
       ...(section.points ?? []),
-      ...(section.figures ?? []).map((figure) => (figure.type === "card" ? "" : (figure.caption ?? ""))),
+      ...sectionPictures(section).map((figure) => (figure.type === "card" ? "" : (figure.caption ?? ""))),
     ]),
   ].join(" ");
   return Math.max(1, Math.round(text.split(/\s+/).length / 200));
@@ -123,6 +125,7 @@ export function ProjectView({
   const channels = useMemo(() => caseChannels(project), [project]);
   const study = project.caseStudy;
   const brief = study?.brief;
+  const clients = study?.client ? [study.client].flat() : [];
   const minutes = readingMinutes(project);
   const number = diskNumber(project);
   const index = diskOrder.findIndex((entry) => entry.id === project.id);
@@ -141,18 +144,12 @@ export function ProjectView({
   );
   const storyChannels = useMemo(
     () =>
-      sections.flatMap((section, position) =>
-        section.figures?.length
-          ? [
-              {
-                part: position,
-                tag: `${padNumber(position + 1)} · ${section.label}`,
-                label: section.label,
-                items: section.figures,
-              },
-            ]
-          : [],
-      ),
+      sections.flatMap((section, position) => {
+        const items = sectionPictures(section);
+        return items.length
+          ? [{ part: position, tag: `${padNumber(position + 1)} · ${section.label}`, label: section.label, items }]
+          : [];
+      }),
     [sections],
   );
 
@@ -422,9 +419,43 @@ export function ProjectView({
       {/* The opening: what it is at a glance, beside the set playing the project's reel. */}
       <div ref={openingRef} className={styles.opening}>
         <div className={styles.intro} data-seen={titleShown || undefined}>
+          {/* Who it was made at and for: Spotmies, and the client beside it. */}
+          {(project.context === "Spotmies" || clients.length > 0) && (
+            <p className={clsx(styles.credits, styles.arrive)}>
+              {project.context === "Spotmies" && (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src="/logos/spotmies-dark.png" alt="Spotmies" className={styles.creditLogo} />
+              )}
+              {project.context === "Spotmies" && clients.length > 0 && (
+                <span className={styles.creditCross} aria-label="for">
+                  ×
+                </span>
+              )}
+              {/* A client with more than one brand: each, split by a rule. */}
+              {clients.map((client, index) => (
+                <Fragment key={client.logo}>
+                  {index > 0 && <span className={styles.creditRule} aria-label="and" />}
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={client.logo}
+                    alt={client.name}
+                    className={styles.creditLogo}
+                    // Taller than the row, it reaches into the space around it instead of
+                    // pushing the title down.
+                    style={
+                      client.height
+                        ? { height: client.height, margin: `${(34 - client.height) / 2}px 0` }
+                        : undefined
+                    }
+                  />
+                </Fragment>
+              ))}
+            </p>
+          )}
           <p className={styles.meta}>
-            {padNumber(number)} ·{" "}
-            {project.context === "Spotmies" ? "At Spotmies" : "Personal project"}
+            {padNumber(number)}
+            {/* Spotmies work is credited by its logo above. */}
+            {project.context !== "Spotmies" && " · Personal project"}
             {study && ` · ${study.timeframe}`}
             {minutes > 0 && ` · ${minutes} min read`}
           </p>
@@ -446,16 +477,24 @@ export function ProjectView({
           )}
           <div className={clsx(styles.actions, styles.arrive)} style={{ "--order": 1 } as CSSProperties}>
             {project.link && (
-              <a
-                href={project.link.href}
-                target="_blank"
-                rel="noreferrer noopener"
-                className={styles.visit}
-                onMouseEnter={onTap}
-              >
-                Visit {project.link.label} ↗
-                <span className={styles.srOnly}> (opens in a new tab)</span>
-              </a>
+              <div className={styles.links}>
+                {[project.link, project.alsoLink].map(
+                  (link, index) =>
+                    link && (
+                      <a
+                        key={link.href}
+                        href={link.href}
+                        target="_blank"
+                        rel="noreferrer noopener"
+                        className={index === 0 ? styles.visit : styles.visitAlso}
+                        onMouseEnter={onTap}
+                      >
+                        Visit {link.label} ↗
+                        <span className={styles.srOnly}> (opens in a new tab)</span>
+                      </a>
+                    ),
+                )}
+              </div>
             )}
             <ul className={styles.stack} aria-label="Tools">
               {project.stack.map((item) => (
@@ -515,7 +554,60 @@ export function ProjectView({
                 style={{ "--order": order + 2 } as CSSProperties}
               >
                 <dt className={styles.briefLabel}>{fact.label}</dt>
-                <dd className={styles.briefValue}>{fact.value}</dd>
+                <dd className={styles.briefValue}>
+                  {fact.people ? (
+                    <span className={styles.briefPeople} role="list" aria-label={fact.value}>
+                      {fact.people.map((person) => {
+                        const photo = (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={person.photo} alt={person.name} className={styles.briefFace} />
+                        );
+                        return (
+                          <span key={person.name} role="listitem" title={person.name}>
+                            {person.href ? (
+                              <a
+                                href={person.href}
+                                target="_blank"
+                                rel="noreferrer noopener"
+                                className={styles.briefPerson}
+                                onMouseEnter={onTap}
+                              >
+                                {photo}
+                                <span className={styles.srOnly}> (opens in a new tab)</span>
+                              </a>
+                            ) : (
+                              <span className={styles.briefPerson}>{photo}</span>
+                            )}
+                          </span>
+                        );
+                      })}
+                    </span>
+                  ) : (() => {
+                    const value = fact.logo ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={fact.logo} alt={fact.value} className={styles.briefLogo} />
+                    ) : (
+                      fact.value
+                    );
+                    return fact.href ? (
+                      <a
+                        href={fact.href}
+                        target="_blank"
+                        rel="noreferrer noopener"
+                        className={styles.briefLink}
+                        onMouseEnter={onTap}
+                      >
+                        {value}
+                        <span aria-hidden="true" className={styles.briefArrow}>
+                          ↗
+                        </span>
+                        <span className={styles.srOnly}> (opens in a new tab)</span>
+                      </a>
+                    ) : (
+                      value
+                    );
+                  })()}
+                </dd>
                 {fact.note && <dd className={styles.briefNote}>{fact.note}</dd>}
               </div>
             ))}
@@ -559,6 +651,46 @@ export function ProjectView({
         {sections.map((section, position) => {
           const channel = storyChannels.findIndex((entry) => entry.part === position);
           const textCount = section.paragraphs.length + (section.points?.length ?? 0);
+          // Pictures are numbered across the part (the lead first), as the closer look and the
+          // monitor count them.
+          const lead = section.lead ? 1 : 0;
+          const setFigureRef = (item: number, node: HTMLElement | null) => {
+            const key = `${position}:${item}`;
+            if (node) figureRefs.current.set(key, node);
+            else figureRefs.current.delete(key);
+          };
+          const open = (item: number) => {
+            onCue?.("insert");
+            setLeaving(false);
+            setCloser({ from: "story", channel, item });
+          };
+          const figureGrid = (figures: ScreenItem[], layout: string, offset: number) => (
+            <div className={styles.figures} data-layout={layout}>
+              {figures.map((figure, index) => {
+                const item = index + offset;
+                return (
+                  <figure
+                    key={figure.type === "card" ? figure.title : figure.src}
+                    className={clsx(styles.figure, styles.arrive)}
+                    style={{ "--order": textCount + item } as CSSProperties}
+                  >
+                    <button
+                      type="button"
+                      ref={(node) => setFigureRef(item, node)}
+                      className={styles.figureButton}
+                      aria-label={`Look closer: ${figure.type === "card" ? figure.title : figure.alt}`}
+                      onClick={() => open(item)}
+                    >
+                      <FigureMedia figure={figure} layout={layout} />
+                    </button>
+                    {figure.type !== "card" && figure.caption && (
+                      <figcaption className={styles.caption}>{figure.caption}</figcaption>
+                    )}
+                  </figure>
+                );
+              })}
+            </div>
+          );
           return (
             <section
               key={section.id}
@@ -617,38 +749,20 @@ export function ProjectView({
                 )}
               </div>
 
-              {section.figures && section.figures.length > 0 && (
-                <div className={styles.figures} data-layout={section.layout ?? "wide"}>
-                  {section.figures.map((figure, item) => (
-                    <figure
-                      key={figure.type === "card" ? figure.title : figure.src}
-                      className={clsx(styles.figure, styles.arrive)}
-                      style={{ "--order": textCount + item } as CSSProperties}
-                    >
-                      <button
-                        type="button"
-                        ref={(node) => {
-                          const key = `${position}:${item}`;
-                          if (node) figureRefs.current.set(key, node);
-                          else figureRefs.current.delete(key);
-                        }}
-                        className={styles.figureButton}
-                        aria-label={`Look closer: ${figure.type === "card" ? figure.title : figure.alt}`}
-                        onClick={() => {
-                          onCue?.("insert");
-                          setLeaving(false);
-                          setCloser({ from: "story", channel, item });
-                        }}
-                      >
-                        <FigureMedia figure={figure} layout={section.layout ?? "wide"} />
-                      </button>
-                      {figure.type !== "card" && figure.caption && (
-                        <figcaption className={styles.caption}>{figure.caption}</figcaption>
-                      )}
-                    </figure>
-                  ))}
-                </div>
+              {section.lead && figureGrid([section.lead], "wide", 0)}
+              {section.layout === "carousel" && section.figures && section.figures.length > 0 && (
+                <FigureCarousel
+                  figures={section.figures}
+                  className={styles.arrive}
+                  style={{ "--order": textCount + lead } as CSSProperties}
+                  setRef={(item, node) => setFigureRef(item + lead, node)}
+                  onOpen={(item) => open(item + lead)}
+                />
               )}
+              {section.layout !== "carousel" &&
+                section.figures &&
+                section.figures.length > 0 &&
+                figureGrid(section.figures, section.layout ?? "wide", lead)}
             </section>
           );
         })}
@@ -740,6 +854,163 @@ export function ProjectView({
   );
 }
 
+// How long a still stays up in a carousel before the next picture (a clip plays to its end).
+const carouselHold = 5000;
+
+/**
+ * A part's pictures one at a time, full width, instead of side by side (for clips that would
+ * compete if they played together): under it, the caption and a tab per picture, whose bar
+ * fills as its clip plays. A clip that ends moves on to the next; clips only play while the
+ * carousel is in view.
+ */
+function FigureCarousel({
+  figures,
+  onOpen,
+  setRef,
+  className,
+  style,
+}: {
+  figures: ScreenItem[];
+  onOpen: (item: number) => void;
+  setRef: (item: number, node: HTMLElement | null) => void;
+  className?: string;
+  style?: CSSProperties;
+}) {
+  const [active, setActive] = useState(0);
+  const [inView, setInView] = useState(false);
+  const rootRef = useRef<HTMLDivElement>(null);
+  const videoRefs = useRef<(HTMLVideoElement | null)[]>([]);
+  const barRefs = useRef<(HTMLSpanElement | null)[]>([]);
+  const count = figures.length;
+  const next = useCallback(() => setActive((current) => (current + 1) % count), [count]);
+
+  useEffect(() => {
+    const root = rootRef.current;
+    if (!root) return;
+    const observer = new IntersectionObserver(([entry]) => setInView(entry.isIntersecting), {
+      threshold: 0.35,
+    });
+    observer.observe(root);
+    return () => observer.disconnect();
+  }, []);
+
+  // The current clip plays while in view; the others wait at their start, their bars empty.
+  useEffect(() => {
+    videoRefs.current.forEach((video, item) => {
+      if (!video) return;
+      if (item === active && inView) {
+        video.play().catch(() => {});
+        return;
+      }
+      video.pause();
+      if (item !== active) video.currentTime = 0;
+    });
+    barRefs.current.forEach((bar, item) => {
+      if (bar && item !== active) bar.style.transform = "scaleX(0)";
+    });
+    if (figures[active]?.type === "video" || !inView || count < 2) return;
+    const timer = window.setTimeout(next, carouselHold);
+    return () => window.clearTimeout(timer);
+  }, [active, count, figures, inView, next]);
+
+  // Where the tabs scroll sideways (narrow screens), the current one slides into view.
+  const tabsRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const tabs = tabsRef.current;
+    const tab = tabs?.children[active] as HTMLElement | undefined;
+    if (!tabs || !tab || tabs.scrollWidth <= tabs.clientWidth) return;
+    tabs.scrollTo({ left: tab.offsetLeft - (tabs.clientWidth - tab.offsetWidth) / 2, behavior: "smooth" });
+  }, [active]);
+
+  const current = figures[active];
+  const labelOf = (figure: ScreenItem) =>
+    figure.type === "card" ? figure.title : (figure.label ?? figure.alt);
+
+  return (
+    <div
+      ref={rootRef}
+      className={clsx(styles.carousel, className)}
+      style={{ ...style, "--hold": `${carouselHold}ms` } as CSSProperties}
+      data-running={inView || undefined}
+    >
+      <div className={styles.carouselStage}>
+        {figures.map((figure, item) => (
+          <button
+            key={figure.type === "card" ? figure.title : figure.src}
+            type="button"
+            ref={(node) => setRef(item, node)}
+            className={clsx(styles.figureButton, styles.carouselSlide)}
+            data-active={item === active || undefined}
+            aria-hidden={item !== active || undefined}
+            tabIndex={item === active ? undefined : -1}
+            aria-label={`Look closer: ${figure.type === "card" ? figure.title : figure.alt}`}
+            onClick={() => onOpen(item)}
+          >
+            {figure.type === "video" ? (
+              <video
+                ref={(node) => {
+                  videoRefs.current[item] = node;
+                }}
+                src={figure.src}
+                poster={figure.poster}
+                className={styles.figureMedia}
+                muted
+                playsInline
+                loop={count < 2}
+                preload={item === 0 ? "metadata" : "none"}
+                aria-hidden="true"
+                onTimeUpdate={(event) => {
+                  const video = event.currentTarget;
+                  const bar = barRefs.current[item];
+                  if (bar && video.duration) {
+                    bar.style.transform = `scaleX(${video.currentTime / video.duration})`;
+                  }
+                }}
+                onEnded={next}
+              />
+            ) : (
+              <FigureMedia figure={figure} layout="wide" />
+            )}
+          </button>
+        ))}
+      </div>
+      <div className={styles.carouselFoot}>
+        <p className={styles.caption} aria-live="polite">
+          {current?.type === "card" ? current.note : current?.caption}
+        </p>
+        {count > 1 && (
+          <div ref={tabsRef} className={styles.carouselTabs} role="tablist" aria-label="Pictures">
+            {figures.map((figure, item) => (
+              <button
+                key={figure.type === "card" ? figure.title : figure.src}
+                type="button"
+                role="tab"
+                aria-selected={item === active}
+                className={styles.carouselTab}
+                onClick={() => setActive(item)}
+              >
+                {/* The fill behind the label: a clip's follows its playback, a still's runs
+                    over its hold (in the CSS). */}
+                <span className={styles.carouselBar} aria-hidden="true">
+                  <span
+                    ref={(node) => {
+                      barRefs.current[item] = node;
+                    }}
+                    data-hold={figure.type !== "video" || undefined}
+                  />
+                </span>
+                <span className={styles.carouselLabel}>
+                  {padNumber(item + 1)} {labelOf(figure)}
+                </span>
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // A picture in the story, sized for how its part lays them out.
 function FigureMedia({ figure, layout }: { figure: ScreenItem; layout: string }) {
   if (figure.type === "card") {
@@ -771,7 +1042,7 @@ function FigureMedia({ figure, layout }: { figure: ScreenItem; layout: string })
         ? "(min-width: 1200px) 1100px, 100vw"
         : "(min-width: 700px) 560px, 100vw";
   // The width and height only reserve room; the picture keeps its own shape (see the CSS).
-  return (
+  const image = (
     <Image
       src={figure.src}
       alt=""
@@ -781,6 +1052,21 @@ function FigureMedia({ figure, layout }: { figure: ScreenItem; layout: string })
       className={styles.figureMedia}
     />
   );
+  // A YouTube video is its thumbnail with a play mark; the closer look plays it.
+  if (figure.type === "youtube") {
+    return (
+      <span className={styles.figureVideo}>
+        {image}
+        <span className={styles.figurePlay} aria-hidden="true">
+          <svg viewBox="0 0 12 12">
+            <path d="M4 2.5v7l6-3.5z" fill="currentColor" />
+          </svg>
+          Play
+        </span>
+      </span>
+    );
+  }
+  return image;
 }
 
 // A heading on the split-flap board, a word at a time so it can wrap like ordinary text.

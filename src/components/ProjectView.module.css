@@ -285,6 +285,34 @@
   margin: 8px calc(var(--pad) * -1) 0;
 }
 
+/* Who it was for: the studio's logo and the client's, side by side above the meta line. */
+.credits {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  margin-bottom: 28px;
+}
+
+.creditLogo {
+  display: block;
+  width: auto;
+  max-width: 180px;
+  height: 34px;
+  object-fit: contain;
+  object-position: left center;
+}
+
+.creditCross {
+  font-size: 18px;
+  color: rgba(26, 26, 26, 0.4);
+}
+
+.creditRule {
+  width: 1px;
+  height: 28px;
+  background: rgba(26, 26, 26, 0.22);
+}
+
 .meta {
   font-family: var(--font-display), sans-serif;
   font-size: 12px;
@@ -384,6 +412,97 @@
   letter-spacing: -0.01em;
 }
 
+/* A mark in place of the value: its box one line of the value tall (padding, not margins,
+   which would collapse into the cell's), so the notes beside it line up. */
+.briefLogo {
+  display: block;
+  box-sizing: content-box;
+  width: auto;
+  height: 1em;
+  padding: 0.1em 0 0.15em;
+}
+
+/* Who made it: round photos, each overlapping the one before. Taller than the value's line,
+   they reach into the gaps above and below it, so the notes beside them still line up. */
+.briefPeople {
+  display: flex;
+  margin: calc((1.25em - 36px) / 2) 0;
+}
+
+.briefPeople > * + * {
+  margin-left: -10px;
+}
+
+.briefPerson {
+  display: block;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  box-shadow: 0 0 0 2px #f7f4ec;
+  transition: transform 200ms ease;
+}
+
+a.briefPerson:hover,
+a.briefPerson:focus-visible {
+  transform: translateY(-2px);
+  outline: none;
+}
+
+a.briefPerson:focus-visible {
+  box-shadow:
+    0 0 0 2px #f7f4ec,
+    0 0 0 4px #2f7a2f;
+}
+
+.briefFace {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+/* A value that's a link (a live site): underlined, with an arrow that nudges on hover. */
+.briefLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-color: rgba(26, 26, 26, 0.3);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 4px;
+  transition: text-decoration-color 150ms ease;
+}
+
+.briefLink:has(img) {
+  text-decoration: none;
+}
+
+.briefLink:hover,
+.briefLink:focus-visible {
+  text-decoration-color: currentColor;
+  outline: none;
+}
+
+.briefLink:focus-visible {
+  outline: 2px solid #2f7a2f;
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+.briefArrow {
+  font-size: 0.8em;
+  color: rgba(26, 26, 26, 0.55);
+  transition: transform 200ms ease;
+}
+
+.briefLink:hover .briefArrow,
+.briefLink:focus-visible .briefArrow {
+  transform: translate(2px, -2px);
+  color: #1a1a1a;
+}
+
 .briefNote {
   margin-top: 6px;
   font-size: 13px;
@@ -436,6 +555,29 @@
 .visit:hover,
 .visit:focus-visible {
   background: #000;
+}
+
+/* The links sit together; with two, the second is an outline of the first. */
+.links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.visitAlso {
+  display: inline-flex;
+  padding: 12px 17px;
+  border: 1px solid rgba(26, 26, 26, 0.28);
+  border-radius: 6px;
+  color: #1a1a1a;
+  font-size: 15px;
+  font-weight: 500;
+  transition: border-color 150ms ease;
+}
+
+.visitAlso:hover,
+.visitAlso:focus-visible {
+  border-color: #1a1a1a;
 }
 
 .srOnly {
@@ -702,6 +844,13 @@
   .figures[data-layout="grid"] {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+
+  /* A pair of one (a tall picture, like a post): its half, centred. */
+  .figures[data-layout="pair"] > .figure:only-child {
+    grid-column: 1 / -1;
+    justify-self: center;
+    width: calc(50% - 10px);
+  }
 }
 
 @media (min-width: 900px) {
@@ -751,10 +900,177 @@
   height: auto;
 }
 
+/* A YouTube video's thumbnail, marked as something to play. */
+.figureVideo {
+  position: relative;
+  display: block;
+}
+
+.figurePlay {
+  position: absolute;
+  left: 14px;
+  bottom: 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 12px 7px 10px;
+  border-radius: 999px;
+  background: rgba(10, 10, 10, 0.78);
+  color: var(--ink);
+  font-family: var(--font-hero), monospace;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  transition: background 0.2s ease;
+}
+
+.figurePlay svg {
+  width: 12px;
+  height: 12px;
+}
+
+.figureButton:hover .figurePlay {
+  background: #d64541;
+}
+
 .figures[data-layout="grid"] .figureMedia {
   aspect-ratio: 16 / 10;
   object-fit: cover;
   object-position: top;
+}
+
+/* A carousel: the pictures stacked in one cell, crossfading, the current one on top; under
+   them the caption and a tab per picture, its bar filling as its clip plays. */
+.carousel {
+  margin-top: clamp(28px, 4vw, 44px);
+}
+
+.carouselStage {
+  display: grid;
+}
+
+.carouselSlide {
+  grid-area: 1 / 1;
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity 500ms ease,
+    visibility 0s linear 500ms,
+    transform 400ms cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 400ms ease;
+}
+
+.carouselSlide[data-active] {
+  opacity: 1;
+  visibility: visible;
+  transition:
+    opacity 500ms ease,
+    visibility 0s,
+    transform 400ms cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 400ms ease;
+}
+
+.carouselFoot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px 24px;
+  margin-top: 14px;
+}
+
+.carouselFoot .caption {
+  flex: 1 1 260px;
+  margin-top: 0;
+}
+
+/* The tabs: a segmented pill. The current one is a solid dark pill that fills from the left
+   as its picture plays; the others stay quiet. Scrolls sideways where it can't fit. */
+.carouselTabs {
+  display: flex;
+  gap: 4px;
+  max-width: 100%;
+  padding: 4px;
+  overflow-x: auto;
+  border-radius: 999px;
+  background: rgba(26, 26, 26, 0.07);
+  scrollbar-width: none;
+}
+
+.carouselTab {
+  position: relative;
+  flex: none;
+  padding: 9px 14px 8px;
+  overflow: hidden;
+  border: none;
+  border-radius: 999px;
+  background: none;
+  color: rgba(26, 26, 26, 0.5);
+  font-family: var(--font-hero), monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background-color 200ms ease,
+    color 200ms ease;
+}
+
+.carouselTab:hover {
+  color: #1a1a1a;
+  background: rgba(26, 26, 26, 0.06);
+}
+
+.carouselTab[aria-selected="true"] {
+  background: #1a1a1a;
+  color: #f5f1ea;
+}
+
+.carouselTab:focus-visible {
+  outline: 2px solid #2f7a2f;
+  outline-offset: 2px;
+}
+
+.carouselLabel {
+  position: relative;
+}
+
+.carouselBar {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.carouselBar > span {
+  display: block;
+  height: 100%;
+  background: rgba(245, 241, 234, 0.2);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 260ms linear;
+}
+
+/* A still's fill runs over its hold while the carousel's in view. */
+.carousel[data-running] .carouselTab[aria-selected="true"] .carouselBar > span[data-hold] {
+  animation: carouselFill var(--hold) linear forwards;
+}
+
+@keyframes carouselFill {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .carouselSlide,
+  .carouselSlide[data-active] {
+    transition: none;
+  }
 }
 
 /* Until the footage exists: a test card, like the monitor's. */
