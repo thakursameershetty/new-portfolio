@@ -122,6 +122,11 @@
     transform 500ms ease;
 }
 
+/* On phones the two halves of the role stack instead of wrapping mid-phrase (below). */
+.rolePart {
+  white-space: nowrap;
+}
+
 .roleVisible {
   opacity: 1;
   transform: none;
@@ -334,5 +339,14 @@
   .role {
     font-size: 11px;
     letter-spacing: 0.2em;
+    line-height: 1.8;
+  }
+
+  .rolePart {
+    display: block;
+  }
+
+  .roleSep {
+    display: none;
   }
 }

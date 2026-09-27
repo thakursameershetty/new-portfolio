@@ -207,7 +207,9 @@ export function Hero() {
           </span>
         </h1>
         <p className={clsx(styles.role, statementLanded && styles.roleVisible)}>
-          UI/UX Designer · Full Stack Developer
+          <span className={styles.rolePart}>Product Designer</span>
+          <span className={styles.roleSep}> · </span>
+          <span className={styles.rolePart}>Designs and prototypes in code</span>
         </p>
       </div>
       <div className={clsx(styles.scene, statementLanded && styles.sceneVisible)}>

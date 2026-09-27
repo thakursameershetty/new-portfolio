@@ -33,10 +33,18 @@ const hero = localFont({
   ],
 });
 
+const title = "Thakur Sameer Shetty — Product Designer";
+const description =
+  "Making things feel right. Product designer who prototypes in code: research, interfaces and micro-interactions, from Figma to production.";
+
+// The link preview image is src/app/opengraph-image.tsx; the icons are favicon.ico and
+// apple-icon.png beside this file.
 export const metadata: Metadata = {
-  title: "Thakur Sameer Shetty — UI/UX Designer & Full Stack Developer",
-  description:
-    "Making things feel right. UI/UX designer and full stack developer crafting interfaces and micro-interactions from Figma to production.",
+  metadataBase: new URL("https://www.thakursameershetty.com"),
+  title,
+  description,
+  openGraph: { title, description, url: "/", siteName: "Thakur Sameer Shetty", type: "website" },
+  twitter: { card: "summary_large_image", title, description },
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

@@ -94,7 +94,7 @@ export function Contact() {
         <div className={styles.status}>
           <span className={styles.available}>
             <span aria-hidden="true" className={styles.pulse} />
-            Open to UI/UX &amp; full stack roles
+            Open to product design roles
           </span>
           <span
             className={styles.place}
