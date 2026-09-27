@@ -465,7 +465,8 @@
   color: var(--ink-muted);
 }
 
-/* Two lines at most, so every row keeps the same rhythm; the rest is in the window. */
+/* Two lines at most, so every row keeps the same rhythm; each project's blurb is written to
+   fit them whole (the clamp is only a safety net). */
 .entrySummary {
   display: -webkit-box;
   max-width: 58ch;
@@ -494,6 +495,10 @@
   font-size: 14px;
   line-height: 1.5;
   color: var(--ink-muted);
+}
+
+.entryTool {
+  white-space: nowrap;
 }
 
 /* What kinds of work it is: design, development, 3D. */

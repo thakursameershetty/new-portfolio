@@ -2,8 +2,16 @@
 
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import clsx from "clsx";
-import { motion, useSpring, useTransform } from "framer-motion";
+import {
+  animate,
+  motion,
+  useReducedMotion,
+  useSpring,
+  useTransform,
+  type AnimationPlaybackControls,
+} from "framer-motion";
 import { useIntro } from "./SiteIntro";
+import { useInView } from "./useInView";
 import styles from "./AboutTimeline.module.css";
 
 // Months are counted from January 2020, where the ruler starts: (year - 2020) * 12 + month.
@@ -23,6 +31,8 @@ const noSubscription = () => () => {};
 const labelReach = 6;
 // Room after "now", so its end of the ruler doesn't sit on the edge.
 const tailMonths = 3;
+// The entrance: how long the needle takes to sweep from 2020 to now.
+const sweepSeconds = 2.2;
 const names = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
 const monthName = (m: number) => `${names[m % 12]} ${firstYear + Math.floor(m / 12)}`;
 
@@ -56,6 +66,7 @@ export function itemsAt(items: TimelineItem[], m: number, now: number) {
  * A ruler of the years so far, with a bar for each dated entry. Its needle rests on "now",
  * glides to an entry's start when that row is hovered, and follows the pointer (or a drag on
  * touch screens) so you can scrub through the years and see what was running at the time.
+ * On arrival the needle sweeps in from 2020, drawing the ruler and each bar as it passes.
  */
 export function AboutTimeline({
   items,
@@ -74,6 +85,28 @@ export function AboutTimeline({
   const rulerRef = useRef<HTMLDivElement>(null);
   const [scrub, setScrub] = useState<number | null>(null);
   const dragging = useRef(false);
+
+  // The entrance, once: "waiting" (hidden, until it's well on screen), "running" (the sweep),
+  // then "done". Server HTML and reduced motion show it finished.
+  const reduceMotion = useReducedMotion();
+  const [intro, setIntro] = useState<"waiting" | "running" | "done">("done");
+  const [introMonth, setIntroMonth] = useState(0);
+  // Just landed on now at the end of the sweep: the readout settles with a bounce.
+  const [landed, setLanded] = useState(false);
+  useEffect(() => {
+    if (!landed) return;
+    const timer = window.setTimeout(() => setLanded(false), 600);
+    return () => window.clearTimeout(timer);
+  }, [landed]);
+  const sweepRef = useRef<AnimationPlaybackControls | null>(null);
+  // All of it on screen, and clear of the bottom quarter, so it plays where you're looking,
+  // not as it peeks in at the bottom edge.
+  const inView = useInView(rulerRef, 1, "0px 0px -25% 0px");
+  useEffect(() => {
+    // Only a browser that can play it waits for it.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    if (!reduceMotion) setIntro("waiting");
+  }, [reduceMotion]);
 
   const endOf = (item: TimelineItem) => (item.to === "now" ? now : item.to);
   const lanes = [...new Set(items.map((item) => item.lane))];
@@ -113,13 +146,53 @@ export function AboutTimeline({
   const shift = useTransform(needle, (m) => `translateX(${-(m / span) * 100}%)`);
 
   useEffect(() => {
-    needle.set(target);
-  }, [needle, target]);
+    if (intro === "done") needle.set(target);
+  }, [needle, target, intro]);
 
-  // Once the browser knows the real month, start there rather than gliding to it.
+  // Once the browser knows the real month, start there rather than gliding to it (or, before
+  // the entrance, at the start of the ruler).
   useEffect(() => {
-    needle.jump(now + 1);
+    needle.jump(intro === "done" ? now + 1 : 0);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [needle, now]);
+
+  // The sweep: the needle runs from January 2020 to now, and the ruler, the bars and their
+  // labels are uncovered behind it (by --sweep, in months, and --progress, 0 to 1).
+  useEffect(() => {
+    const ruler = rulerRef.current;
+    if (intro !== "waiting" || !inView || !ruler) return;
+    // Started here and left to run: this effect re-runs as the state moves to "running", and
+    // its cleanup mustn't stop the sweep it just began (the unmount effect below does that).
+    setIntro("running");
+    let shown = -1;
+    sweepRef.current = animate(0, now + 1, {
+      duration: sweepSeconds,
+      delay: 0.15,
+      ease: [0.6, 0, 0.25, 1],
+      onUpdate: (m) => {
+        needle.jump(m);
+        ruler.style.setProperty("--sweep", String(m));
+        ruler.style.setProperty("--progress", String(m / (now + 1)));
+        const month = Math.min(Math.floor(m), now);
+        if (month !== shown) {
+          shown = month;
+          setIntroMonth(month);
+        }
+      },
+      onComplete: () => {
+        setIntro("done");
+        setLanded(true);
+      },
+    });
+  }, [intro, inView, needle, now]);
+  useEffect(() => () => sweepRef.current?.stop(), []);
+
+  // Reaching for the ruler mid-sweep finishes it at once.
+  const finishIntro = () => {
+    if (intro === "done") return;
+    sweepRef.current?.stop();
+    setIntro("done");
+  };
 
   // A detent click, and the year label lighting up, each time the needle crosses a year.
   const [year, setYear] = useState(Math.floor((now + 1) / 12));
@@ -142,12 +215,15 @@ export function AboutTimeline({
     return Math.min(Math.max(m, 0), now);
   };
   const scrubTo = (m: number | null) => {
+    finishIntro();
     setScrub(m);
     onScrub(m, now);
   };
 
   const readout =
-    scrub !== null
+    intro !== "done"
+      ? monthName(introMonth)
+      : scrub !== null
       ? monthName(scrub)
       : focused
         ? focused.yearOnly
@@ -161,6 +237,7 @@ export function AboutTimeline({
     <div
       ref={rulerRef}
       className={clsx(styles.timeline, lit && styles.hasLit)}
+      data-intro={intro === "done" ? undefined : intro}
       style={{ "--months": span } as React.CSSProperties}
       role="img"
       aria-label={`Timeline from ${firstYear} to now: ${items
@@ -207,6 +284,8 @@ export function AboutTimeline({
                   style={
                     {
                       "--tone": `var(--tone-${item.tone})`,
+                      "--from": item.from,
+                      "--len": endOf(item) + 1 - item.from,
                       left: `${(item.from / span) * 100}%`,
                       width: `${((endOf(item) + 1 - item.from) / span) * 100}%`,
                     } as React.CSSProperties
@@ -235,6 +314,7 @@ export function AboutTimeline({
                     style={
                       {
                         ...tone,
+                        "--from": label.from,
                         left: fromEnd ? "auto" : `${(label.from / span) * 100}%`,
                         right: fromEnd ? `${(1 - (label.end + 1) / span) * 100}%` : "auto",
                       } as React.CSSProperties
@@ -284,7 +364,13 @@ export function AboutTimeline({
         ))}
       </div>
 
-      <motion.div aria-hidden="true" className={clsx(styles.needle, resting && styles.resting)}
+      <motion.div
+        aria-hidden="true"
+        className={clsx(
+          styles.needle,
+          resting && intro === "done" && styles.resting,
+          landed && styles.landed,
+        )}
         style={{ left }}
       >
         <motion.span className={styles.readout} style={{ transform: shift }}>

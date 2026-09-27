@@ -255,7 +255,69 @@
   }
 }
 
+/* ---- The entrance (data-intro, set only in a browser that plays it): everything waits
+   hidden, then the sweeping needle uncovers it. --sweep is the needle's month and --progress
+   its share of the way to now, both updated each frame. ---- */
+.timeline[data-intro] {
+  --sweep: 0;
+  --progress: 0;
+}
+
+/* Bars grow from their start as the needle passes over them. */
+.timeline[data-intro] .bar {
+  transition: none;
+  clip-path: inset(
+    0 calc(100% - clamp(0%, (var(--sweep) - var(--from)) / var(--len) * 100%, 100%)) 0 0
+  );
+}
+
+/* A single month pops up as the needle reaches it. */
+.timeline[data-intro] .point {
+  clip-path: none;
+  transform: scale(clamp(0, (var(--sweep) - var(--from)) * 1.4, 1));
+}
+
+/* A label wipes on, left to right, over the few months after its start. */
+.timeline[data-intro] .barLabel {
+  clip-path: inset(
+    0 calc(100% - clamp(0%, (var(--sweep) - var(--from)) / 4 * 100%, 100%)) 0 0
+  );
+}
+
+/* The ruler and its years are drawn in behind the needle. */
+.timeline[data-intro] .axis {
+  clip-path: inset(0 calc(100% - var(--progress) * 100%) -20px 0);
+}
+
+/* Before the sweep, even the needle waits; it fades in at the start of the ruler. */
+.timeline[data-intro="waiting"] .needle {
+  opacity: 0;
+}
+
+.needle {
+  transition: opacity 300ms ease;
+}
+
+/* Landing on now at the end of the sweep: the readout settles with a small bounce as it
+   turns red. */
+.landed .readout {
+  animation: land 420ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes land {
+  from {
+    scale: 0.8;
+  }
+  to {
+    scale: 1;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
+  .landed .readout {
+    animation: none;
+  }
+
   .resting .handle::after {
     animation: none;
   }

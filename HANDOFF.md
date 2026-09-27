@@ -157,6 +157,14 @@ stack builds, *with a soft spot for micro-interactions: the small moments that m
 feel right.*" The muted second half echoes the hero's "feel right". The Spotmies "S" mark
 (`public/spotmies-mark.png`) sits inline like a letter.
 
+**Timeline (`AboutTimeline.tsx`):** a ruler from 2020 to now with a bar per entry; the needle
+rests on now, glides to a hovered row's start, and scrubs with the pointer (drag on touch).
+**Entrance:** once ≥60% on screen, the needle sweeps from Jan 2020 to now in 2.2s (detent
+click per year), uncovering the axis, each bar from its start, the hackathon dots (pop) and
+labels (wipe) behind it via `--sweep`/`--progress` CSS variables; it lands red on NOW with a
+small bounce. Once per visit; skipped for reduced motion (headless Chrome reports reduced
+motion, so emulate `no-preference` to test it); touching the ruler mid-sweep finishes it.
+
 ### Work — `src/components/Work.tsx`, `diskBox3d.ts`, `CrtPreview.tsx`, `projects.ts`
 **Discipline tags:** each row shows DESIGN · DEV · 3D from `disciplines` in `projects.ts`. A
 "View by" lens filter (with disks shut away in the boxes, empty boxes docking beside the switch,
@@ -213,8 +221,9 @@ Spotmies · Amerox, Peddi, TMN · Satara Today) and **Personal · Hobby & academ
 - Scroll anchoring is off in `.shelves` so the page doesn't jump while things move.
 
 **Opened list = single-column rows** (`.entries`), every row the same shape:
-- Desktop: small disk · number + title (Disket, word-spacing pulled in so "TMN · SATARA NEWS"
-  reads as one name) · kind · summary capped at **2 lines** · role + stack as plain text ·
+- Desktop: small disk · number + title (Disket, word-spacing pulled in so "TMN · SATARA TODAY"
+  reads as one name) · kind · the project's `blurb` (a line written to fit **2 lines** whole;
+  never the case-study `summary`, which ran long and got cut off with "…") · role + stack as plain text ·
   small cream keycap link (only if the project has one). Hover slides the disk's shutter.
 - Phones (≤560px): an index — disk, title, kind, and a 40px ↗ key for links; summary/role/stack
   hidden (they're in the window). **The whole row is tappable** (title button's `::after`
@@ -275,7 +284,9 @@ outside `public/`, which ships with the site.
   open, split-flap flutter for floppy open, center ripple for Contact, timed pour for Contact,
   featured-project rows above the boxes (all projects are equal effort), 2-column disk+details
   grid, chips wrapping in rows, a CRT "hiss", disks passing through each other, email wrapping
-  onto two lines.
+  onto two lines, a faster Work open with every row's copy fading in together and
+  off-screen disks dropping instead of flying (tried and rolled back 2026-09-27; the owner
+  kept the original disk-by-disk choreography).
 
 ## Open items / next steps
 

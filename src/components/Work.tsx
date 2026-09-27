@@ -711,12 +711,20 @@ function EntryCopy({
           </button>
         </h4>
         <p className={styles.entryKind}>{project.kind}</p>
-        <p className={styles.entrySummary}>{project.summary}</p>
+        <p className={styles.entrySummary}>{project.blurb}</p>
       </div>
 
       <div className={styles.entrySide}>
         <p className={styles.entryRole}>{project.role}</p>
-        <p className={styles.entryStack}>{project.stack.join(" · ")}</p>
+        {/* Each tool kept whole, so a line only breaks between them. */}
+        <p className={styles.entryStack}>
+          {project.stack.map((item, index) => (
+            <span key={item}>
+              {index > 0 && " · "}
+              <span className={styles.entryTool}>{item}</span>
+            </span>
+          ))}
+        </p>
         <p className={styles.entryDisciplines}>
           {disciplines
             .filter((discipline) => project.disciplines.includes(discipline.id))

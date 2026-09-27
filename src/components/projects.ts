@@ -87,6 +87,9 @@ export interface Project {
   /** Where it was made: at Spotmies, or as a personal / hackathon project. */
   context: "Spotmies" | "Project";
   summary: string;
+  /** The row's line in the Work list: short enough to fit its two lines whole (the summary
+   *  is for the case study). */
+  blurb: string;
   highlights: string[];
   stack: string[];
   link?: { href: string; label: string };
@@ -122,6 +125,7 @@ export const projects: Project[] = [
     context: "Spotmies",
     summary:
       "A fan site for the Telugu film Rao Bahadur, where people who'd seen it could pick their favourite characters and post and debate theories, without making an account. Built alone in under a week, with an admin panel the film team ran themselves.",
+    blurb: "A fan site where people who'd seen the Telugu film could pick their favourite characters and debate theories.",
     highlights: [
       "No sign-up: a nickname and a generated face, asked for only on your first like or post",
       "Likes, replies and trending theories that update live",
@@ -279,6 +283,7 @@ export const projects: Project[] = [
     context: "Spotmies",
     summary:
       "The creator app for MutinyX, an influencer marketing network: designed in Figma and built in React Native twice, six months apart, plus the Next.js landing pages for its rebrand. My first big project at Spotmies.",
+    blurb: "The creator app for an influencer marketing network, designed and built twice, and its website.",
     highlights: [
       "Designed the first version, about 35 screens, in three days, then built its frontend in React Native",
       "Redesigned it after the rebrand, around a new flow for submitting each deliverable",
@@ -441,6 +446,7 @@ export const projects: Project[] = [
     context: "Spotmies",
     summary:
       "A redesign of Spotmies' own website, the landing page and the inner pages, from a stock-photo template to a dark, modern studio site. Researched, designed and built by me in Next.js, right after Amero X.",
+    blurb: "The studio's own website, redesigned from a stock-photo template into a dark, modern site.",
     highlights: [
       "Replaced the old template site with a new design, researched across many references",
       "Designed and built the landing and inner pages in Next.js, with three.js on the landing page",
@@ -535,6 +541,7 @@ export const projects: Project[] = [
     context: "Spotmies",
     summary:
       "My first project at Spotmies: refining Amero X, a crypto trading platform whose designs felt cheap, into a black-and-gold product that feels premium and trustworthy. I redesigned it in Figma, then built the landing page to match.",
+    blurb: "My first project: refining a crypto trading platform into a black-and-gold product that feels premium.",
     highlights: [
       "Refined the platform's designs in Figma: trading, swap, P2P, wallet and more",
       "Built the landing page from the approved design, animations and all",
@@ -621,10 +628,11 @@ export const projects: Project[] = [
     disciplines: ["design", "development", "3d"],
     title: "Peddi",
     kind: "Roblox game world for a feature film",
-    role: "Duo: world building + product",
+    role: "Duo: world building",
     context: "Spotmies",
     summary:
       "A Roblox world for the Telugu film Peddi, made with Dworak in Roblox Studio to promote its release: a fairground, mountains, caves and rivers to explore, with references to the film all through it.",
+    blurb: "A Roblox world for the Telugu film Peddi, full of references to the film, made with Dworak.",
     highlights: [
       "Built the virtual world around the game's core mechanics",
       "Filled it with references to the film, for fans to find",
@@ -784,6 +792,7 @@ export const projects: Project[] = [
     context: "Spotmies",
     summary:
       "The app and website for TMN, Today Media Network, and Satara Today, its Marathi sister in Satara: one minimal design that holds English and Marathi alike, with articles readers can react to, vote on and write themselves. Designed in Figma, and built by the Spotmies development team.",
+    blurb: "One minimal news app and website for TMN and Satara Today, in English and in Marathi.",
     highlights: [
       "One design for both brands, in English and in Marathi",
       "Articles with reactions, instant polls and comments",
@@ -896,6 +905,7 @@ export const projects: Project[] = [
     context: "Project",
     summary:
       "A working simulation of how a swarm of underwater drones could keep its links safe from future quantum computers, and notice when one of its drones is captured. Phones stand in for the drones; a live 3D dashboard shows the swarm.",
+    blurb: "A simulation of an underwater drone swarm that stays safe from quantum attacks and spots a captured drone.",
     highlights: [
       "Phones stream real motion data as drone nodes; shaking one plays a physical capture",
       "Quantum key bits, encrypted fleet averages and an AI agent that isolates hostile nodes",
@@ -1022,6 +1032,7 @@ export const projects: Project[] = [
     context: "Project",
     summary:
       "Two experiments in using the web without touching anything: Gesture Shop, a store you browse and fill your cart in with your hand, and Aura, a music visualizer you play, skip and restyle with gestures. Both track your hand through the webcam with MediaPipe, in the browser.",
+    blurb: "A shop and a music player you use with your hand, tracked through the webcam in the browser.",
     highlights: [
       "Pinch to select, close your hand to grab a product and drop it in the cart",
       "Play, skip and switch Aura's visual themes with your hand",
@@ -1117,6 +1128,7 @@ export const projects: Project[] = [
     context: "Project",
     summary:
       "The design for Nova, a UPI payments app, made in 48 hours as a challenge to myself: wireframes, a design system drawn from iOS 26's glass, then signing in, cards that arrive from your phone number, a home screen with your balance and quick sends, and paying by QR with a swipe. About fifty screens in Figma, prototyped end to end with Smart Animate so each screen morphs into the next.",
+    blurb: "A UPI payments app designed in 48 hours: wireframes, a design system and fifty screens that morph.",
     highlights: [
       "Cards fetched from your phone number, added with a pull",
       "Scan a UPI QR, pick a card and swipe to pay",
@@ -1279,6 +1291,7 @@ export const projects: Project[] = [
     context: "Project",
     summary:
       "A real-time computer vision trainer that tracks your movement from a live camera feed and counts bicep curl reps, streamed through a custom Flask backend.",
+    blurb: "A trainer that watches you through the camera and counts your bicep curl reps as you go.",
     highlights: [
       "Real-time pose tracking and rep counting",
       "Live data streamed through a custom backend",
