@@ -3,20 +3,26 @@
 import { useEffect, useLayoutEffect, useRef } from "react";
 import { useReducedMotion } from "framer-motion";
 import Image from "next/image";
-import type { CaseSection } from "./projects";
+import type { ScreenItem } from "./projects";
 import styles from "./ScreenViewer.module.css";
 
-const padNumber = (number: number) => String(number).padStart(2, "0");
+/** A set of pictures to look through: the monitor's reel, or a part of the story. */
+export interface ViewerChannel {
+  /** Shown at the top, e.g. "CH 01 · Reel" or "03 · Spoilers". */
+  tag: string;
+  label: string;
+  items: ScreenItem[];
+}
 
 /**
- * A closer look at what's on the case study's monitor: it grows out of the monitor's screen
- * (scaled up from the screen's own spot on the page) to take over the window with the
- * current item, large, and shrinks back into the screen when you step back. ← and → (or a
- * swipe) step through the channel's items, ↑ and ↓ change channel, and Esc steps back out to
- * the set. Clips play here with their controls and sound.
+ * A closer look at a picture in a case study: it grows out of where it was opened from (the
+ * monitor's screen, or the picture in the story, scaled up from its spot on the page) to take
+ * over the window, large, and shrinks back there when you step back. ← and → (or a swipe)
+ * step through the channel's pictures, ↑ and ↓ change channel, and Esc steps back out. Clips
+ * play here with their controls and sound.
  */
 export function ScreenViewer({
-  sections,
+  channels,
   channel,
   item,
   onItem,
@@ -26,12 +32,12 @@ export function ScreenViewer({
   onClose,
   onTap,
 }: {
-  sections: CaseSection[];
+  channels: ViewerChannel[];
   channel: number;
   item: number;
   onItem: (item: number) => void;
   onChannel: (channel: number) => void;
-  /** The monitor's screen on the page, to grow from and shrink back into. */
+  /** Where the current picture sits on the page, to grow from and shrink back into. */
   screenRect: () => DOMRect | null;
   /** Stepping back has started (the camera can pull out). */
   onLeave: () => void;
@@ -43,8 +49,8 @@ export function ScreenViewer({
   const viewerRef = useRef<HTMLDivElement>(null);
   const reduceMotion = useReducedMotion();
   const leavingRef = useRef(false);
-  const section = sections[channel];
-  const items = section?.screen ?? [];
+  const section = channels[channel];
+  const items = section?.items ?? [];
   const count = items.length;
   const current = items[item % Math.max(count, 1)];
 
@@ -53,10 +59,10 @@ export function ScreenViewer({
   };
   const tune = (by: number) => {
     const next = channel + by;
-    if (next >= 0 && next < sections.length) onChannel(next);
+    if (next >= 0 && next < channels.length) onChannel(next);
   };
 
-  // The whole view scaled down onto the monitor's screen: where it grows from, and shrinks to.
+  // The whole view scaled down onto the picture's spot: where it grows from, and shrinks to.
   const onScreen = () => {
     const rect = screenRect();
     const { innerWidth: width, innerHeight: height } = window;
@@ -141,9 +147,7 @@ export function ScreenViewer({
       aria-label={`${section?.label ?? "Screen"}: closer look`}
     >
       <header className={styles.top}>
-        <p className={styles.channel}>
-          CH {padNumber(channel + 1)} · {section?.label}
-        </p>
+        <p className={styles.channel}>{section?.tag}</p>
         {count > 1 && (
           <p className={styles.count} aria-live="polite">
             {(item % count) + 1} / {count}
@@ -155,7 +159,7 @@ export function ScreenViewer({
           className={styles.close}
           onClick={close}
           onMouseEnter={onTap}
-          aria-label="Back to the monitor"
+          aria-label="Step back"
         >
           <span aria-hidden="true">✕</span>
           <span className={styles.closeLabel}>Back</span>
@@ -203,9 +207,7 @@ export function ScreenViewer({
           <div key={current.title} className={styles.card}>
             <span className={styles.bars} aria-hidden="true" />
             <span className={styles.cardBody}>
-              <span className={styles.cardChannel}>
-                CH {padNumber(channel + 1)} · {section?.label}
-              </span>
+              <span className={styles.cardChannel}>{section?.tag}</span>
               <span className={styles.cardTitle}>{current.title}</span>
               <span className={styles.cardNote}>{current.note}</span>
             </span>
@@ -216,29 +218,33 @@ export function ScreenViewer({
 
       <footer className={styles.bottom}>
         <p className={styles.caption}>
-          {current?.type === "card" ? current.note : current?.alt}
+          {current?.type === "card" ? current.note : (current?.caption ?? current?.alt)}
         </p>
         <div className={styles.controls}>
-          <button
-            type="button"
-            className={styles.key}
-            onClick={() => tune(-1)}
-            onMouseEnter={onTap}
-            disabled={channel === 0}
-            aria-label="Previous part"
-          >
-            CH ▲
-          </button>
-          <button
-            type="button"
-            className={styles.key}
-            onClick={() => tune(1)}
-            onMouseEnter={onTap}
-            disabled={channel === sections.length - 1}
-            aria-label="Next part"
-          >
-            CH ▼
-          </button>
+          {channels.length > 1 && (
+            <>
+              <button
+                type="button"
+                className={styles.key}
+                onClick={() => tune(-1)}
+                onMouseEnter={onTap}
+                disabled={channel === 0}
+                aria-label="Previous part"
+              >
+                CH ▲
+              </button>
+              <button
+                type="button"
+                className={styles.key}
+                onClick={() => tune(1)}
+                onMouseEnter={onTap}
+                disabled={channel === channels.length - 1}
+                aria-label="Next part"
+              >
+                CH ▼
+              </button>
+            </>
+          )}
           {count > 1 && (
             <>
               <button

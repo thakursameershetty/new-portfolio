@@ -316,7 +316,7 @@ export async function createCrtSet(
 
   type Button = {
     mesh: THREE.Group;
-    kind: "power" | "up" | "down" | "channel";
+    kind: "power" | "up" | "down" | "channel" | "previous" | "next";
     index: number;
     pressed: number;
     lit: THREE.MeshStandardMaterial;
@@ -374,6 +374,9 @@ export async function createCrtSet(
     const row = Math.floor(index / 3);
     addButton("channel", index, (column - 1) * 0.058, -0.065 + row * 0.056, String(index + 1));
   });
+  // Under the numbers: step through the channel's pictures.
+  addButton("previous", -1, -0.042, 0.125, "◀");
+  addButton("next", -1, 0.042, 0.125, "▶");
 
   // Soft shadows under the monitor and the remote.
   const shadowCanvas = document.createElement("canvas");
@@ -402,6 +405,31 @@ export async function createCrtSet(
   remoteShadow.scale.set(0.36, 0.62, 1);
   remoteShadow.position.set(0.66, 0.001, 0.6);
   set.add(remoteShadow);
+
+  // The floor the set stands on: faint grid lines in the page's ink (a stronger one every
+  // fourth), fading out in an oval around the set so it melts into the page. It turns with the
+  // set when it's dragged round.
+  const floor = new THREE.Mesh(
+    keep(new THREE.PlaneGeometry(4, 4)),
+    keep(
+      new THREE.ShaderMaterial({
+        uniforms: {
+          uInk: { value: new THREE.Color(0x1a1a1a) },
+          uCell: { value: 0.125 },
+          uRadius: { value: 1.25 },
+        },
+        vertexShader: floorVertex,
+        fragmentShader: floorFragment,
+        transparent: true,
+        depthWrite: false,
+      }),
+    ),
+  );
+  floor.rotation.x = -Math.PI / 2;
+  // Centred between the monitor and the remote, just under the shadows.
+  floor.position.set(0.25, -0.0005, 0.2);
+  floor.renderOrder = -1;
+  set.add(floor);
 
   // ---- What's on the screen. ----
   const loader = new THREE.TextureLoader();
@@ -510,6 +538,16 @@ export async function createCrtSet(
       playing = video;
       itemTimer = window.setTimeout(advance, videoLimit);
     }
+  };
+
+  // The remote's ◀ and ▶: the channel's previous or next picture, then on from there.
+  const stepItem = (by: number) => {
+    const count = channels[channel]?.screen.length ?? 0;
+    if (count < 2) return;
+    itemIndex = (itemIndex + by + count) % count;
+    flicker(0.5, 220);
+    playItem();
+    onItem?.(itemIndex);
   };
 
   // ---- Motion. ----
@@ -749,6 +787,10 @@ export async function createCrtSet(
       onPower?.();
       return;
     }
+    if (button.kind === "previous" || button.kind === "next") {
+      stepItem(button.kind === "next" ? 1 : -1);
+      return;
+    }
     const count = channels.length;
     const next =
       button.kind === "channel"
@@ -966,6 +1008,37 @@ export async function createCrtSet(
     },
   };
 }
+
+// ---- The floor: a grid of hairlines, kept crisp at any distance (widths in screen pixels),
+// fading out from the middle. ----
+const floorVertex = /* glsl */ `
+  varying vec2 vPlace;
+  void main() {
+    vPlace = position.xy;
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+  }
+`;
+
+const floorFragment = /* glsl */ `
+  uniform vec3 uInk;
+  uniform float uCell;
+  uniform float uRadius;
+  varying vec2 vPlace;
+
+  float lines(vec2 at) {
+    vec2 grid = abs(fract(at - 0.5) - 0.5) / fwidth(at);
+    return 1.0 - min(min(grid.x, grid.y), 1.0);
+  }
+
+  void main() {
+    vec2 cell = vPlace / uCell;
+    float strength = max(lines(cell) * 0.13, lines(cell / 4.0) * 0.24);
+    // An oval, wider than deep, so the far edge fades before the near one.
+    float away = length(vPlace / vec2(1.0, 0.8));
+    float fade = 1.0 - smoothstep(uRadius * 0.3, uRadius, away);
+    gl_FragColor = vec4(uInk, strength * fade);
+  }
+`;
 
 // ---- The tube: curvature, scanlines, a vignette, static, and warming up from a line. ----
 const tubeVertex = /* glsl */ `

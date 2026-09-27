@@ -3,50 +3,44 @@
 import { useEffect, useRef, useState } from "react";
 import { useReducedMotion } from "framer-motion";
 import { onTilt } from "./deviceTilt";
-import { GestureHints, HintsToggle } from "./GestureHints";
 import type { CrtSet } from "./crtSet3d";
-import type { CaseSection, Project } from "./projects";
+import type { CaseChannel, Project } from "./projects";
 import styles from "./ProjectView.module.css";
 
-// Below this width the monitor sits alone above the story, and the remote becomes a strip of
-// keys along the bottom of the screen.
+// Below this width the monitor sits alone under the title, framed without its remote.
 const compactQuery = "(max-width: 999px)";
 
 /**
- * The case study's monitor: loads the three.js set (crtSet3d.ts) and keeps it on the current
- * channel. Without WebGL it falls back to a flat screen showing the channel's first still.
+ * The monitor at the top of a case study: loads the three.js set (crtSet3d.ts) and keeps it on
+ * the current channel (the reel, or a part's pictures), stepping through the channel's items
+ * on its own. Without WebGL it falls back to a flat screen showing the channel's first still.
  */
 export function CaseMonitor({
   project,
   number,
-  sections,
+  channels,
   channel,
   closer,
   onSelect,
   onPower,
   onCue,
   onLookCloser,
-  hintsShown,
-  onToggleHints,
   onUsed,
   screenRectRef,
   ejectRef,
 }: {
   project: Project;
   number: number;
-  sections: CaseSection[];
+  channels: CaseChannel[];
   channel: number;
   /** The item being looked at closely, or null. */
   closer: number | null;
+  /** A key on the remote chose this channel. */
   onSelect: (index: number) => void;
   onPower?: () => void;
   onCue?: (cue: "remoteKey" | "driveLoad") => void;
   /** Look closer at the screen, starting from this item of the current channel. */
   onLookCloser: (item: number) => void;
-  /** Whether the how-to caption under the set shows. */
-  hintsShown: boolean;
-  /** Its switch, kept with it: hides the hints, or brings them back. */
-  onToggleHints: () => void;
   /** The set was pressed (dragged, or its screen or a key clicked). */
   onUsed: () => void;
   /** Filled with a way to find the screen on the page, for the closer look to grow from. */
@@ -60,9 +54,6 @@ export function CaseMonitor({
   const [failed, setFailed] = useState(false);
   const [overScreen, setOverScreen] = useState(false);
   const monitorRef = useRef<HTMLDivElement>(null);
-  // How to work the set, as one caption under it (wide screens with a mouse); whether it
-  // shows is the case study's call (the hints key, and whether the set's been used).
-  const captionRef = useRef<HTMLDivElement>(null);
   // The "Look closer" pill that stands in for the cursor over the screen, and where it's
   // heading (the pointer, inside the monitor's box).
   const pillRef = useRef<HTMLSpanElement>(null);
@@ -93,7 +84,7 @@ export function CaseMonitor({
     import("./crtSet3d")
       .then(({ createCrtSet }) =>
         createCrtSet(canvas, {
-          channels: sections.map((section) => ({ label: section.label, screen: section.screen })),
+          channels,
           disk: { color: project.disk, ink: project.ink, number, title: project.title },
           reduceMotion: Boolean(reduceMotion),
           onSelect: (index) => handlers.current.onSelect(index),
@@ -123,7 +114,7 @@ export function CaseMonitor({
       canvas.remove();
       setSet(null);
     };
-  }, [number, project, reduceMotion, sections]);
+  }, [channels, number, project, reduceMotion]);
 
   useEffect(() => {
     itemRef.current = 0;
@@ -192,29 +183,7 @@ export function CaseMonitor({
     return () => cancelAnimationFrame(frame);
   }, [overScreen, reduceMotion]);
 
-  // The caption follows the set each frame, so it stays under it while it's dragged round
-  // and eases back: left-aligned with the set, a little below its foot.
-  useEffect(() => {
-    const monitor = monitorRef.current;
-    const caption = captionRef.current;
-    if (!set || !monitor || !caption) return;
-    let frame = 0;
-    const follow = () => {
-      frame = requestAnimationFrame(follow);
-      // Only drawn where there's room for it (see the CSS); skip the work otherwise.
-      if (!caption.offsetParent) return;
-      const whole = set.partRect("set");
-      if (!whole) return;
-      const box = monitor.getBoundingClientRect();
-      const left = Math.max(whole.left - box.left, 0);
-      const top = Math.min(whole.bottom - box.top + 24, box.height - caption.offsetHeight - 16);
-      caption.style.transform = `translate(${left}px, ${top}px)`;
-    };
-    frame = requestAnimationFrame(follow);
-    return () => cancelAnimationFrame(frame);
-  }, [set]);
-
-  const fallback = sections[channel]?.screen.find((item) => item.type === "image");
+  const fallback = channels[channel]?.screen.find((item) => item.type === "image");
 
   return (
     <div
@@ -232,25 +201,6 @@ export function CaseMonitor({
       }}
     >
       <div ref={holderRef} className={styles.monitorHolder} />
-      <div
-        ref={captionRef}
-        className={styles.setCaption}
-        data-looking={looking || undefined}
-      >
-        <HintsToggle shown={hintsShown} onToggle={onToggleHints} />
-        <div aria-hidden="true" className={styles.captionList} data-hidden={!hintsShown || undefined}>
-          <GestureHints
-            hints={[
-              { gesture: "Drag", does: "to turn it" },
-              { gesture: "Click", does: "the screen to look closer" },
-              { gesture: "Click", does: "a key to change the channel" },
-              // The remote's red key; only on the wide set, where the remote is out.
-              { gesture: "Click", does: "the power button to eject and leave" },
-            ]}
-            active={Boolean(set)}
-          />
-        </div>
-      </div>
       <span
         ref={pillRef}
         className={styles.cursorPill}
@@ -273,7 +223,7 @@ export function CaseMonitor({
             // eslint-disable-next-line @next/next/no-img-element
             <img src={fallback.src} alt="" />
           ) : (
-            <span>{sections[channel]?.label}</span>
+            <span>{project.title}</span>
           )}
         </div>
       )}

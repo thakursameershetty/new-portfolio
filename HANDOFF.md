@@ -275,15 +275,30 @@ Unsplash-licensed) and two CC0 MDN clips re-encoded with ffmpeg (`demo-flower.mp
 1. **Real media and links:** replace the placeholder images/clips in `public/work/` and the
    `example.com` links (Mutiny Talent, SamudraGupt-Q) in `projects.ts`. The owner will supply
    them.
-2. **Case studies (planned):** one per project. Agreed shape: header (role, timeframe, tools,
-   link) → context → "my role" (say plainly it was built solo, especially Spotmies work) → 2–3
-   key decisions → the hard part → outcome → reflection → visuals/clips. Company work: check
-   what Spotmies allows to be shown. SamudraGupt-Q: the owner will share the final-year
-   documentation; condense it, explain the quantum ideas in plain language, and confirm which
-   parts were theirs (role says "Lead designer + developer"). The owner is preparing answers to:
-   who it was for, when/how long, what they did, hardest part, a proud decision, what happened
-   after, what they'd change, what media they can share. Likely a page per project, linked from
-   the row/window.
+2. **Case studies (in progress):** one per project, written up in `projects.ts`
+   (`caseStudy`). Rao Bahadur is done (bar a line on what they'd change, and whether fans'
+   nicknames in screenshots should be blurred); SamudraGupt-Q is written; the rest fall back to
+   a single overview. Layout (`ProjectView.tsx`), chosen over an earlier version where the
+   story sat beside a sticky CRT and each part was a channel (the work was too small to see,
+   and it read as a wall of text): a first screen with the meta line (with a read time worked
+   out from the text), the title, a story `headline` (the summary only shows without one),
+   link and tools, kept sparse on purpose (the owner found a fuller version clumsy), beside
+   the CRT standing on a faint grid floor that fades out (channel 1 is the project's `reel`,
+   then a channel per part with pictures, its `screen` or else its `figures`; the remote's
+   keys tune the TV without scrolling the page, and its ◀ ▶ step through the channel's
+   pictures); then a `brief` band across the page under the fold (label, value, note, 3
+   across; after a reference the owner liked); then the story in a 680px column, each part's
+   `figures` large under its text (`layout`: wide, pair, grid or row), with a `caption` each.
+   A part's `act` names a new act of the story above it (The brief, The decisions, The build,
+   What happened). Any picture, or the set's screen, opens `ScreenViewer`. The how-to hints
+   live in the hero's empty top-right corner (a "? Hide hints" switch with a dark card of
+   hints under it; just above the set on narrow screens). The owner rejected them under the set,
+   under the title, and inside the top bar. The card opens by itself on wide screens with a
+   mouse until the set is used, and only on request elsewhere. Shape per
+   project: brief → 2–3 key decisions (the bulk) → everything else as a grid of screens →
+   the hard part → outcome → reflection. Say plainly the work was solo. Don't quote numbers
+   the client sets for marketing (Rao Bahadur's home page counter). The monitor's screen is
+   4:3 and covers, so portrait pictures for the `reel` are paired side by side on black.
 3. Optional résumé download key in Contact (needs `public/resume.pdf`).
 4. `public/spotmies_banner.webp` is unused (kept as an asset).
 5. At 320px, the status line wraps awkwardly ("10:27 / PM" beside "IN VISAKHAPATNAM, / INDIA");

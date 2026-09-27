@@ -2,26 +2,41 @@
 // states; add years, images and links as they're confirmed). `disk` is the disk's body
 // colour and `ink` the colour of anything printed on it.
 
+/** A still or a clip; `caption` is the short line shown under it in a case study. */
 export type ProjectMedia =
-  | { type: "image"; src: string; alt: string }
-  | { type: "video"; src: string; poster: string; alt: string };
+  | { type: "image"; src: string; alt: string; caption?: string }
+  | { type: "video"; src: string; poster: string; alt: string; caption?: string };
 
 /**
- * What the case study's monitor shows: a still or clip, or (until the footage exists) a test
- * card naming what will go there.
+ * A picture in a case study (or on its monitor): a still or clip, or (until the footage
+ * exists) a test card naming what will go there.
  */
 export type ScreenItem = ProjectMedia | { type: "card"; title: string; note: string };
 
-/** One part of a case study, and one channel on its monitor. */
+/** One part of a case study: its text, then its pictures, large. */
 export interface CaseSection {
   id: string;
-  /** Short name for the remote and the monitor's display. */
+  /** Starts a new act of the story (e.g. "The decisions"), named above this part. */
+  act?: string;
+  /** Short name for the progress ticks and the closer look. */
   label: string;
   heading: string;
   paragraphs: string[];
   points?: string[];
-  /** Played on the monitor while this part is being read. */
-  screen: ScreenItem[];
+  figures?: ScreenItem[];
+  /** What the monitor shows on this part's channel, when it can't be the figures (the
+   *  screen is 4:3 and fills itself, so tall pictures lose their top and bottom). */
+  screen?: ScreenItem[];
+  /** How the figures sit: each full width (the default), two side by side, two across in a
+   *  grid, or all in one row (for tall ones, like posts). */
+  layout?: "wide" | "pair" | "grid" | "row";
+}
+
+/** A cell of the brief under a case study's title: what it's about, the fact, and a note. */
+export interface CaseFact {
+  label: string;
+  value: string;
+  note?: string;
 }
 
 export interface Project {
@@ -38,8 +53,16 @@ export interface Project {
   link?: { href: string; label: string };
   /** Screenshots and clips, shown on the preview monitor and in the project window. */
   media?: ProjectMedia[];
-  /** The full write-up, part by part; projects without one get a single overview part. */
-  caseStudy?: { timeframe: string; sections: CaseSection[] };
+  /** The full write-up, part by part; projects without one get a single overview part.
+   *  `headline` is the story in a line, under the title; `brief` the grid of facts at a
+   *  glance; `reel` what the monitor plays first (the project's media if left out). */
+  caseStudy?: {
+    timeframe: string;
+    headline?: string;
+    brief?: CaseFact[];
+    reel?: ScreenItem[];
+    sections: CaseSection[];
+  };
   disk: string;
   ink: string;
 }
@@ -48,22 +71,155 @@ export const projects: Project[] = [
   {
     id: "raobahadur",
     title: "Rao Bahadur",
-    kind: "Full stack web app",
-    role: "Design + full stack",
+    kind: "Fan site for a feature film",
+    role: "Solo: design + full stack",
     context: "Spotmies",
     summary:
-      "A ready-to-use full stack web application, built fast and owned end to end, from the first design to the backend optimisations.",
+      "A fan site for the Telugu film Rao Bahadur, where people who'd seen it could pick their favourite characters and post and debate theories, without making an account. Built alone in under a week, with an admin panel the film team ran themselves.",
     highlights: [
-      "Complete ownership of the product, from design through to backend",
-      "Shipped quickly in an agile, iterative way",
+      "No sign-up: a nickname and a generated face, asked for only on your first like or post",
+      "Likes, replies and trending theories that update live",
+      "An admin panel for the debate, the critics' videos, users and theories",
     ],
-    stack: ["Design", "Frontend", "Backend"],
+    // Confirm: add the database / live-update service.
+    stack: ["Next.js", "GSAP", "Vercel"],
     link: { href: "https://raobahadur.in", label: "raobahadur.in" },
-    // Placeholder media: swap for real screenshots and clips.
     media: [
-      { type: "image", src: "/work/raobahadur-1.jpg", alt: "Rao Bahadur screenshot 1" },
-      { type: "image", src: "/work/raobahadur-2.jpg", alt: "Rao Bahadur screenshot 2" },
+      { type: "image", src: "/work/raobahadur/hero.jpg", alt: "Rao Bahadur home page" },
+      { type: "image", src: "/work/raobahadur/characters.jpg", alt: "Picking favourite characters, with like counts" },
+      { type: "image", src: "/work/raobahadur/theories.jpg", alt: "The fan theories board" },
     ],
+    caseStudy: {
+      timeframe: "July 2026",
+      headline: "Getting a slow-burn film talked about, with nothing in the way of joining in",
+      brief: [
+        { label: "Role", value: "Solo, end to end", note: "Design, frontend, backend, admin" },
+        { label: "Product", value: "Fan site + admin panel", note: "For the Telugu film Rao Bahadur" },
+        { label: "Window", value: "5–6 days", note: "Live for the July 2026 release" },
+        { label: "Fans", value: "271 theories", note: "And 144 comments and replies" },
+        { label: "Reach", value: "4 official posts", note: "36,000+ views on X, the director replying" },
+        { label: "Takeaway", value: "Remove every hurdle", note: "A nickname was enough to join in" },
+      ],
+      reel: [
+        { type: "image", src: "/work/raobahadur/hero.jpg", alt: "Rao Bahadur home page" },
+        { type: "image", src: "/work/raobahadur/characters.jpg", alt: "Picking favourite characters" },
+        { type: "image", src: "/work/raobahadur/theories.jpg", alt: "The fan theories board" },
+        { type: "image", src: "/work/raobahadur/easter-egg.jpg", alt: "The insect easter egg" },
+      ],
+      sections: [
+        {
+          id: "brief",
+          act: "The brief",
+          label: "Brief",
+          heading: "Keep people talking after the film",
+          paragraphs: [
+            "Rao Bahadur is a Telugu film directed by Venkatesh Maha. Its makers asked Spotmies for a site where people who'd watched it could share their opinions and dig into the hidden details the director had put in. It's a slow, detailed film, and it opened in the same week as a much bigger star's, so it needed word of mouth. Spotmies gave the project to me, and I designed and built all of it.",
+            "The first draft took two to three days and covered about 90% of the site. The client's changes, like the admin panel, took it to five or six.",
+          ],
+          figures: [
+            { type: "image", src: "/work/raobahadur/hero.jpg", alt: "Rao Bahadur home page", caption: "The home page: root for the film, or see the buzz around it." },
+          ],
+        },
+        {
+          id: "identity",
+          act: "The decisions",
+          label: "No sign-up",
+          heading: "No sign-up, just a name",
+          paragraphs: [
+            "Fans of a smaller film won't make an account just to leave a comment, and a fan discussion doesn't need real names. So reading is open to everyone, and only your first like, reply or post asks for a nickname. As you type it, a face is drawn from the letters, so everyone has an avatar without uploading a photo.",
+          ],
+          layout: "pair",
+          figures: [
+            { type: "image", src: "/work/raobahadur/identify-modal.jpg", alt: "Identify yourself: an empty avatar and a nickname field", caption: "Asked for only on your first like, reply or post." },
+            { type: "image", src: "/work/raobahadur/identify-avatar-modal.jpg", alt: "The avatar's face appears as the name is typed", caption: "The face is drawn from the name as you type it." },
+          ],
+        },
+        {
+          id: "spoilers",
+          label: "Spoilers",
+          heading: "Ask before you spoil it",
+          paragraphs: [
+            "Rooting for the film starts with one question: have you watched it? If not, you go to the buzz page, with trailers, critics' posts and where to book tickets, and nothing that gives the film away. If you have, you pick your favourite characters and go on to the theories.",
+          ],
+          layout: "pair",
+          figures: [
+            { type: "image", src: "/work/raobahadur/watched.jpg", alt: "Have you watched Rao Bahadur? Two cards: yes, or not yet", caption: "One question before any spoilers." },
+            { type: "image", src: "/work/raobahadur/characters.jpg", alt: "Five character cards, each with a like count", caption: "Favourite characters, with like counts that update live." },
+          ],
+        },
+        {
+          id: "easter-egg",
+          label: "Easter egg",
+          heading: "A hidden detail of my own",
+          paragraphs: [
+            "The site is about the details the director hid in the film, so I hid one in the site. Search the theories for “the insect”, in English or in Telugu, and confetti falls while a card explains what the insect stands for in the film.",
+          ],
+          figures: [
+            { type: "image", src: "/work/raobahadur/easter-egg.jpg", alt: "Easter egg: the Insect of Doubt card over falling confetti", caption: "Found by searching “the insect”." },
+          ],
+        },
+        {
+          id: "more",
+          act: "The build",
+          label: "Also built",
+          heading: "Everything around it",
+          paragraphs: [
+            "Around those decisions is the rest of the product: the theories themselves, a debate the film team ran, and an admin panel they used without needing me.",
+          ],
+          layout: "grid",
+          figures: [
+            { type: "image", src: "/work/raobahadur/theories.jpg", alt: "The fan theories board, with tabs for trending, new and hidden details", caption: "Theories to read, like, reply to, save and share." },
+            { type: "image", src: "/work/raobahadur/theory-trending.jpg", alt: "A theory trending through clicks and through replies", caption: "Tags show whether a theory is trending through clicks, likes or replies." },
+            { type: "image", src: "/work/raobahadur/hero-debate.jpg", alt: "The home page with its Live debate banner", caption: "An open debate with the film team, announced on the home page." },
+            { type: "image", src: "/work/raobahadur/debate-form.jpg", alt: "Open debate sign-up form", caption: "The debate sign-up: the only place that asks for real details, so the team could pick people and contact them." },
+            { type: "image", src: "/work/raobahadur/admin-theories.jpg", alt: "Admin dashboard listing theories, comments and replies", caption: "The admin panel: users, theories, the debate and the buzz page." },
+            { type: "image", src: "/work/raobahadur/my-theories.jpg", alt: "My theories and saved theories", caption: "Your own theories, and the ones you saved." },
+          ],
+        },
+        {
+          id: "hard",
+          label: "Hard part",
+          heading: "Keeping it fast and live",
+          paragraphs: [
+            "I was still new to building at this scale. The hardest part was keeping pages quick while theories, replies, videos and images piled up, and making likes and counts update live without a refresh. I also reworked the animations several times, until each one explained something instead of getting in the way.",
+          ],
+          figures: [
+            { type: "image", src: "/work/raobahadur/theory-hidden-detail.jpg", alt: "A theory page with its discussion and like count", caption: "A theory page. Likes and replies arrive without a refresh." },
+          ],
+        },
+        {
+          id: "outcome",
+          act: "What happened",
+          label: "Outcome",
+          heading: "What happened",
+          paragraphs: [
+            // The count on the home page is set by the client for marketing, so it isn't quoted
+            // here; these totals are from the admin panel.
+            "Fans posted 271 theories and 144 comments and replies. The film's official X account sent people to the site four times in its first ten days, asked for easter eggs and theories, and said the director would reply to the best ones. Spotmies was told on a call that the filmmakers loved the site.",
+          ],
+          layout: "row",
+          // Paired side by side, so they fill the monitor's 4:3 screen.
+          screen: [
+            { type: "image", src: "/work/raobahadur/posts-jul-7.jpg", alt: "Two posts about the site from @RaoBahadurMovie on July 7" },
+            { type: "image", src: "/work/raobahadur/posts-jul-8-16.jpg", alt: "Posts about the site from July 8 and July 16" },
+          ],
+          figures: [
+            { type: "image", src: "/work/raobahadur/post-1.jpg", alt: "@RaoBahadurMovie: Loved #RaoBahadur? Visit raobahadur.in. Root for it. Root for good cinema.", caption: "July 7 · 13,985 views" },
+            { type: "image", src: "/work/raobahadur/post-2.jpg", alt: "@RaoBahadurMovie: Think you've decoded #RaoBahadur? Share the easter eggs you found; @mahaisnotanoun will reply to the best ones.", caption: "July 7 · 7,450 views" },
+            { type: "image", src: "/work/raobahadur/post-3.jpg", alt: "@RaoBahadurMovie: We're going through all of them and are quite amazed by them, with a fan's theory from the site", caption: "July 8 · 4,834 views" },
+            { type: "image", src: "/work/raobahadur/post-4.jpg", alt: "@RaoBahadurMovie: Loved it or have mixed feelings? Join the #RaoBahadur Debate at raobahadur.in/debate", caption: "July 16 · 9,892 views" },
+          ],
+        },
+        {
+          id: "reflection",
+          label: "Reflection",
+          heading: "A site can't change a release date",
+          paragraphs: [
+            "The film got good reviews but didn't do well at the box office, partly because it came out alongside a bigger film. The site kept the people who had watched it talking, and gave the film team something to post about, but it couldn't bring in the people who never went to see it.",
+          ],
+        },
+      ],
+    },
     disk: "#1f1f1f",
     ink: "#f5f1ea",
   },
@@ -186,7 +342,8 @@ export const projects: Project[] = [
             "SamudraGupt-Q is my final-year project, and I built all of it on my own: the research, the design and every part of the code. It's a working simulation of a security system for swarms of autonomous underwater drones.",
             "Phones stand in for the drones and stream their real motion sensors. A 3D command dashboard shows the swarm live, and a separate attacker console lets me break things on purpose and watch how the system responds.",
           ],
-          screen: [
+          layout: "pair",
+          figures: [
             { type: "card", title: "Command dashboard", note: "Recording coming soon" },
             { type: "image", src: "/work/samudragupt/architecture.jpg", alt: "System architecture: phones as drone nodes, a cloud aggregator, the command centre and the quantum layer" },
           ],
@@ -204,7 +361,7 @@ export const projects: Project[] = [
             "Notice a captured drone from how it moves, not only from its keys",
             "Let the fleet share numbers without one server seeing every drone's data",
           ],
-          screen: [{ type: "card", title: "Store now, decrypt later", note: "Illustration coming soon" }],
+          figures: [{ type: "card", title: "Store now, decrypt later", note: "Illustration coming soon" }],
         },
         {
           id: "how",
@@ -219,7 +376,8 @@ export const projects: Project[] = [
             "Privacy: TenSEAL averages the fleet's depth readings while they're still encrypted (CKKS)",
             "AI agent: a PPO agent reads link quality, latency and g-force, and chooses to carry on, rotate keys or cut the node off",
           ],
-          screen: [
+          layout: "pair",
+          figures: [
             { type: "image", src: "/work/samudragupt/architecture.jpg", alt: "System architecture diagram" },
             { type: "image", src: "/work/samudragupt/sequence.jpg", alt: "Sequence diagram: key exchange, encrypted telemetry and the AI agent's decision" },
           ],
@@ -233,7 +391,8 @@ export const projects: Project[] = [
             "I gave the agent three choices instead of a yes-or-no alarm. Rotating keys is a middle step, so a noisy reading doesn't split the swarm the way cutting a node off would.",
             "I built the attacker as its own console. Spoofing a node, stripping its key or striking it all happen live, against the running system.",
           ],
-          screen: [
+          layout: "pair",
+          figures: [
             { type: "image", src: "/work/samudragupt/threat-flow.jpg", alt: "Flowchart of the threat response, from the quantum check to Protocol Omega" },
             { type: "card", title: "Drone and attacker consoles", note: "Recording coming soon" },
           ],
@@ -252,7 +411,8 @@ export const projects: Project[] = [
             "A violent shake, which triggers Protocol Omega: the node is cut off and its keys wiped",
             "A drone reporting a false depth, which the fleet average has to ignore",
           ],
-          screen: [
+          layout: "pair",
+          figures: [
             { type: "card", title: "Kinetic strike → Protocol Omega", note: "Recording coming soon" },
             { type: "card", title: "Rogue node detected", note: "Recording coming soon" },
           ],
@@ -270,7 +430,7 @@ export const projects: Project[] = [
             "Get Dilithium running, and filter outliers without decrypting",
             "Train and evaluate the agent on recorded phone sessions with labelled attacks",
           ],
-          screen: [{ type: "card", title: "Next steps", note: "Diagram coming soon" }],
+          figures: [{ type: "card", title: "Next steps", note: "Diagram coming soon" }],
         },
       ],
     },
@@ -361,11 +521,41 @@ export function caseSections(project: Project): CaseSection[] {
       id: "overview",
       label: "Overview",
       heading: "Overview",
-      paragraphs: [project.summary],
+      // The summary already opens the page.
+      paragraphs: [],
       points: project.highlights,
-      screen: project.media?.length
-        ? project.media
-        : [{ type: "card", title: project.title, note: "Screens coming soon" }],
+      figures: project.media,
+      layout: "grid",
     },
   ];
+}
+
+/** A channel on the case study's monitor. */
+export interface CaseChannel {
+  label: string;
+  screen: ScreenItem[];
+  /** The part it shows, or null for the reel. */
+  part: number | null;
+}
+
+/**
+ * The monitor's channels: the reel first (the project's media if it has no reel of its own),
+ * then one for each part with pictures.
+ */
+export function caseChannels(project: Project): CaseChannel[] {
+  const reel = project.caseStudy?.reel ?? project.media;
+  const channels: CaseChannel[] = [
+    {
+      label: "Reel",
+      screen: reel?.length ? reel : [{ type: "card", title: project.title, note: "Screens coming soon" }],
+      part: null,
+    },
+  ];
+  // Without a write-up, the overview's pictures are the reel again.
+  if (!project.caseStudy) return channels;
+  project.caseStudy.sections.forEach((section, part) => {
+    const screen = section.screen ?? section.figures;
+    if (screen?.length) channels.push({ label: section.label, screen, part });
+  });
+  return channels;
 }

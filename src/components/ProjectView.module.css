@@ -1,7 +1,6 @@
-/* A project's case study, full screen, on the cream of the old window. Wide screens (1000px+):
-   the monitor and its remote held in view on the left, beside the story, part by part, on the
-   right. Narrow screens: the title, then the monitor pinned under the bar while the parts
-   scroll beneath it, and the remote as a strip of keys along the bottom. */
+/* A project's case study, full screen, on the cream of the old window: the opening (the
+   title and the facts at a glance beside the set, or above it on narrow screens), then the
+   story, part by part, each with its pictures large. */
 .view {
   --pad: clamp(20px, 5vw, 56px);
   /* Room at the top for the floating header pill. */
@@ -27,6 +26,7 @@
 }
 
 .pill {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 14px;
@@ -182,37 +182,83 @@
   transform: translateY(1px);
 }
 
-/* The hints under the title, with their switch above them; the list folds away when
-   they're put away, and the switch stays. */
-.titleHints {
+/* How to work the set: a switch in the hero's top corner (wide screens), or just above the
+   set (narrow), and the card of hints dropping from it. */
+.hintsCorner {
   --hint-ink: rgba(26, 26, 26, 0.6);
   --key-ink: #1a1a1a;
   --toggle-edge: rgba(26, 26, 26, 0.2);
   --toggle-cut: #f4f0e6;
-  margin-top: 24px;
+  position: relative;
+  z-index: 2;
+  justify-self: end;
+  margin-top: 12px;
 }
 
-.titleHints .hints {
-  margin-top: 14px;
-}
-.hintsHolder {
-  display: grid;
-  grid-template-rows: 1fr;
-  transition:
-    grid-template-rows 300ms ease,
-    opacity 250ms ease;
+.hintsToggle {
+  background: #f4f0e6;
 }
 
-/* Clipped while it folds away; the bottom padding keeps the last key's skirt in view. */
-.hintsHolder > * {
-  min-height: 0;
-  padding-bottom: 4px;
-  overflow: hidden;
-}
-
-.hintsHolder[data-hidden] {
-  grid-template-rows: 0fr;
+/* The card: dark glass like the bar, cream keys, one gesture per line, under the switch. */
+.hintsCard {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: max-content;
+  max-width: min(420px, calc(100vw - 2 * var(--pad)));
+  padding: 16px 18px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 10px;
+  /* Darker than the bar: it lies over text, which mustn't show through. */
+  background: rgba(20, 20, 20, 0.92);
+  -webkit-backdrop-filter: blur(20px) saturate(1.4);
+  backdrop-filter: blur(20px) saturate(1.4);
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.2);
+  --hint-ink: rgba(245, 241, 234, 0.72);
+  --key-ink: #1a0605;
   opacity: 0;
+  visibility: hidden;
+  transform: translateY(-6px);
+  transition:
+    opacity 200ms ease,
+    transform 300ms cubic-bezier(0.16, 1, 0.3, 1),
+    visibility 0s linear 300ms;
+}
+
+.hintsCard[data-shown] {
+  opacity: 1;
+  visibility: visible;
+  transform: none;
+  transition:
+    opacity 200ms ease,
+    transform 300ms cubic-bezier(0.16, 1, 0.3, 1),
+    visibility 0s;
+}
+
+.hintsCard p {
+  flex-direction: column;
+  flex-wrap: nowrap;
+  gap: 10px;
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+/* Keys of one width, so the descriptions start on the same line. */
+.hintsCard kbd {
+  min-width: 52px;
+  text-align: center;
+}
+
+@media (max-width: 600px) {
+  .hintsCard p {
+    white-space: normal;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hintsCard {
+    transition: none;
+  }
 }
 
 .ejectIcon {
@@ -220,31 +266,23 @@
   height: 12px;
 }
 
-/* ---- Story and monitor. ---- */
-.layout {
+/* ---- The opening: the title and the facts at a glance, with the set beside them (wide)
+   or under them (narrow). ---- */
+.opening {
+  position: relative;
   display: grid;
   max-width: 1360px;
   margin: 0 auto;
-  padding: 0 var(--pad);
-}
-
-/* Narrow: its parts join the grid directly, so the monitor falls between title and parts. */
-.story {
-  display: contents;
+  padding: calc(var(--bar) + 16px) var(--pad) 0;
 }
 
 .intro {
-  order: 1;
-  padding: calc(var(--bar) + 16px) 0 24px;
+  padding-bottom: 8px;
 }
 
 .stage {
-  order: 2;
-}
-
-.parts,
-.details {
-  order: 3;
+  height: clamp(260px, 48svh, 440px);
+  margin: 8px calc(var(--pad) * -1) 0;
 }
 
 .meta {
@@ -273,168 +311,98 @@
   color: rgba(26, 26, 26, 0.7);
 }
 
-/* How to work the set, under the title: dark keys on the light page. */
-.hints {
-  --key-face: #1a1a1a;
-  --key-ink: #f5f1ea;
-  --key-skirt: #000;
-  font-size: 12px;
+.summary {
+  max-width: 54ch;
+  margin-top: 20px;
+  font-size: 17px;
+  line-height: 1.55;
 }
 
-/* ---- Arriving text. The title and headings flip in on the split-flap board (a word per
-   board line, so they wrap); paragraphs and points rise in one after another once their part
-   is in view; the parts you're not on dim a little. Only once the page has set
-   data-arriving, so without JavaScript it's all simply there. ---- */
-.title .flapWord,
-.partHeading .flapWord {
-  display: inline-block;
-}
-
-.title .flapWord:not(:last-child),
-.partHeading .flapWord:not(:last-child) {
-  margin-right: 0.32em;
-}
-
-.view[data-arriving] .arrive {
-  opacity: 0;
-  transform: translateY(14px);
-  transition:
-    opacity 500ms ease,
-    transform 700ms cubic-bezier(0.16, 1, 0.3, 1);
-  transition-delay: calc(240ms + var(--order, 0) * 90ms);
-}
-
-.view[data-arriving] .part[data-seen] .arrive {
-  opacity: 1;
-  transform: none;
-}
-
-.view[data-arriving] .part {
-  transition: opacity 400ms ease;
-}
-
-.view[data-arriving] .part:not([data-current]) {
-  opacity: 0.5;
-}
-
-/* The current part's tag reads like a CRT: a block cursor blinking after it. */
-.part[data-current] .partTag::after {
-  content: "";
-  display: inline-block;
-  width: 0.62em;
-  height: 1.05em;
-  margin-left: 6px;
-  vertical-align: -0.2em;
-  background: currentColor;
-  animation: cursorBlink 1.05s steps(2, jump-none) infinite;
-}
-
-@keyframes cursorBlink {
-  50% {
-    opacity: 0;
-  }
-}
-
-.view[data-arriving] .stack li {
-  opacity: 0;
-  transform: scale(0.86);
-  transition:
-    opacity 300ms ease,
-    transform 420ms cubic-bezier(0.34, 1.5, 0.64, 1);
-  transition-delay: calc(var(--order, 0) * 55ms);
-}
-
-.view[data-arriving] .details[data-seen] .stack li {
-  opacity: 1;
-  transform: none;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .view[data-arriving] .arrive,
-  .view[data-arriving] .stack li {
-    opacity: 1;
-    transform: none;
-    transition: none;
-  }
-
-  .part[data-current] .partTag::after {
-    animation: none;
-  }
-
-  .pill {
-    animation: none;
-  }
-}
-
-/* ---- The parts: each one a channel on the monitor. ---- */
-.part {
-  /* Scrolled to from the remote: clear of the bar (and, narrow, the pinned monitor). */
-  scroll-margin-top: calc(var(--bar) + var(--stage-height, 0px) + 28px);
-  padding: 36px 0;
-  border-top: 1px solid rgba(26, 26, 26, 0.12);
-}
-
-.partTag {
-  font-family: var(--font-hero), monospace;
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: rgba(26, 26, 26, 0.45);
-  transition: color 200ms ease;
-}
-
-.part[data-current] .partTag {
-  color: #2f7a2f;
-}
-
-.partHeading {
-  margin: 10px 0 16px;
-  font-family: var(--font-hero), monospace;
-  font-size: clamp(22px, 2.6vw, 30px);
-  font-weight: 700;
-  line-height: 1.02;
-  letter-spacing: -0.04em;
-  word-spacing: -0.3em;
-  text-transform: uppercase;
+/* The story in a line, under the title. */
+.headline {
+  max-width: 30ch;
+  margin-top: 4px;
+  font-size: clamp(20px, 1.9vw, 25px);
+  font-weight: 500;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
   text-wrap: balance;
 }
 
-.paragraph {
-  max-width: 62ch;
-  font-size: 17px;
-  line-height: 1.6;
-}
-
-.paragraph + .paragraph {
-  margin-top: 14px;
-}
-
-.highlights {
+/* The brief: a grid of facts, each with what it's about, the fact, and a note; hairlines
+   between the cells (the gaps show the grid's own colour). */
+.brief {
   display: grid;
-  gap: 10px;
-  max-width: 62ch;
-  margin-top: 20px;
-  list-style: none;
-  font-size: 15px;
-  line-height: 1.5;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1px;
+  margin-top: 32px;
+  overflow: hidden;
+  border: 1px solid rgba(26, 26, 26, 0.13);
+  border-radius: 12px;
+  background: rgba(26, 26, 26, 0.13);
 }
 
-.highlights li {
-  position: relative;
-  padding-left: 22px;
+.briefCell {
+  padding: 20px 22px 22px;
+  background: #f7f4ec;
 }
 
-.highlights li::before {
-  content: "→";
-  position: absolute;
-  left: 0;
-  color: rgba(26, 26, 26, 0.5);
+@media (min-width: 900px) {
+  .brief {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .briefCell {
+    padding: 26px 28px 28px;
+  }
+
+  /* Three across: an odd one out no longer needs to span. */
+  .briefCell:last-child:nth-child(odd) {
+    grid-column: auto;
+  }
 }
 
-.details {
-  padding: 28px 0 56px;
-  border-top: 1px solid rgba(26, 26, 26, 0.12);
+/* An odd one out spans the row, so no empty cell shows. */
+.briefCell:last-child:nth-child(odd) {
+  grid-column: 1 / -1;
+}
+
+.briefLabel {
+  font-family: var(--font-hero), monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: rgba(26, 26, 26, 0.45);
+}
+
+.briefValue {
+  margin-top: 10px;
+  font-size: clamp(17px, 1.5vw, 20px);
+  font-weight: 500;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+}
+
+.briefNote {
+  margin-top: 6px;
+  font-size: 13px;
+  line-height: 1.4;
+  color: rgba(26, 26, 26, 0.6);
+}
+
+@media (max-width: 380px) {
+  .briefCell {
+    padding: 14px 14px 16px;
+  }
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px;
+  margin-top: 28px;
 }
 
 .stack {
@@ -457,7 +425,6 @@
 
 .visit {
   display: inline-flex;
-  margin-top: 24px;
   padding: 13px 18px;
   border-radius: 6px;
   background: #1a1a1a;
@@ -480,6 +447,360 @@
   white-space: nowrap;
 }
 
+/* ---- Arriving text. The title and headings flip in on the split-flap board (a word per
+   board line, so they wrap); paragraphs, points and pictures rise in one after another once
+   their part is in view. Only once the page has set data-arriving, so without JavaScript
+   it's all simply there. ---- */
+.title .flapWord,
+.partHeading .flapWord {
+  display: inline-block;
+}
+
+.title .flapWord:not(:last-child),
+.partHeading .flapWord:not(:last-child) {
+  margin-right: 0.32em;
+}
+
+.view[data-arriving] .arrive {
+  opacity: 0;
+  transform: translateY(14px);
+  transition:
+    opacity 500ms ease,
+    transform 700ms cubic-bezier(0.16, 1, 0.3, 1);
+  transition-delay: calc(240ms + min(var(--order, 0), 8) * 90ms);
+}
+
+.view[data-arriving] [data-seen] .arrive {
+  opacity: 1;
+  transform: none;
+}
+
+/* The tag of the part being read reads like a CRT: a block cursor blinking after it. */
+.part[data-current] .partTag::after {
+  content: "";
+  display: inline-block;
+  width: 0.62em;
+  height: 1.05em;
+  margin-left: 6px;
+  vertical-align: -0.2em;
+  background: currentColor;
+  animation: cursorBlink 1.05s steps(2, jump-none) infinite;
+}
+
+@keyframes cursorBlink {
+  50% {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .view[data-arriving] .arrive {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+
+  .part[data-current] .partTag::after {
+    animation: none;
+  }
+
+  .pill {
+    animation: none;
+  }
+}
+
+/* The cue to scroll: a small pane of the bar's dark glass at the bottom centre of the window.
+   It rises in once the title has arrived and goes as soon as the page moves. Its arrow keeps
+   dropping, like a nudge downward. */
+.scrollCue {
+  position: fixed;
+  bottom: max(24px, env(safe-area-inset-bottom));
+  left: 50%;
+  z-index: 3;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px 10px 13px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 10px;
+  background: rgba(20, 20, 20, 0.72);
+  -webkit-backdrop-filter: blur(20px) saturate(1.4);
+  backdrop-filter: blur(20px) saturate(1.4);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18);
+  color: #f5f1ea;
+  font-family: var(--font-display), sans-serif;
+  font-size: 12px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  cursor: pointer;
+  opacity: 0;
+  transform: translate(-50%, 16px);
+  pointer-events: none;
+  transition:
+    opacity 300ms ease,
+    transform 600ms cubic-bezier(0.34, 1.1, 0.64, 1),
+    background-color 150ms ease;
+}
+
+.scrollCue[data-shown] {
+  opacity: 1;
+  transform: translate(-50%, 0);
+  pointer-events: auto;
+  transition-delay: 500ms, 500ms, 0ms;
+}
+
+.scrollCue:hover {
+  background: rgba(0, 0, 0, 0.85);
+}
+
+.scrollCue:focus-visible {
+  outline: 2px solid #1a1a1a;
+  outline-offset: 3px;
+}
+
+.scrollArrow {
+  flex: none;
+  animation: drop 1.6s ease-in-out infinite;
+}
+
+@keyframes drop {
+  0% {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  30%,
+  70% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scrollCue {
+    transition: opacity 300ms ease;
+  }
+
+  .scrollArrow {
+    animation: none;
+  }
+}
+
+/* ---- The story: a column of text a comfortable line long, with each part's pictures
+   under it, wider. ---- */
+.story {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 var(--pad) clamp(56px, 8vw, 112px);
+}
+
+.part {
+  --part-gap: clamp(56px, 8vw, 112px);
+  /* Scrolled to from the ticks: its tag lands just clear of the bar. */
+  scroll-margin-top: calc(var(--bar) + 20px - var(--part-gap));
+  padding-top: var(--part-gap);
+}
+
+.partText {
+  max-width: 680px;
+  margin: 0 auto;
+}
+
+/* An act of the story, named once above its first part: a small label on a rule. */
+.act {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  max-width: 680px;
+  margin: 0 auto 36px;
+  font-family: var(--font-display), sans-serif;
+  font-size: 12px;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: rgba(26, 26, 26, 0.55);
+}
+
+.act::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: rgba(26, 26, 26, 0.16);
+}
+
+.partTag {
+  font-family: var(--font-hero), monospace;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(26, 26, 26, 0.45);
+  transition: color 200ms ease;
+}
+
+.part[data-current] .partTag {
+  color: #2f7a2f;
+}
+
+.partHeading {
+  margin: 10px 0 18px;
+  font-family: var(--font-hero), monospace;
+  font-size: clamp(24px, 3vw, 36px);
+  font-weight: 700;
+  line-height: 1.02;
+  letter-spacing: -0.04em;
+  word-spacing: -0.3em;
+  text-transform: uppercase;
+  text-wrap: balance;
+}
+
+.paragraph {
+  font-size: 17px;
+  line-height: 1.65;
+}
+
+.paragraph + .paragraph {
+  margin-top: 14px;
+}
+
+.highlights {
+  display: grid;
+  gap: 10px;
+  margin-top: 20px;
+  list-style: none;
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.highlights li {
+  position: relative;
+  padding-left: 22px;
+}
+
+.highlights li::before {
+  content: "→";
+  position: absolute;
+  left: 0;
+  color: rgba(26, 26, 26, 0.5);
+}
+
+/* The pictures: framed dark, so each project's own look shows on the cream page. */
+.figures {
+  display: grid;
+  gap: 28px 20px;
+  align-items: start;
+  margin-top: clamp(28px, 4vw, 44px);
+}
+
+.figures[data-layout="row"] {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+@media (min-width: 700px) {
+  .figures[data-layout="pair"],
+  .figures[data-layout="grid"] {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 900px) {
+  .figures[data-layout="row"] {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+.figure {
+  margin: 0;
+}
+
+.figureButton {
+  display: block;
+  width: 100%;
+  padding: 0;
+  overflow: hidden;
+  border: none;
+  border-radius: 12px;
+  background: #0b0b0b;
+  box-shadow:
+    0 0 0 1px rgba(26, 26, 26, 0.08),
+    0 22px 44px -28px rgba(0, 0, 0, 0.55);
+  cursor: zoom-in;
+  transition:
+    transform 400ms cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 400ms ease;
+}
+
+.figureButton:hover {
+  transform: translateY(-3px);
+  box-shadow:
+    0 0 0 1px rgba(26, 26, 26, 0.1),
+    0 30px 54px -28px rgba(0, 0, 0, 0.6);
+}
+
+.figureButton:focus-visible {
+  outline: 2px solid #2f7a2f;
+  outline-offset: 3px;
+}
+
+/* Each picture keeps its own shape; in a grid of screens they share one, so its rows line
+   up. */
+.figureMedia {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.figures[data-layout="grid"] .figureMedia {
+  aspect-ratio: 16 / 10;
+  object-fit: cover;
+  object-position: top;
+}
+
+/* Until the footage exists: a test card, like the monitor's. */
+.figureCard {
+  display: grid;
+  place-content: center;
+  gap: 8px;
+  aspect-ratio: 16 / 10;
+  padding: 24px;
+  background: #0b0d0c;
+  color: #9fe29a;
+  font-family: var(--font-hero), monospace;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.figureCardTitle {
+  font-size: clamp(14px, 1.8vw, 20px);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.figureCardNote {
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  opacity: 0.6;
+}
+
+.caption {
+  max-width: 60ch;
+  margin-top: 12px;
+  font-size: 13px;
+  line-height: 1.45;
+  color: rgba(26, 26, 26, 0.65);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .figureButton {
+    transition: none;
+  }
+
+  .figureButton:hover {
+    transform: none;
+  }
+}
+
 /* ---- The monitor. ---- */
 .monitor {
   position: relative;
@@ -492,83 +813,16 @@
   inset: 0;
 }
 
-/* How to work the set, one caption under it (placed each frame by CaseMonitor): only on
-   wide screens with a mouse, where there's room around the set; elsewhere the hints sit
-   under the title. Its switch leads; the legend under it is quiet (outlined keys, like the
-   stack chips) and folds away once the set's been used or the visitor hides it, leaving
-   the switch. All of it steps aside while the screen is looked at closely. */
-.setCaption {
-  --hint-ink: rgba(26, 26, 26, 0.5);
-  --key-face: transparent;
-  --key-ink: rgba(26, 26, 26, 0.75);
-  --key-skirt: transparent;
-  --key-border: 1px solid rgba(26, 26, 26, 0.2);
-  --toggle-edge: rgba(26, 26, 26, 0.18);
-  --toggle-cut: #f4f0e6;
-  position: absolute;
-  top: 0;
-  left: 0;
-  display: none;
-  pointer-events: none;
-  will-change: transform;
-  transition: opacity 250ms ease;
-}
-
-.setCaption[data-looking] {
-  opacity: 0;
-}
-
-.setCaption[data-looking] button {
-  pointer-events: none;
-}
-
-.captionList {
-  display: grid;
-  grid-template-rows: 1fr;
-  transition:
-    grid-template-rows 300ms ease,
-    opacity 250ms ease;
-}
-
-.captionList > * {
-  min-height: 0;
-  overflow: hidden;
-}
-
-.captionList[data-hidden] {
-  grid-template-rows: 0fr;
-  opacity: 0;
-}
-
-/* A short legend, one gesture per line, so it reads the same at any width. */
-.setCaption p {
-  flex-direction: column;
-  gap: 8px;
-  padding-top: 12px;
-  font-size: 11px;
-}
-
-/* Keys of one width, so the three descriptions start on the same line. */
-.setCaption kbd {
-  min-width: 58px;
-  text-align: center;
-}
-
-@media (min-width: 1000px) and (hover: hover) and (pointer: fine) {
-  .setCaption {
-    display: block;
-  }
-
-  .intro .titleHints {
-    display: none;
-  }
-}
-
 .monitorCanvas {
   display: block;
   width: 100%;
   height: 100%;
   touch-action: pan-y;
+  /* Soft edges, so the floor and the shadows fade out rather than stop at the canvas. */
+  mask-image:
+    linear-gradient(to right, transparent, #000 5%, #000 95%, transparent),
+    linear-gradient(to bottom, transparent, #000 4%, #000 94%, transparent);
+  mask-composite: intersect;
 }
 
 /* Over the monitor's screen, the cursor becomes a frosted "Look closer" pill that follows
@@ -687,55 +941,6 @@
   object-fit: cover;
 }
 
-/* ---- The remote's keys, as buttons. ---- */
-.remote ol {
-  display: flex;
-  gap: 6px;
-  list-style: none;
-}
-
-.remoteKey {
-  display: inline-flex;
-  flex: none;
-  align-items: center;
-  gap: 8px;
-  height: 38px;
-  padding: 0 12px;
-  border: none;
-  border-radius: 8px;
-  background: #3d3f45;
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.12),
-    0 2px 0 #18191b;
-  color: #f5f1ea;
-  font-family: var(--font-hero), monospace;
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  white-space: nowrap;
-  cursor: pointer;
-}
-
-.remoteKey:active {
-  transform: translateY(2px);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12);
-}
-
-.remoteKey[aria-current] {
-  background: #2f4a2f;
-  color: #9fe29a;
-}
-
-.remoteKey:focus-visible {
-  outline: 2px solid #9fe29a;
-  outline-offset: 2px;
-}
-
-.remoteNumber {
-  opacity: 0.6;
-}
-
 /* ---- The neighbouring disks. ---- */
 .pager {
   display: grid;
@@ -804,84 +1009,39 @@
   outline: none;
 }
 
-/* ---- Narrow: the monitor pinned under the bar, the remote along the bottom. ---- */
-@media (max-width: 999px) {
-  .view {
-    --stage-height: clamp(210px, 38svh, 400px);
-    padding-bottom: calc(64px + env(safe-area-inset-bottom));
-  }
-
-  .stage {
-    position: sticky;
-    top: var(--bar);
-    z-index: 2;
-    height: var(--stage-height);
-    margin: 0 calc(var(--pad) * -1);
-    background: #f4f0e6;
-    box-shadow: 0 10px 16px -12px rgba(26, 26, 26, 0.25);
-  }
-
-  .remote {
-    position: fixed;
-    right: 0;
-    bottom: 0;
-    left: 0;
-    z-index: 3;
-    padding: 12px max(var(--pad), env(safe-area-inset-left)) max(12px, env(safe-area-inset-bottom));
-    overflow-x: auto;
-    background: #2b2c30;
-    scrollbar-width: none;
-  }
-}
-
-/* ---- Wide: the set held in view on the left, the story on the right. ---- */
+/* ---- Wide: the title and facts on the left, the set filling the right. ---- */
 @media (min-width: 1000px) {
-  .layout {
-    grid-template-columns: 6fr minmax(360px, 5fr);
-    gap: clamp(32px, 4vw, 64px);
-    align-items: start;
+  /* The first screen is the title beside the set, with room at its foot for the cue to
+     scroll; the brief spans the page below it. */
+  .opening {
+    grid-template-columns: minmax(380px, 5fr) 6fr;
+    grid-template-rows: minmax(calc(100svh - var(--bar)), auto) auto;
+    column-gap: clamp(32px, 4vw, 64px);
+    align-items: center;
+    padding-top: var(--bar);
   }
 
-  .story {
-    order: 2;
-    display: block;
-    padding-top: 40px;
+  .brief {
+    grid-column: 1 / -1;
+    margin-top: 0;
   }
 
-  /* Sized to the story's column: whole words can't break (they flip as tiles). */
+  .hintsCorner {
+    position: absolute;
+    top: calc(var(--bar) + 16px);
+    right: var(--pad);
+    margin-top: 0;
+  }
+
+  /* Sized to its column: whole words can't break (they flip as tiles). */
   .title {
     font-size: clamp(34px, 4.2vw, 64px);
   }
 
   .stage {
-    order: 1;
-    position: sticky;
-    top: var(--bar);
-    height: calc(100svh - var(--bar));
+    height: min(calc(100svh - var(--bar) - 120px), 720px);
     min-height: 520px;
-  }
-
-  .part {
-    padding: 52px 0;
-  }
-
-  /* The set's remote takes the pointer; its keys as buttons stay out of sight until one is
-     reached with the keyboard. */
-  .remote {
-    position: absolute;
-    bottom: 20px;
-    left: 50%;
-    max-width: calc(100% - 32px);
-    overflow-x: auto;
-    padding: 8px;
-    border-radius: 12px;
-    background: #2b2c30;
-    transform: translateX(-50%);
-    clip-path: inset(50%);
-  }
-
-  .remote:focus-within {
-    clip-path: none;
+    margin: 0;
   }
 }
 

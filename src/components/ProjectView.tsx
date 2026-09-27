@@ -10,6 +10,7 @@ import {
   type CSSProperties,
   type Ref,
 } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useReducedMotion } from "framer-motion";
@@ -21,39 +22,76 @@ import {
   subscribeHintPreference,
   writeHintPreference,
 } from "./hintPreference";
-import { ScreenViewer } from "./ScreenViewer";
+import { ScreenViewer, type ViewerChannel } from "./ScreenViewer";
 import { useIntro } from "./SiteIntro";
 import { SplitFlapText } from "./SplitFlapText";
-import { caseSections, diskNumber, diskOrder, type Project } from "./projects";
+import {
+  caseChannels,
+  caseSections,
+  diskNumber,
+  diskOrder,
+  type Project,
+  type ScreenItem,
+} from "./projects";
 import styles from "./ProjectView.module.css";
 
 const padNumber = (number: number) => String(number).padStart(2, "0");
 
-// How to work the set: the remote and the screen take clicks from a mouse; touch screens
-// get the strip of channel keys and the Look closer button instead.
+// How to work the set and the pictures, in the card under the hints switch in the hero's
+// top corner. Mouse and touch
+// get their own (the remote is only out on wide screens with a mouse).
 const caseHints: GestureHint[] = [
-  { gesture: "Scroll", does: "the story to change the channel" },
-  { gesture: "Click", does: "a remote key to jump to a part", device: "mouse" },
+  { gesture: "Drag", does: "the set to turn it", device: "mouse" },
   { gesture: "Click", does: "the screen to look closer", device: "mouse" },
-  { gesture: "Drag", does: "the set to turn it round", device: "mouse" },
-  { gesture: "Tap", does: "a channel key to jump to a part", device: "touch" },
-  { gesture: "Tap", does: "Look closer to see it full size", device: "touch" },
+  { gesture: "Click", does: "a key to change channel", device: "mouse" },
+  { gesture: "Click", does: "◀ ▶ for the next picture", device: "mouse" },
+  { gesture: "Click", does: "power to eject", device: "mouse" },
+  { gesture: "Tap", does: "Look closer to see the screen full size", device: "touch" },
+  { gesture: "Tap", does: "any picture to see it full size", device: "touch" },
 ];
 
-// A part becomes the current channel once its top passes this far down the screen (or, when
-// the monitor is pinned above the story, a little below the monitor).
+// Where the hints can open on their own: wide screens with a mouse. Elsewhere they'd cover the
+// title, so they wait to be asked for.
+const roomyQuery = "(min-width: 1000px) and (hover: hover) and (pointer: fine)";
+const subscribeRoomy = (onChange: () => void) => {
+  const query = window.matchMedia(roomyQuery);
+  query.addEventListener("change", onChange);
+  return () => query.removeEventListener("change", onChange);
+};
+const readRoomy = () => window.matchMedia(roomyQuery).matches;
+
+// A part counts as the one being read once its top passes this far down the screen.
 const readingLine = 0.38;
+
+// Minutes to read a case study: its words at an easy 200 a minute (captions included).
+const readingMinutes = (project: Project) => {
+  const study = project.caseStudy;
+  if (!study) return 0;
+  const text = [
+    project.summary,
+    study.headline ?? "",
+    ...study.sections.flatMap((section) => [
+      section.heading,
+      ...section.paragraphs,
+      ...(section.points ?? []),
+      ...(section.figures ?? []).map((figure) => (figure.type === "card" ? "" : (figure.caption ?? ""))),
+    ]),
+  ].join(" ");
+  return Math.max(1, Math.round(text.split(/\s+/).length / 200));
+};
+
+/** What's being looked at closely: what's on the monitor, or a picture in the story. */
+type Closer = { from: "set" | "story"; channel: number; item: number };
 
 /**
  * A project's case study, full screen: a floating pill at the top (the project's disk and
- * name, a tick per part, and Eject), then the story, part by part, beside a CRT
- * (CaseMonitor) that plays each part's screens as its own channel. Reading changes the
- * channel; the remote's keys (on the set, the strip of keys on narrow screens, or the ticks)
- * scroll to their part. The neighbouring disks come last.
+ * name, a tick per part, and Eject); then the opening, with the title, the story in a line,
+ * the brief (a grid of facts at a glance) and a CRT playing the project's reel, with a channel for each part's pictures on its remote;
+ * then the story, part by part, each with its pictures large. Any picture (or the monitor's
+ * screen) opens a closer look. The neighbouring disks come last.
  *
  * The text arrives as it's reached: the title and each part's heading flip in on the
- * split-flap board, paragraphs and points rise in after them, and the parts you're not on
- * dim a little, so reading follows the channel.
+ * split-flap board, and paragraphs, points and pictures rise in after them.
  *
  * Shared by the overlay the disks open into (Work.tsx passes `onClose` and `onSelect`, so
  * closing and paging stay in place) and the standalone /work/[id] page (no handlers: they
@@ -82,27 +120,63 @@ export function ProjectView({
   const reduceMotion = useReducedMotion();
   const { playFlap, setHum } = useIntro();
   const sections = useMemo(() => caseSections(project), [project]);
+  const channels = useMemo(() => caseChannels(project), [project]);
+  const study = project.caseStudy;
+  const brief = study?.brief;
+  const minutes = readingMinutes(project);
   const number = diskNumber(project);
   const index = diskOrder.findIndex((entry) => entry.id === project.id);
   const previous = diskOrder[(index - 1 + diskOrder.length) % diskOrder.length];
   const next = diskOrder[(index + 1) % diskOrder.length];
 
-  const [channel, setChannel] = useState(0);
-  // The how-to hints: shown until the set is first used, unless the visitor has chosen with
-  // the hints key, which then holds (on stays on through use; off stays off).
+  // The closer look's channels: the monitor's, or the parts that have pictures.
+  const setChannels = useMemo<ViewerChannel[]>(
+    () =>
+      channels.map((entry, position) => ({
+        tag: `CH ${padNumber(position + 1)} · ${entry.label}`,
+        label: entry.label,
+        items: entry.screen,
+      })),
+    [channels],
+  );
+  const storyChannels = useMemo(
+    () =>
+      sections.flatMap((section, position) =>
+        section.figures?.length
+          ? [
+              {
+                part: position,
+                tag: `${padNumber(position + 1)} · ${section.label}`,
+                label: section.label,
+                items: section.figures,
+              },
+            ]
+          : [],
+      ),
+    [sections],
+  );
+
+  // The part being read, for the ticks in the pill, and the monitor's channel.
+  const [current, setCurrent] = useState(0);
+  const [tvChannel, setTvChannel] = useState(0);
+  // Still at the top: the cue to scroll shows.
+  const [atTop, setAtTop] = useState(true);
+  // The how-to hints: shown until the set is first used (where there's room), unless the
+  // visitor has chosen with the hints switch, which then holds (on stays on through use; off stays
+  // off).
   const hintPreference = useSyncExternalStore(
     subscribeHintPreference,
     readHintPreferenceOrMemory,
     () => null,
   );
   const [triedSet, setTriedSet] = useState(false);
-  const hintsShown = hintPreference === "on" || (hintPreference === null && !triedSet);
+  const roomy = useSyncExternalStore(subscribeRoomy, readRoomy, () => false);
+  const hintsShown = hintPreference === "on" || (hintPreference === null && !triedSet && roomy);
   const toggleHints = () => {
     onCue?.("remoteKey");
     writeHintPreference(hintsShown ? "off" : "on");
   };
-  // The item on the monitor being looked at closely, or null.
-  const [closer, setCloser] = useState<number | null>(null);
+  const [closer, setCloser] = useState<Closer | null>(null);
   // Stepping back out of the closer look: the screen can move on again as the view shrinks.
   const [leaving, setLeaving] = useState(false);
   const screenRectRef = useRef<(() => DOMRect | null) | null>(null);
@@ -113,7 +187,9 @@ export function ProjectView({
   const [shownId, setShownId] = useState(project.id);
   if (shownId !== project.id) {
     setShownId(project.id);
-    setChannel(0);
+    setCurrent(0);
+    setTvChannel(0);
+    setAtTop(true);
     setCloser(null);
     setLeaving(false);
     setSeen(new Set());
@@ -140,25 +216,25 @@ export function ProjectView({
     return () => window.clearTimeout(timer);
   }, [project.id, reduceMotion]);
 
-  // Reading drives the channel: the last part whose top has passed the reading line. While a
-  // key's scroll is under way, it holds the key's channel instead.
+  // The part being read: the last one whose top has passed the reading line. While a tick's
+  // scroll is under way, it holds the tick's part instead.
   const partRefs = useRef<(HTMLElement | null)[]>([]);
-  const stageRef = useRef<HTMLDivElement>(null);
+  const openingRef = useRef<HTMLDivElement>(null);
   const heldRef = useRef(false);
   useEffect(() => {
     let frame = 0;
     let release = 0;
     const update = () => {
       frame = 0;
+      const opening = openingRef.current?.getBoundingClientRect();
+      setAtTop(!opening || opening.top > -60);
       if (heldRef.current) return;
-      const stage = stageRef.current?.getBoundingClientRect();
-      const pinnedAbove = stage && stage.width > window.innerWidth * 0.8 ? stage.bottom + 48 : 0;
-      const line = Math.max(window.innerHeight * readingLine, pinnedAbove);
-      let current = 0;
+      const line = window.innerHeight * readingLine;
+      let reading = 0;
       partRefs.current.forEach((part, position) => {
-        if (part && part.getBoundingClientRect().top <= line) current = position;
+        if (part && part.getBoundingClientRect().top <= line) reading = position;
       });
-      setChannel(current);
+      setCurrent(reading);
     };
     const handleScroll = () => {
       if (!frame) frame = requestAnimationFrame(update);
@@ -179,8 +255,7 @@ export function ProjectView({
     };
   }, [sections]);
 
-  // Each part's text arrives as it comes into view (the tools after the last part too).
-  const detailsRef = useRef<HTMLDivElement>(null);
+  // Each part's text and pictures arrive as it comes into view.
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
@@ -196,7 +271,6 @@ export function ProjectView({
       { rootMargin: "0px 0px -12% 0px" },
     );
     for (const part of partRefs.current) if (part) observer.observe(part);
-    if (detailsRef.current) observer.observe(detailsRef.current);
     return () => observer.disconnect();
   }, [sections]);
 
@@ -204,7 +278,7 @@ export function ProjectView({
     (target: number) => {
       const part = partRefs.current[target];
       if (!part) return;
-      setChannel(target);
+      setCurrent(target);
       heldRef.current = true;
       // In case nothing scrolls (already there), or scrollend never comes.
       window.setTimeout(() => (heldRef.current = false), 1400);
@@ -241,13 +315,13 @@ export function ProjectView({
   }, [setHum]);
   useEffect(() => powerDown, [powerDown]);
 
-  const shownChannelRef = useRef({ id: project.id, channel });
+  const shownChannelRef = useRef({ id: project.id, channel: tvChannel });
   useEffect(() => {
     const shown = shownChannelRef.current;
-    shownChannelRef.current = { id: project.id, channel };
-    if (shown.id !== project.id || shown.channel === channel || !litRef.current) return;
+    shownChannelRef.current = { id: project.id, channel: tvChannel };
+    if (shown.id !== project.id || shown.channel === tvChannel || !litRef.current) return;
     onCue?.("static");
-  }, [channel, onCue, project.id]);
+  }, [onCue, project.id, tvChannel]);
 
   // Eject: the disk slides out of the monitor's drive and the tube goes dark, then the case
   // study closes (back into its disk in the list, or to the work on the home page).
@@ -265,24 +339,30 @@ export function ProjectView({
     close();
   }, [close, onCue, powerDown]);
 
-  // Keys: ← and → change channel, 1–9 jump to a part.
+  // Keys: ← and → move a part, 1–9 jump to one.
   useEffect(() => {
     const handleKey = (event: KeyboardEvent) => {
       if (closer !== null || event.metaKey || event.ctrlKey || event.altKey) return;
       const target = event.target as HTMLElement | null;
       if (target?.closest("input, textarea, select, [contenteditable]")) return;
       let goal = -1;
-      if (event.key === "ArrowRight") goal = Math.min(channel + 1, sections.length - 1);
-      else if (event.key === "ArrowLeft") goal = Math.max(channel - 1, 0);
+      if (event.key === "ArrowRight") goal = Math.min(current + 1, sections.length - 1);
+      else if (event.key === "ArrowLeft") goal = Math.max(current - 1, 0);
       else if (/^[1-9]$/.test(event.key)) goal = Number(event.key) - 1;
-      if (goal < 0 || goal >= sections.length || goal === channel) return;
+      if (goal < 0 || goal >= sections.length || goal === current) return;
       event.preventDefault();
       onCue?.("remoteKey");
       goTo(goal);
     };
     window.addEventListener("keydown", handleKey);
     return () => window.removeEventListener("keydown", handleKey);
-  }, [channel, closer, goTo, onCue, sections.length]);
+  }, [current, closer, goTo, onCue, sections.length]);
+
+  // The pictures in the story, to grow the closer look from (and shrink it back into).
+  const figureRefs = useRef(new Map<string, HTMLElement>());
+  const figureRect = (part: number, item: number) =>
+    figureRefs.current.get(`${part}:${item}`)?.getBoundingClientRect() ?? null;
+  const storyChannel = closer?.from === "story" ? storyChannels[closer.channel] : undefined;
 
   return (
     <article
@@ -310,8 +390,8 @@ export function ProjectView({
                   <button
                     type="button"
                     className={styles.tick}
-                    data-passed={position < channel || undefined}
-                    aria-current={position === channel ? "step" : undefined}
+                    data-passed={position < current || undefined}
+                    aria-current={position === current ? "step" : undefined}
                     aria-label={`Part ${position + 1}: ${section.label}`}
                     title={section.label}
                     onClick={() => {
@@ -339,47 +419,166 @@ export function ProjectView({
         </div>
       </header>
 
-      <div className={styles.layout}>
-        {/* On narrow screens this column dissolves (display: contents), so the monitor can sit
-            between the title and the parts. */}
-        <div className={styles.story}>
-          <div className={styles.intro}>
-            <p className={styles.meta}>
-              {padNumber(number)} ·{" "}
-              {project.context === "Spotmies" ? "At Spotmies" : "Personal project"}
-              {project.caseStudy && ` · ${project.caseStudy.timeframe}`}
-            </p>
-            <h1 id="project-title" className={styles.title} aria-label={project.title}>
-              <span aria-hidden="true">
-                <FlapWords text={project.title} active={titleShown} onFlap={playFlap} />
-              </span>
-            </h1>
+      {/* The opening: what it is at a glance, beside the set playing the project's reel. */}
+      <div ref={openingRef} className={styles.opening}>
+        <div className={styles.intro} data-seen={titleShown || undefined}>
+          <p className={styles.meta}>
+            {padNumber(number)} ·{" "}
+            {project.context === "Spotmies" ? "At Spotmies" : "Personal project"}
+            {study && ` · ${study.timeframe}`}
+            {minutes > 0 && ` · ${minutes} min read`}
+          </p>
+          <h1 id="project-title" className={styles.title} aria-label={project.title}>
+            <span aria-hidden="true">
+              <FlapWords text={project.title} active={titleShown} onFlap={playFlap} />
+            </span>
+          </h1>
+          {study?.headline ? (
+            <p className={styles.headline}>{study.headline}</p>
+          ) : (
             <p className={styles.kind}>
               {project.kind} · {project.role}
             </p>
-            <div className={styles.titleHints}>
-              <HintsToggle shown={hintsShown} onToggle={toggleHints} onHover={onTap} />
-              <div className={styles.hintsHolder} data-hidden={!hintsShown || undefined}>
-                <GestureHints hints={caseHints} active={titleShown} className={styles.hints} />
-              </div>
-            </div>
-          </div>
-
-          <div className={styles.parts}>
-            {sections.map((section, position) => (
-              <section
-                key={section.id}
-                ref={(part) => {
-                  partRefs.current[position] = part;
-                }}
-                className={styles.part}
-                aria-labelledby={`part-${section.id}`}
-                data-part={position}
-                data-current={position === channel || undefined}
-                data-seen={seen.has(position) || undefined}
+          )}
+          {/* With a headline, the brief below says the rest. */}
+          {!study?.headline && (
+            <p className={clsx(styles.summary, styles.arrive)}>{project.summary}</p>
+          )}
+          <div className={clsx(styles.actions, styles.arrive)} style={{ "--order": 1 } as CSSProperties}>
+            {project.link && (
+              <a
+                href={project.link.href}
+                target="_blank"
+                rel="noreferrer noopener"
+                className={styles.visit}
+                onMouseEnter={onTap}
               >
+                Visit {project.link.label} ↗
+                <span className={styles.srOnly}> (opens in a new tab)</span>
+              </a>
+            )}
+            <ul className={styles.stack} aria-label="Tools">
+              {project.stack.map((item) => (
+                <li key={item}>{item}</li>
+              ))}
+            </ul>
+          </div>
+        </div>
+
+        {/* How to work the set and the pictures: a switch in the hero's top corner, and the
+            card of hints dropping from it. */}
+        <div className={styles.hintsCorner}>
+          <HintsToggle
+            shown={hintsShown}
+            onToggle={toggleHints}
+            onHover={onTap}
+            className={styles.hintsToggle}
+          />
+          <div
+            id="case-hints"
+            className={styles.hintsCard}
+            data-shown={hintsShown || undefined}
+            aria-hidden={!hintsShown || undefined}
+          >
+            <GestureHints hints={caseHints} active={titleShown && hintsShown} />
+          </div>
+        </div>
+
+        <div className={styles.stage}>
+          <CaseMonitor
+            project={project}
+            number={number}
+            channels={channels}
+            channel={tvChannel}
+            closer={!leaving && closer?.from === "set" ? closer.item : null}
+            onSelect={setTvChannel}
+            screenRectRef={screenRectRef}
+            ejectRef={ejectRef}
+            onPower={eject}
+            onUsed={() => setTriedSet(true)}
+            onCue={monitorCue}
+            onLookCloser={(item) => {
+              onCue?.("insert");
+              setLeaving(false);
+              setCloser({ from: "set", channel: tvChannel, item });
+            }}
+          />
+        </div>
+
+        {/* The brief: the facts at a glance, in a band across the page under the fold. */}
+        {brief && (
+          <dl className={styles.brief} data-seen={titleShown || undefined}>
+            {brief.map((fact, order) => (
+              <div
+                key={fact.label}
+                className={clsx(styles.briefCell, styles.arrive)}
+                style={{ "--order": order + 2 } as CSSProperties}
+              >
+                <dt className={styles.briefLabel}>{fact.label}</dt>
+                <dd className={styles.briefValue}>{fact.value}</dd>
+                {fact.note && <dd className={styles.briefNote}>{fact.note}</dd>}
+              </div>
+            ))}
+          </dl>
+        )}
+
+        {/* A cue to scroll, like the home page's, once the title has arrived; it goes as the
+            page moves, and takes you to the first part. */}
+        <button
+          type="button"
+          className={styles.scrollCue}
+          data-shown={(titleShown && atTop) || undefined}
+          tabIndex={atTop ? undefined : -1}
+          onMouseEnter={onTap}
+          onClick={() => {
+            onCue?.("remoteKey");
+            goTo(0);
+          }}
+        >
+          <svg
+            aria-hidden="true"
+            className={styles.scrollArrow}
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+          >
+            <path
+              d="M12 4v16M5 13l7 7 7-7"
+              stroke="currentColor"
+              strokeWidth="2.2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+          Scroll
+        </button>
+      </div>
+
+      <div className={styles.story}>
+        {sections.map((section, position) => {
+          const channel = storyChannels.findIndex((entry) => entry.part === position);
+          const textCount = section.paragraphs.length + (section.points?.length ?? 0);
+          return (
+            <section
+              key={section.id}
+              ref={(part) => {
+                partRefs.current[position] = part;
+              }}
+              className={styles.part}
+              aria-labelledby={`part-${section.id}`}
+              data-part={position}
+              data-current={position === current || undefined}
+              data-seen={seen.has(position) || undefined}
+            >
+              {section.act && (
+                <p className={styles.act}>
+                  <span>{section.act}</span>
+                </p>
+              )}
+              <div className={styles.partText}>
                 <p className={styles.partTag} aria-hidden="true">
-                  CH {padNumber(position + 1)} · {section.label}
+                  {padNumber(position + 1)} · {section.label}
                 </p>
                 <h2
                   id={`part-${section.id}`}
@@ -416,96 +615,78 @@ export function ProjectView({
                     ))}
                   </ul>
                 )}
-              </section>
-            ))}
-          </div>
+              </div>
 
-          <div
-            ref={detailsRef}
-            className={styles.details}
-            data-part={sections.length}
-            data-seen={seen.has(sections.length) || undefined}
-          >
-            <ul className={styles.stack} aria-label="Tools">
-              {project.stack.map((item, order) => (
-                <li key={item} style={{ "--order": order } as CSSProperties}>
-                  {item}
-                </li>
-              ))}
-            </ul>
-            {project.link && (
-              <a
-                href={project.link.href}
-                target="_blank"
-                rel="noreferrer noopener"
-                className={styles.visit}
-                onMouseEnter={onTap}
-              >
-                Visit {project.link.label} ↗
-                <span className={styles.srOnly}> (opens in a new tab)</span>
-              </a>
-            )}
-          </div>
-        </div>
-
-        <div ref={stageRef} className={styles.stage}>
-          <CaseMonitor
-            project={project}
-            number={number}
-            sections={sections}
-            channel={channel}
-            closer={leaving ? null : closer}
-            screenRectRef={screenRectRef}
-            ejectRef={ejectRef}
-            onSelect={goTo}
-            onPower={eject}
-            hintsShown={hintsShown}
-            onToggleHints={toggleHints}
-            onUsed={() => setTriedSet(true)}
-            onCue={monitorCue}
-            onLookCloser={(item) => {
-              onCue?.("insert");
-              setLeaving(false);
-              setCloser(item);
-            }}
-          />
-          {/* The remote as real buttons: a strip along the bottom on narrow screens; on wide
-              ones hidden (the set's remote is the pointer's) until a key is focused. */}
-          <nav className={styles.remote} aria-label="Parts of this case study">
-            <ol>
-              {sections.map((section, position) => (
-                <li key={section.id}>
-                  <button
-                    type="button"
-                    className={styles.remoteKey}
-                    aria-current={position === channel ? "step" : undefined}
-                    onClick={() => {
-                      onCue?.("remoteKey");
-                      goTo(position);
-                    }}
-                  >
-                    <span className={styles.remoteNumber}>{padNumber(position + 1)}</span>
-                    {section.label}
-                  </button>
-                </li>
-              ))}
-            </ol>
-          </nav>
-        </div>
+              {section.figures && section.figures.length > 0 && (
+                <div className={styles.figures} data-layout={section.layout ?? "wide"}>
+                  {section.figures.map((figure, item) => (
+                    <figure
+                      key={figure.type === "card" ? figure.title : figure.src}
+                      className={clsx(styles.figure, styles.arrive)}
+                      style={{ "--order": textCount + item } as CSSProperties}
+                    >
+                      <button
+                        type="button"
+                        ref={(node) => {
+                          const key = `${position}:${item}`;
+                          if (node) figureRefs.current.set(key, node);
+                          else figureRefs.current.delete(key);
+                        }}
+                        className={styles.figureButton}
+                        aria-label={`Look closer: ${figure.type === "card" ? figure.title : figure.alt}`}
+                        onClick={() => {
+                          onCue?.("insert");
+                          setLeaving(false);
+                          setCloser({ from: "story", channel, item });
+                        }}
+                      >
+                        <FigureMedia figure={figure} layout={section.layout ?? "wide"} />
+                      </button>
+                      {figure.type !== "card" && figure.caption && (
+                        <figcaption className={styles.caption}>{figure.caption}</figcaption>
+                      )}
+                    </figure>
+                  ))}
+                </div>
+              )}
+            </section>
+          );
+        })}
       </div>
 
-      {closer !== null && (
+      {closer?.from === "set" && (
         <ScreenViewer
-          sections={sections}
-          channel={channel}
-          item={closer}
-          onItem={setCloser}
-          onChannel={(next) => {
+          channels={setChannels}
+          channel={closer.channel}
+          item={closer.item}
+          onItem={(item) => setCloser({ ...closer, item })}
+          onChannel={(channel) => {
             onCue?.("remoteKey");
-            setCloser(0);
-            goTo(next);
+            setTvChannel(channel);
+            setCloser({ from: "set", channel, item: 0 });
           }}
           screenRect={() => screenRectRef.current?.() ?? null}
+          onLeave={() => setLeaving(true)}
+          onClose={() => {
+            setCloser(null);
+            setLeaving(false);
+          }}
+          onTap={onTap}
+        />
+      )}
+      {closer?.from === "story" && storyChannel && (
+        <ScreenViewer
+          channels={storyChannels}
+          channel={closer.channel}
+          item={closer.item}
+          onItem={(item) => setCloser({ ...closer, item })}
+          onChannel={(channel) => {
+            onCue?.("remoteKey");
+            setCloser({ from: "story", channel, item: 0 });
+            // Keep the page under the view on the same part, so stepping back lands on it.
+            partRefs.current[storyChannels[channel].part]?.scrollIntoView({ block: "start" });
+          }}
+          screenRect={() => figureRect(storyChannel.part, closer.item)}
           onLeave={() => setLeaving(true)}
           onClose={() => {
             setCloser(null);
@@ -556,6 +737,49 @@ export function ProjectView({
         })}
       </nav>
     </article>
+  );
+}
+
+// A picture in the story, sized for how its part lays them out.
+function FigureMedia({ figure, layout }: { figure: ScreenItem; layout: string }) {
+  if (figure.type === "card") {
+    return (
+      <span className={styles.figureCard}>
+        <span className={styles.figureCardTitle}>{figure.title}</span>
+        <span className={styles.figureCardNote}>{figure.note}</span>
+      </span>
+    );
+  }
+  if (figure.type === "video") {
+    return (
+      <video
+        src={figure.src}
+        poster={figure.poster}
+        className={styles.figureMedia}
+        autoPlay
+        muted
+        loop
+        playsInline
+        aria-hidden="true"
+      />
+    );
+  }
+  const sizes =
+    layout === "row"
+      ? "(min-width: 900px) 300px, 50vw"
+      : layout === "wide"
+        ? "(min-width: 1200px) 1100px, 100vw"
+        : "(min-width: 700px) 560px, 100vw";
+  // The width and height only reserve room; the picture keeps its own shape (see the CSS).
+  return (
+    <Image
+      src={figure.src}
+      alt=""
+      width={1680}
+      height={1050}
+      sizes={sizes}
+      className={styles.figureMedia}
+    />
   );
 }
 
