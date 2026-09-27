@@ -153,6 +153,12 @@
   margin-top: 48px;
 }
 
+/* The social keys sit in the same row as the email key; on phones they get a row of
+   their own (below). */
+.socials {
+  display: contents;
+}
+
 .key {
   max-width: 100%;
   min-width: 0;
@@ -333,6 +339,29 @@
 
   .keyArrow {
     padding: 0 14px;
+  }
+
+  /* The social keys shrink to three square icon keys side by side; their names stay for
+     screen readers. */
+  .socials {
+    display: flex;
+    gap: 16px;
+  }
+
+  .socials .keyFace {
+    padding: 16px;
+  }
+
+  .socials .keyLabel {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+
+  .socials .keyArrowInline {
+    display: none;
   }
 }
 

@@ -7,13 +7,20 @@ import { useInView } from "./useInView";
 import { WebsiteShaderBackground, getKineticGrid } from "./WebsiteShaderCanvas";
 import { SplitFlapText } from "./SplitFlapText";
 import { AtSymbolIcon } from "./icons/AtSymbolIcon";
+import { DribbbleIcon } from "./icons/DribbbleIcon";
+import { GithubIcon } from "./icons/GithubIcon";
 import { LinkedinIcon } from "./icons/LinkedinIcon";
 import { MapPinIcon } from "./icons/MapPinIcon";
 import type { AnimatedIconHandle } from "./icons/types";
 import styles from "./Contact.module.css";
 
 const email = "thakursst5002810@gmail.com";
-const linkedIn = "https://www.linkedin.com/in/thakur-sameer-shetty-tammana/";
+// On phones these shrink to three icon keys in a row (see Contact.module.css).
+const socials = [
+  { href: "https://www.linkedin.com/in/thakur-sameer-shetty-tammana/", label: "LinkedIn", Icon: LinkedinIcon },
+  { href: "https://dribbble.com/thakur5002", label: "Dribbble", Icon: DribbbleIcon },
+  { href: "https://github.com/thakursameershetty", label: "GitHub", Icon: GithubIcon },
+];
 const timeZone = "Asia/Kolkata";
 const location = "Visakhapatnam, India";
 // The red grows down the section as it scrolls in: none while its top is at the bottom of
@@ -100,7 +107,11 @@ export function Contact() {
 
         <div className={styles.keys}>
           <EmailKey />
-          <LinkKey href={linkedIn} label="LinkedIn" Icon={LinkedinIcon} />
+          <div className={styles.socials}>
+            {socials.map((social) => (
+              <LinkKey key={social.label} {...social} />
+            ))}
+          </div>
         </div>
 
         <footer className={styles.footer}>
