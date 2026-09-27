@@ -46,8 +46,8 @@ const record: {
           title: "Spotmies LLP",
           detail:
             "Hired as a UI/UX designer; grew the role into leading full stack builds, from the first screen to the backend.",
-          when: "Jan 2026 – now",
-          timeline: { short: "Spotmies", lane: "work", from: monthOf(2026, 1), to: "now" },
+          when: "Dec 2025 – now",
+          timeline: { short: "Spotmies", lane: "work", from: monthOf(2025, 12), to: "now" },
         },
       ],
     },
@@ -87,7 +87,7 @@ const record: {
         },
         {
           title: "Tutedude Hackathon",
-          detail: "Solo Traveler App, from user research to a high-fidelity prototype",
+          detail: "Solo Traveler App: the high-fidelity design, from our team's user research, in under 24 hours",
           when: "Jul 2025",
           timeline: { short: "Tutedude", ...oneMonth(2025, 7) },
         },
