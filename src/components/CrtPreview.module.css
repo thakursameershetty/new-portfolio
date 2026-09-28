@@ -315,17 +315,20 @@
   background: linear-gradient(180deg, #bdb4a2, #a39a88);
 }
 
-/* Under the stand: what a click on the row does, in the site's frosted pill. */
+/* Under the stand: what a click on the row does. Solid cream (the monitor's casing and the
+   site's cream keys) with dark type and a shadow, so it stands clear of the row's text
+   behind it rather than letting it show through. */
 .hint {
   width: fit-content;
   margin: 12px auto 0;
   padding: 7px 14px;
-  border: 1px solid rgba(255, 255, 255, 0.16);
+  border: 1px solid rgba(0, 0, 0, 0.08);
   border-radius: 999px;
-  background: rgba(20, 20, 20, 0.5);
-  -webkit-backdrop-filter: blur(10px) saturate(1.4);
-  backdrop-filter: blur(10px) saturate(1.4);
-  color: #f5f1ea;
+  background: #f5f1ea;
+  box-shadow:
+    0 2px 0 #b9ad9c,
+    0 10px 24px rgba(0, 0, 0, 0.55);
+  color: #1a0605;
   font-family: var(--font-hero), monospace;
   font-size: 10px;
   font-weight: 700;
