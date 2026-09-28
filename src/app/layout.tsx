@@ -56,12 +56,17 @@ export const metadata: Metadata = {
   creator: site.name,
   keywords: [
     "Thakur Sameer Shetty",
+    "Thakur Sameer",
+    "Sameer Shetty",
+    "thakur sameer shetty portfolio",
     "product designer",
     "UI/UX designer",
+    "frontend developer",
     "interaction design",
     "micro-interactions",
     "design engineer",
     "portfolio",
+    "Spotmies",
     "Visakhapatnam",
   ],
   alternates: { canonical: "/" },
@@ -95,7 +100,7 @@ export const metadata: Metadata = {
   },
   // Add your Google Search Console verification string here to track search performance
   verification: {
-    google: "", 
+    google: "",
   },
   formatDetection: { telephone: false, email: false, address: false },
 };
