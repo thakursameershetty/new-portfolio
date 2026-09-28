@@ -225,7 +225,73 @@
   flex: none;
 }
 
-/* Swapping the label (email ↔ "Copied ✓") flips the new one in like a card. */
+/* "Copied" with its tick drawing itself in beside it. */
+.copied {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ---- Hover tips: what each part of the email key does, in the same dark label as the
+   nav's "Tap for sound", above the key with a point down to it. ---- */
+.keyFace,
+.keyArrow {
+  position: relative;
+}
+
+.tip {
+  position: absolute;
+  bottom: calc(100% + 16px);
+  left: 50%;
+  padding: 6px 9px 5px;
+  border: 1px solid rgba(245, 241, 234, 0.14);
+  border-radius: 6px;
+  background: #121211;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.45);
+  color: #f5f1ea;
+  font-family: var(--font-hero), monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  opacity: 0;
+  transform: translate(-50%, 4px);
+  pointer-events: none;
+  transition:
+    opacity 140ms ease,
+    transform 200ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.tip::after {
+  content: "";
+  position: absolute;
+  bottom: -5px;
+  left: calc(50% - 4px);
+  width: 8px;
+  height: 8px;
+  border-right: 1px solid rgba(245, 241, 234, 0.14);
+  border-bottom: 1px solid rgba(245, 241, 234, 0.14);
+  background: inherit;
+  transform: rotate(45deg);
+}
+
+.keyFace:hover .tip,
+.keyFace:focus-visible .tip,
+.keyArrow:hover .tip,
+.keyArrow:focus-visible .tip {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+/* Touch screens have no hover to show them. */
+@media (hover: none) {
+  .tip {
+    display: none;
+  }
+}
+
+/* Swapping the label (email ↔ "Copied") flips the new one in like a card. */
 /* Always the full label on one line; on phones it scales down to fit (see below). */
 .keyLabel {
   display: inline-block;
@@ -372,7 +438,8 @@
     animation: none;
   }
 
-  .key {
+  .key,
+  .tip {
     transition: none;
   }
 }

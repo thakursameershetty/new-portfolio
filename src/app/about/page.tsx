@@ -83,7 +83,7 @@ export default function AboutPage() {
               <h1 className={styles.statement}>
                 <span className={styles.statementLine}>I&rsquo;m Thakur.</span>{" "}
                 <span className={styles.statementLine}>
-                  I draw rectangles until they look like real products.
+                  I draw rectangles, then build them.
                 </span>
               </h1>
               <p className={styles.lede}>

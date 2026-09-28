@@ -908,7 +908,7 @@ export async function createCrtSet(
       itemIndex = 0;
       drawDisplay(channelText(channel));
       lightKey();
-      if (!instant) flicker(1, 380);
+      if (!instant) flicker(0.6, 300);
       playItem();
     },
     setCompact(next) {
@@ -1077,18 +1077,18 @@ const tubeFragment = /* glsl */ `
 
     // Static between channels.
     float grain = noise(floor(uv * vec2(260.0, 200.0)) + floor(uTime * 40.0));
-    colour = mix(colour, vec3(grain * 0.9), uStatic);
-    colour += (noise(vec2(uTime, floor(uv.y * 90.0))) - 0.5) * 0.25 * uStatic;
+    colour = mix(colour, vec3(grain * 0.9), uStatic * 0.7);
+    colour += (noise(vec2(uTime, floor(uv.y * 90.0))) - 0.5) * 0.12 * uStatic;
 
     // Scanlines (fading to an even tone once they're finer than the pixels showing them, as
     // when the set is turned edge-on, so they don't shimmer into moiré), a slow rolling band,
-    // and the tube's darker edges.
+    // and the tube's darker edges: all kept faint, so the picture reads first.
     float lines = uv.y * 620.0;
     float density = fwidth(lines);
-    colour *= mix(0.84 + 0.16 * sin(lines), 0.9, smoothstep(0.35, 1.2, density));
-    colour *= 0.96 + 0.04 * sin(uv.y * 6.0 - uTime * 1.6);
+    colour *= mix(0.94 + 0.06 * sin(lines), 0.97, smoothstep(0.35, 1.2, density));
+    colour *= 0.99 + 0.01 * sin(uv.y * 6.0 - uTime * 1.6);
     float edge = length(centred * vec2(1.0, 1.15));
-    colour *= smoothstep(0.78, 0.3, edge);
+    colour *= mix(1.0, smoothstep(0.82, 0.36, edge), 0.7);
     colour *= inside;
 
     // Warming up: a bright line that widens, then opens out into the picture.

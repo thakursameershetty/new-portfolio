@@ -9,6 +9,7 @@ import { record, timelineItems } from "./record";
 import { useIntro } from "./SiteIntro";
 import { useInView } from "./useInView";
 import { DocumentIcon } from "./icons/DocumentIcon";
+import { ProfileCardIcon } from "./icons/ProfileCardIcon";
 import type { AnimatedIconHandle } from "./icons/types";
 import styles from "./Currently.module.css";
 
@@ -20,7 +21,11 @@ export function Currently() {
   const [lineOn, setLineOn] = useState(false);
 
   return (
-    <section id="about" className={styles.currently} aria-labelledby="about-heading">
+    <section
+      id="about"
+      className={styles.currently}
+      aria-labelledby="about-heading"
+    >
       <h2 id="about-heading" className={styles.label}>
         About
       </h2>
@@ -39,8 +44,15 @@ export function Currently() {
         </span>{" "}
         I started as a UI/UX designer and now lead full stack builds,{" "}
         <span className={clsx(styles.muted, lineOn && styles.mutedOn)}>
-          with a soft spot for <LineSwitch on={lineOn} onToggle={setLineOn} />
-          micro-interactions: the small moments that make a product feel right.
+          with a soft spot for{" "}
+          {/* The switch stands in for the hyphen in "micro-interactions", the word kept
+              whole so the line never breaks around it. */}
+          <span className={styles.compound}>
+            micro
+            <LineSwitch on={lineOn} onToggle={setLineOn} />
+            interactions:
+          </span>{" "}
+          the small moments that make a product feel right.
         </span>
       </p>
 
@@ -56,7 +68,9 @@ export function Currently() {
             items={timelineItems}
             focus={focus}
             onScrub={(month, now) =>
-              setScrubbed(month === null ? null : itemsAt(timelineItems, month, now))
+              setScrubbed(
+                month === null ? null : itemsAt(timelineItems, month, now),
+              )
             }
           />
         </section>
@@ -68,26 +82,38 @@ export function Currently() {
                 <span
                   aria-hidden="true"
                   className={styles.swatch}
-                  style={{ "--tone": `var(--tone-${group.tone})` } as React.CSSProperties}
+                  style={
+                    {
+                      "--tone": `var(--tone-${group.tone})`,
+                    } as React.CSSProperties
+                  }
                 />
               )}
               {group.heading}
             </h3>
-            <ul className={clsx(styles.entries, group.compact && styles.compact)}>
+            <ul
+              className={clsx(styles.entries, group.compact && styles.compact)}
+            >
               {group.entries.map((entry) => (
                 <li
                   key={entry.title}
                   className={clsx(
                     styles.entry,
-                    scrubbed && !scrubbed.includes(entry.title) && styles.entryDim,
+                    scrubbed &&
+                      !scrubbed.includes(entry.title) &&
+                      styles.entryDim,
                   )}
                   onPointerEnter={
                     entry.timeline ? () => setFocus(entry.title) : undefined
                   }
-                  onPointerLeave={entry.timeline ? () => setFocus(null) : undefined}
+                  onPointerLeave={
+                    entry.timeline ? () => setFocus(null) : undefined
+                  }
                 >
                   <span className={styles.entryTitle}>{entry.title}</span>
-                  {entry.when && <span className={styles.entryWhen}>{entry.when}</span>}
+                  {entry.when && (
+                    <span className={styles.entryWhen}>{entry.when}</span>
+                  )}
                   {entry.detail && (
                     <span className={styles.entryDetail}>{entry.detail}</span>
                   )}
@@ -101,10 +127,16 @@ export function Currently() {
   );
 }
 
-// A small toggle switch set into the sentence, just before "micro-interactions": flick it
+// A small toggle switch set into the sentence, standing in for the hyphen of "micro-interactions": flick it
 // and the muted half of the line lights up, a micro-interaction making its own point. It
 // nudges once when the statement comes into view, so it reads as something to flick.
-function LineSwitch({ on, onToggle }: { on: boolean; onToggle: (on: boolean) => void }) {
+function LineSwitch({
+  on,
+  onToggle,
+}: {
+  on: boolean;
+  onToggle: (on: boolean) => void;
+}) {
   const { playCue } = useIntro();
   const ref = useRef<HTMLButtonElement>(null);
   const seen = useInView(ref);
@@ -116,7 +148,11 @@ function LineSwitch({ on, onToggle }: { on: boolean; onToggle: (on: boolean) => 
       role="switch"
       aria-checked={on}
       aria-label="Light up the rest of the line"
-      className={clsx(styles.switch, on && styles.switchOn, seen && !on && styles.switchHint)}
+      className={clsx(
+        styles.switch,
+        on && styles.switchOn,
+        seen && !on && styles.switchHint,
+      )}
       onClick={() => {
         onToggle(!on);
         playCue(on ? "switchOff" : "switchOn");
@@ -131,11 +167,28 @@ function LineSwitch({ on, onToggle }: { on: boolean; onToggle: (on: boolean) => 
 // On to the About page: the longer timeline, and what's playing outside work.
 function MoreLink() {
   const { playCue } = useIntro();
+  const iconRef = useRef<AnimatedIconHandle>(null);
 
   return (
-    <Link href="/about" className={styles.more} onMouseEnter={() => playCue("tap")}>
-      More about me
-      <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none">
+    <Link
+      href="/about"
+      className={clsx(styles.key, styles.keyRed)}
+      onMouseEnter={() => {
+        iconRef.current?.startAnimation();
+        playCue("tap");
+      }}
+      onPointerDown={() => playCue("land")}
+    >
+      <ProfileCardIcon ref={iconRef} size={20} className={styles.keyIcon} />
+      <span>More about me</span>
+      <svg
+        aria-hidden="true"
+        className={styles.keyArrow}
+        width="16"
+        height="16"
+        viewBox="0 0 24 24"
+        fill="none"
+      >
         <path
           d="M5 12h14M13 6l6 6-6 6"
           stroke="currentColor"

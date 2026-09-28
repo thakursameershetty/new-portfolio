@@ -247,37 +247,49 @@ export const films: Film[] = [
 ];
 
 /** A game, ranked by how much it's played. `icon` is a square app icon in
- *  /public/about/games; until one exists the card draws a placeholder from `color`. */
+ *  /public/about/games; until one exists the card draws a placeholder from `color`.
+ *  `studio` and `year` show on the card's back, with `why` (in Thakur's words) when
+ *  there is one. */
 export interface Game {
   name: string;
   genre: string;
   color: string;
   icon?: string;
-  link?: string;
+  studio: string;
+  year: string;
+  why?: string;
 }
 
 // Thakur's most-played, in his order.
 export const games: Game[] = [
   {
     name: "Red Dead Redemption 2",
+    studio: "Rockstar Games",
+    year: "2018",
     genre: "Outlaw western",
     color: "#a8261b",
     icon: "/about/games/red-dead-redemption-2.avif",
   },
   {
     name: "Call of Duty: Mobile",
+    studio: "TiMi Studio Group · Activision",
+    year: "2019",
     genre: "Multiplayer shooter",
     color: "#4a5160",
     icon: "/about/games/call-of-duty-mobile.jpg",
   },
   {
     name: "Batman: Arkham Knight",
+    studio: "Rocksteady Studios",
+    year: "2015",
     genre: "Open-world action",
     color: "#27344c",
     icon: "/about/games/batman-arkham-knight.avif",
   },
   {
     name: "Stray",
+    studio: "BlueTwelve Studio",
+    year: "2022",
     genre: "Neon cat adventure",
     color: "#c45a24",
     icon: "/about/games/stray.jpg",

@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import clsx from "clsx";
 import { useReducedMotion } from "framer-motion";
+import { onTilt } from "../deviceTilt";
 import { useIntro } from "../SiteIntro";
 import { films, type Film } from "./taste";
 import key from "./Keycap.module.css";
@@ -65,6 +66,38 @@ export function Watching() {
   const [dragging, setDragging] = useState(false);
   const onScreen = useOnScreen(stageRef);
   const running = !reduced && !hovered && !focused && !dragging && onScreen;
+
+  // On phones, tipping the phone tilts the poster in focus, gloss and all, as the mouse
+  // does on a desktop (measured from however the phone's held; the permission iPhones need
+  // is asked on the page's first tap). Still while a finger's on the carousel, and only
+  // while it's on screen.
+  const draggingRef = useRef(false);
+  useEffect(() => {
+    draggingRef.current = dragging;
+  }, [dragging]);
+  useEffect(() => {
+    if (reduced || !onScreen) return;
+    return onTilt((x, y) => {
+      if (draggingRef.current) return;
+      const stage = stageRef.current;
+      const card = stage?.querySelector<HTMLElement>("li[aria-current]");
+      if (!stage || !card) return;
+      // A poster that's turned out of the middle settles back level.
+      for (const other of stage.querySelectorAll<HTMLElement>(
+        `.${styles.tilting}`,
+      )) {
+        if (other === card) continue;
+        other.classList.remove(styles.tilting);
+        other.style.setProperty("--rx", "0deg");
+        other.style.setProperty("--ry", "0deg");
+      }
+      card.classList.add(styles.tilting);
+      card.style.setProperty("--ry", `${x * 10}deg`);
+      card.style.setProperty("--rx", `${-y * 8}deg`);
+      card.style.setProperty("--gx", `${50 + x * 50}%`);
+      card.style.setProperty("--gy", `${50 + y * 50}%`);
+    });
+  }, [reduced, onScreen]);
 
   // Each poster gets a full turn; handling the carousel restarts the count, and after the
   // last it goes back to the first.
@@ -187,6 +220,27 @@ export function Watching() {
               }
               aria-current={offset === 0 ? "true" : undefined}
               aria-hidden={Math.abs(offset) > 2 ? true : undefined}
+              // The poster in focus tilts toward the mouse under a moving gloss, like the
+              // ID card; it settles back level when the mouse leaves.
+              onPointerMove={(event) => {
+                if (offset !== 0 || reduced || event.pointerType !== "mouse")
+                  return;
+                const card = event.currentTarget;
+                const rect = card.getBoundingClientRect();
+                const x = (event.clientX - rect.left) / rect.width;
+                const y = (event.clientY - rect.top) / rect.height;
+                card.classList.add(styles.tilting);
+                card.style.setProperty("--ry", `${(x - 0.5) * 16}deg`);
+                card.style.setProperty("--rx", `${(0.5 - y) * 12}deg`);
+                card.style.setProperty("--gx", `${x * 100}%`);
+                card.style.setProperty("--gy", `${y * 100}%`);
+              }}
+              onPointerLeave={(event) => {
+                const card = event.currentTarget;
+                card.classList.remove(styles.tilting);
+                card.style.setProperty("--ry", "0deg");
+                card.style.setProperty("--rx", "0deg");
+              }}
               onClick={() => {
                 if (!drag.current?.moved && offset !== 0) go(i);
               }}
@@ -208,6 +262,7 @@ export function Watching() {
                   <span aria-hidden="true">★</span>
                 </span>
               )}
+              <span aria-hidden="true" className={styles.gloss} />
               {/* The poster already carries its title; this names it for screen readers. */}
               <span className={styles.srOnly}>
                 {film.title}, {film.year}, {film.length}

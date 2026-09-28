@@ -52,12 +52,16 @@
 
 /* The switch sits in the line like a word, sized in em so it scales with the statement:
    a dark track with a cream knob, turning red (the grid's red) when on. */
+.compound {
+  white-space: nowrap;
+}
+
 .switch {
   position: relative;
   display: inline-block;
   width: 1.02em;
   height: 0.58em;
-  margin-right: 0.24em;
+  margin: 0 0.1em;
   padding: 0;
   border: 0.045em solid rgba(245, 241, 234, 0.28);
   border-radius: 1em;
@@ -146,51 +150,37 @@
   margin-top: 44px;
 }
 
-.more {
-  display: inline-flex;
-  align-items: center;
-  gap: 12px;
-  padding: 16px 20px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 10px;
-  background: #2a2a2a;
-  color: #f5f1ea;
-  font-size: 17px;
-  font-weight: 500;
+/* The About key: the Résumé key's twin (same keycap, same depth, same parts), in the
+   hero grid's red on a deep red skirt, with cream type. */
+.key.keyRed {
+  border-color: rgba(0, 0, 0, 0.12);
+  background: #e54b45;
+  color: #fff8f3;
   text-decoration: none;
   box-shadow:
-    0 6px 0 #555,
-    0 12px 24px rgba(0, 0, 0, 0.3);
-  transition:
-    transform 110ms ease,
-    box-shadow 110ms ease;
+    0 6px 0 #8f2622,
+    0 14px 28px rgba(0, 0, 0, 0.45);
 }
 
-.more svg {
-  transition: transform 200ms ease;
-}
-
-.more:hover {
-  transform: translateY(-2px);
+.key.keyRed:hover {
   box-shadow:
-    0 8px 0 #555,
-    0 16px 28px rgba(0, 0, 0, 0.4);
+    0 8px 0 #8f2622,
+    0 18px 32px rgba(0, 0, 0, 0.5);
 }
 
-.more:active {
-  transform: translateY(5px);
+.key.keyRed:active {
   box-shadow:
-    0 1px 0 #555,
-    0 4px 10px rgba(0, 0, 0, 0.3);
+    0 1px 0 #8f2622,
+    0 4px 10px rgba(0, 0, 0, 0.45);
 }
 
-.more:hover svg {
+.key.keyRed .keyArrow {
+  opacity: 0.8;
+}
+
+/* Its arrow points on, not out, so it slides straight ahead. */
+.key.keyRed:hover .keyArrow {
   transform: translateX(3px);
-}
-
-.more:focus-visible {
-  outline: 2px solid var(--ink);
-  outline-offset: 4px;
 }
 
 .key {

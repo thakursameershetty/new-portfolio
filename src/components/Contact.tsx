@@ -7,6 +7,7 @@ import { useInView } from "./useInView";
 import { WebsiteShaderBackground, getKineticGrid } from "./WebsiteShaderCanvas";
 import { SplitFlapText } from "./SplitFlapText";
 import { AtSymbolIcon } from "./icons/AtSymbolIcon";
+import { CheckIcon } from "./icons/CheckIcon";
 import { DribbbleIcon } from "./icons/DribbbleIcon";
 import { GithubIcon } from "./icons/GithubIcon";
 import { LinkedinIcon } from "./icons/LinkedinIcon";
@@ -78,7 +79,11 @@ export function Contact() {
       </div>
 
       {/* The red part of the section, below its dissolving edge, for the nav. */}
-      <div aria-hidden="true" data-nav-surface="red" className={styles.redSurface} />
+      <div
+        aria-hidden="true"
+        data-nav-surface="red"
+        className={styles.redSurface}
+      />
 
       <div className={styles.inner}>
         <p className={styles.label}>Contact</p>
@@ -118,7 +123,8 @@ export function Contact() {
         <footer className={styles.footer}>
           <span>© {new Date().getFullYear()} Thakur Sameer Shetty</span>
           <span>
-            Designed and built by me · Next.js, Three.js, WebGL, Web Audio, Claude, Gemini
+            Designed and built by me · Next.js, Three.js, WebGL, Web Audio,
+            Claude, Gemini
           </span>
         </footer>
       </div>
@@ -263,7 +269,18 @@ function EmailKey() {
       >
         <AtSymbolIcon ref={iconRef} size={20} className={styles.keyIcon} />
         <span key={copied ? "copied" : "email"} className={styles.keyLabel}>
-          {copied ? "Copied ✓" : email}
+          {copied ? (
+            <span className={styles.copied}>
+              Copied
+              <CheckIcon size={18} />
+            </span>
+          ) : (
+            email
+          )}
+        </span>
+        {/* What each part of the key does, on hover: copy here, the mail app on the arrow. */}
+        <span aria-hidden="true" className={styles.tip}>
+          {copied ? "Copied to clipboard" : "Click to copy"}
         </span>
       </button>
       <a
@@ -274,6 +291,9 @@ function EmailKey() {
         onPointerDown={() => playCue("land")}
       >
         <ArrowIcon />
+        <span aria-hidden="true" className={styles.tip}>
+          Open mail app
+        </span>
       </a>
     </div>
   );
@@ -287,7 +307,10 @@ function LinkKey({
   href: string;
   label: string;
   Icon: React.ComponentType<
-    { size?: number; className?: string } & React.RefAttributes<AnimatedIconHandle>
+    {
+      size?: number;
+      className?: string;
+    } & React.RefAttributes<AnimatedIconHandle>
   >;
 }) {
   const { playCue } = useIntro();

@@ -37,7 +37,7 @@
 }
 
 .ambientOn {
-  opacity: 0.6;
+  opacity: 0.45;
 }
 
 /* The Films / Series keys, centred above the posters. */
@@ -78,9 +78,14 @@
   border-radius: 22px;
   cursor: pointer;
   opacity: calc(1 - var(--distance) * 0.28);
+  /* Moved into place, then (for the one in focus, under the mouse) tilted in its own
+     perspective by --rx and --ry. */
   transform: translateX(
       calc(-50% + var(--side) * (var(--reach) * var(--card) + var(--gaps) * var(--gap)))
     )
+    perspective(900px)
+    rotateX(var(--rx, 0deg))
+    rotateY(var(--ry, 0deg))
     scale(var(--scale));
   transition:
     transform 520ms cubic-bezier(0.22, 1, 0.36, 1),
@@ -96,6 +101,34 @@
     )
     scale(calc(var(--scale) * 0.96));
   transition-duration: 120ms;
+}
+
+/* While the mouse tilts it, the tilt follows closely; letting go, it settles back slowly. */
+.tilting {
+  transition:
+    transform 140ms ease-out,
+    opacity 400ms ease,
+    filter 400ms ease;
+}
+
+/* The laminate-like gloss over the poster in focus, following the mouse. */
+.gloss {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  background: radial-gradient(
+    55% 45% at var(--gx, 50%) var(--gy, 30%),
+    rgba(255, 255, 255, 0.28),
+    transparent 70%
+  );
+  mix-blend-mode: soft-light;
+  opacity: 0;
+  transition: opacity 250ms ease;
+  pointer-events: none;
+}
+
+.tilting .gloss {
+  opacity: 1;
 }
 
 .cardActive {
@@ -114,7 +147,8 @@
   background-size: cover;
 }
 
-/* Scanlines and a soft vignette, like a picture on the home page's CRT. */
+/* Faint scanlines and a soft vignette, a nod to the home page's CRT that stays out of the
+   poster's way. */
 .card::before {
   content: "";
   position: absolute;
@@ -122,10 +156,10 @@
   z-index: 1;
   background: repeating-linear-gradient(
     180deg,
-    rgba(0, 0, 0, 0.16) 0 1px,
-    transparent 1px 3px
+    rgba(0, 0, 0, 0.06) 0 1px,
+    transparent 1px 4px
   );
-  box-shadow: inset 0 0 60px rgba(0, 0, 0, 0.45);
+  box-shadow: inset 0 0 50px rgba(0, 0, 0, 0.22);
   pointer-events: none;
 }
 
