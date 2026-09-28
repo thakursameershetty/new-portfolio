@@ -4,6 +4,7 @@ import { useEffect, useLayoutEffect, useRef } from "react";
 import { useReducedMotion } from "framer-motion";
 import Image from "next/image";
 import type { ScreenItem } from "./projects";
+import { ArrowIcon } from "./icons/ArrowIcon";
 import styles from "./ScreenViewer.module.css";
 
 /** A set of pictures to look through: the monitor's reel, or a part of the story. */
@@ -66,7 +67,12 @@ export function ScreenViewer({
   const onScreen = () => {
     const rect = screenRect();
     const { innerWidth: width, innerHeight: height } = window;
-    if (!rect) return { transform: "translate(25vw, 25vh) scale(0.5)", opacity: 0, borderRadius: "0px" };
+    if (!rect)
+      return {
+        transform: "translate(25vw, 25vh) scale(0.5)",
+        opacity: 0,
+        borderRadius: "0px",
+      };
     const scale = rect.width / width;
     const top = rect.top + rect.height / 2 - (height * scale) / 2;
     return {
@@ -79,7 +85,10 @@ export function ScreenViewer({
   useLayoutEffect(() => {
     const viewer = viewerRef.current;
     if (!viewer || reduceMotion) return;
-    viewer.animate([onScreen(), full], { duration: 460, easing: "cubic-bezier(0.22, 1, 0.36, 1)" });
+    viewer.animate([onScreen(), full], {
+      duration: 460,
+      easing: "cubic-bezier(0.22, 1, 0.36, 1)",
+    });
     // Only on opening.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -93,11 +102,14 @@ export function ScreenViewer({
       return;
     }
     viewer
-      .animate([full, { ...onScreen(), offset: 0.85 }, { ...onScreen(), opacity: 0 }], {
-        duration: 380,
-        easing: "cubic-bezier(0.5, 0, 0.75, 0)",
-        fill: "forwards",
-      })
+      .animate(
+        [full, { ...onScreen(), offset: 0.85 }, { ...onScreen(), opacity: 0 }],
+        {
+          duration: 380,
+          easing: "cubic-bezier(0.5, 0, 0.75, 0)",
+          fill: "forwards",
+        },
+      )
       .finished.then(onClose, onClose);
   };
 
@@ -126,13 +138,18 @@ export function ScreenViewer({
       const action = actions[event.key];
       if (!action) return;
       // Leave the arrows to a clip's own controls while they have focus.
-      if (event.key !== "Escape" && (event.target as HTMLElement | null)?.tagName === "VIDEO") return;
+      if (
+        event.key !== "Escape" &&
+        (event.target as HTMLElement | null)?.tagName === "VIDEO"
+      )
+        return;
       event.preventDefault();
       event.stopPropagation();
       action();
     };
     window.addEventListener("keydown", handleKey, { capture: true });
-    return () => window.removeEventListener("keydown", handleKey, { capture: true });
+    return () =>
+      window.removeEventListener("keydown", handleKey, { capture: true });
   }, []);
 
   // Swipe across the picture to step through.
@@ -176,7 +193,11 @@ export function ScreenViewer({
           swipeRef.current = null;
           if (!start) return;
           const dx = event.clientX - start.x;
-          if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(event.clientY - start.y)) step(dx < 0 ? 1 : -1);
+          if (
+            Math.abs(dx) > 50 &&
+            Math.abs(dx) > Math.abs(event.clientY - start.y)
+          )
+            step(dx < 0 ? 1 : -1);
         }}
       >
         {current?.type === "image" && (
@@ -228,7 +249,9 @@ export function ScreenViewer({
 
       <footer className={styles.bottom}>
         <p className={styles.caption}>
-          {current?.type === "card" ? current.note : (current?.caption ?? current?.alt)}
+          {current?.type === "card"
+            ? current.note
+            : (current?.caption ?? current?.alt)}
         </p>
         <div className={styles.controls}>
           {channels.length > 1 && (
@@ -264,7 +287,7 @@ export function ScreenViewer({
                 onMouseEnter={onTap}
                 aria-label="Previous picture"
               >
-                ←
+                <ArrowIcon direction="left" size={18} animated={false} />
               </button>
               <button
                 type="button"
@@ -273,7 +296,7 @@ export function ScreenViewer({
                 onMouseEnter={onTap}
                 aria-label="Next picture"
               >
-                →
+                <ArrowIcon size={18} animated={false} />
               </button>
             </>
           )}

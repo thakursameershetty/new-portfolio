@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { AboutFooter } from "@/components/about/AboutFooter";
 import { ControllerIcon } from "@/components/about/ControllerIcon";
 import { IdCard } from "@/components/about/IdCard";
 import { ListeningTo } from "@/components/about/ListeningTo";
@@ -132,6 +133,7 @@ export default function AboutPage() {
             </div>
           </section>
         </main>
+        <AboutFooter />
       </div>
     </PageSound>
   );

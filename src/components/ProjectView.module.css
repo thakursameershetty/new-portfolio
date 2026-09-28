@@ -492,6 +492,9 @@ a.briefPerson:focus-visible {
 }
 
 .briefArrow {
+  display: inline-flex;
+  margin-left: 4px;
+  vertical-align: -0.05em;
   font-size: 0.8em;
   color: rgba(26, 26, 26, 0.55);
   transition: transform 200ms ease;
@@ -820,11 +823,20 @@ a.briefPerson:focus-visible {
   padding-left: 22px;
 }
 
+/* An arrow drawn as a shape (a text "→" can turn into an emoji on iPhones), in the text's
+   colour, faded. */
 .highlights li::before {
-  content: "→";
+  content: "";
   position: absolute;
+  top: 0.35em;
   left: 0;
-  color: rgba(26, 26, 26, 0.5);
+  width: 13px;
+  height: 13px;
+  background: rgba(26, 26, 26, 0.5);
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 12h15.5M20 12l-6 6M20 12l-6-6'/%3E%3C/svg%3E")
+    center / contain no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 12h15.5M20 12l-6 6M20 12l-6-6'/%3E%3C/svg%3E")
+    center / contain no-repeat;
 }
 
 /* The pictures: framed dark, so each project's own look shows on the cream page. */
@@ -1287,6 +1299,9 @@ a.briefPerson:focus-visible {
 }
 
 .pagerLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   font-family: var(--font-display), sans-serif;
   font-size: 11px;
   letter-spacing: 0.14em;
@@ -1382,4 +1397,11 @@ a.briefPerson:focus-visible {
     justify-items: start;
     text-align: left;
   }
+}
+
+/* The "Visit" keys: a little space before the arrow icon. */
+.visit,
+.visitAlso {
+  align-items: center;
+  column-gap: 8px;
 }

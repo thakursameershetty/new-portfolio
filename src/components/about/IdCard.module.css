@@ -453,3 +453,14 @@
 .dockFaceBack {
   transform: rotateY(180deg);
 }
+
+/* At the foot of the About page, the badge steps aside so the contact keys and credits show
+   (AboutFooter sets <html data-page-end>). */
+.dock {
+  transition: opacity 250ms ease;
+}
+
+:global(html[data-page-end]) .dock {
+  opacity: 0;
+  pointer-events: none;
+}

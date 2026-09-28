@@ -1,0 +1,80 @@
+/* Full width, over the home page's living grid (see AboutFooter.tsx); the top padding
+   leaves room for the grid's dissolving edge above the content. */
+.footer {
+  --on-red: #fff8f3;
+  --on-red-muted: rgba(255, 248, 243, 0.78);
+  position: relative;
+  overflow: hidden;
+  margin-top: clamp(32px, 6vh, 72px);
+  background: var(--ground);
+  color: var(--ink);
+}
+
+.grid {
+  position: absolute;
+  inset: 0;
+}
+
+.inner {
+  position: relative;
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: clamp(220px, 32vh, 320px) 24px 32px;
+  /* The pointer reaches the grid everywhere but the controls. */
+  pointer-events: none;
+}
+
+.inner a,
+.inner button {
+  pointer-events: auto;
+}
+
+@media (max-width: 600px) {
+  .inner {
+    padding-top: 170px;
+  }
+}
+
+.label {
+  margin-bottom: 20px;
+  font-family: var(--font-hero), monospace;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--on-red-muted);
+}
+
+.statement {
+  max-width: 20em;
+  font-size: clamp(28px, 4vw, 48px);
+  font-weight: 500;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+}
+
+.statement {
+  color: var(--on-red);
+}
+
+.statementLine {
+  display: block;
+}
+
+/* The Contact section's keys bring their own top margin; this keeps it. */
+.keys {
+  margin-top: 8px;
+}
+
+.work {
+  margin-top: 28px;
+}
+
+.work svg {
+  transition: transform 200ms ease;
+}
+
+.work:hover svg {
+  transform: translateX(3px);
+}

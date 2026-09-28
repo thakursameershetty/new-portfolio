@@ -22,11 +22,16 @@ import { onTilt } from "./deviceTilt";
 import { ProjectView } from "./ProjectView";
 import { disciplines, projects, type Project } from "./projects";
 import { useInView } from "./useInView";
+import { ArrowIcon } from "./icons/ArrowIcon";
 import styles from "./Work.module.css";
 
 const heading = [{ text: "SELECTED WORK", className: styles.headingLine }];
 const workHints: GestureHint[] = [
-  { gesture: "Hover", does: "a project to preview it on the monitor", device: "mouse" },
+  {
+    gesture: "Hover",
+    does: "a project to preview it on the monitor",
+    device: "mouse",
+  },
   { gesture: "Click", does: "to open its case study", device: "mouse" },
   { gesture: "Tap", does: "a project to open its case study", device: "touch" },
 ];
@@ -47,7 +52,9 @@ const shelves = [
 ];
 // Disks are numbered straight through both boxes.
 const firstNumbers = shelves.map((_, index) =>
-  shelves.slice(0, index).reduce((count, shelf) => count + shelf.projects.length, 1),
+  shelves
+    .slice(0, index)
+    .reduce((count, shelf) => count + shelf.projects.length, 1),
 );
 // Both boxes are framed for the fuller one, so their disks come out the same size.
 const fitSlots = Math.max(...shelves.map((shelf) => shelf.projects.length));
@@ -68,9 +75,10 @@ export function Work() {
   const { playFlap, playCue, setHum } = useIntro();
   const sectionRef = useRef<HTMLElement>(null);
   const inView = useInView(sectionRef, 0.2);
-  const [open, setOpen] = useState<{ project: Project; disk: HTMLElement | null } | null>(
-    null,
-  );
+  const [open, setOpen] = useState<{
+    project: Project;
+    disk: HTMLElement | null;
+  } | null>(null);
   const windowRef = useRef<DiskWindowHandle>(null);
   const openIdRef = useRef<string | null>(null);
   useEffect(() => {
@@ -86,14 +94,16 @@ export function Work() {
         return;
       }
       const project = projects.find((entry) => entry.id === id);
-      if (project && id !== openIdRef.current) setOpen({ project, disk: findDisk(project) });
+      if (project && id !== openIdRef.current)
+        setOpen({ project, disk: findDisk(project) });
     };
     window.addEventListener("popstate", handlePop);
     return () => window.removeEventListener("popstate", handlePop);
   }, []);
-  const [preview, setPreview] = useState<{ project: Project; number: number } | null>(
-    null,
-  );
+  const [preview, setPreview] = useState<{
+    project: Project;
+    number: number;
+  } | null>(null);
   const previewIdRef = useRef<string | null>(null);
   const hideTimerRef = useRef(0);
 
@@ -140,7 +150,11 @@ export function Work() {
       aria-labelledby="work-heading"
     >
       <p className={styles.label}>Work</p>
-      <h2 id="work-heading" className={styles.heading} aria-label="Selected work">
+      <h2
+        id="work-heading"
+        className={styles.heading}
+        aria-label="Selected work"
+      >
         <span aria-hidden="true">
           <SplitFlapText lines={heading} active={inView} onFlap={playFlap} />
         </span>
@@ -164,7 +178,11 @@ export function Work() {
               setPreview(null);
               setHum(false);
               setOpen({ project, disk });
-              window.history.pushState({ projectView: project.id }, "", `/work/${project.id}`);
+              window.history.pushState(
+                { projectView: project.id },
+                "",
+                `/work/${project.id}`,
+              );
             }}
             onPreview={(next) => {
               if (next) setHintsDone(true);
@@ -174,7 +192,10 @@ export function Work() {
         ))}
       </div>
 
-      <CrtPreview project={preview?.project ?? null} number={preview?.number ?? 0} />
+      <CrtPreview
+        project={preview?.project ?? null}
+        number={preview?.number ?? 0}
+      />
 
       <DiskWindow
         ref={windowRef}
@@ -183,7 +204,11 @@ export function Work() {
         onClosed={() => setOpen(null)}
         onSelect={(project) => {
           // Paging to a neighbour swaps the file in place, and its URL with it.
-          window.history.replaceState({ projectView: project.id }, "", `/work/${project.id}`);
+          window.history.replaceState(
+            { projectView: project.id },
+            "",
+            `/work/${project.id}`,
+          );
           setOpen({ project, disk: findDisk(project) });
         }}
       />
@@ -233,10 +258,18 @@ function flyOverBox(disk: HTMLElement) {
 }
 
 const flight = { duration: 620, easing: "cubic-bezier(0.45, 0, 0.2, 1)" };
-const flightBack = { duration: 480, stagger: 70, easing: "cubic-bezier(0.45, 0, 0.2, 1)" };
+const flightBack = {
+  duration: 480,
+  stagger: 70,
+  easing: "cubic-bezier(0.45, 0, 0.2, 1)",
+};
 // The list's room opening and closing, so the page below glides instead of jumping.
 // An even ease in and out: an ease-out would shove the page most of the way in one frame.
-const room = { open: 850, close: 620, easing: "cubic-bezier(0.65, 0, 0.35, 1)" };
+const room = {
+  open: 850,
+  close: 620,
+  easing: "cubic-bezier(0.65, 0, 0.35, 1)",
+};
 const copyIn = { duration: 380, easing: "cubic-bezier(0.22, 1, 0.36, 1)" };
 
 // Grow an element from nothing to its laid-out height (margin included), or back.
@@ -440,19 +473,25 @@ function DiskBox({
     for (const copy of copyRefs.current) if (copy) copy.style.opacity = "0";
 
     scene
-      .open((index, rect) => {
-        const disk = diskRefs.current[index];
-        const copy = copyRefs.current[index];
-        if (!disk) return;
-        disk.style.opacity = "";
-        const row = flyOverBox(disk);
-        disk
-          .animate([{ transform: placeOver(disk, rect) }, { transform: "none" }], flight)
-          .finished.catch(() => {})
-          .finally(() => row?.removeAttribute("data-flying"));
-        // The details arrive as the disk lands.
-        if (copy) showCopy(copy, flight.duration * 0.65);
-      }, () => playCue("diskOut"))
+      .open(
+        (index, rect) => {
+          const disk = diskRefs.current[index];
+          const copy = copyRefs.current[index];
+          if (!disk) return;
+          disk.style.opacity = "";
+          const row = flyOverBox(disk);
+          disk
+            .animate(
+              [{ transform: placeOver(disk, rect) }, { transform: "none" }],
+              flight,
+            )
+            .finished.catch(() => {})
+            .finally(() => row?.removeAttribute("data-flying"));
+          // The details arrive as the disk lands.
+          if (copy) showCopy(copy, flight.duration * 0.65);
+        },
+        () => playCue("diskOut"),
+      )
       .then(() => playCue("arrive"))
       .finally(() => {
         movingRef.current = false;
@@ -483,7 +522,9 @@ function DiskBox({
     await Promise.all(
       projects.map(async (_, index) => {
         const disk = diskRefs.current[index];
-        await new Promise((resolve) => window.setTimeout(resolve, flightBack.stagger * index));
+        await new Promise((resolve) =>
+          window.setTimeout(resolve, flightBack.stagger * index),
+        );
         if (!disk) return;
         const over = placeOver(disk, scene.liftedRect(index));
         flyOverBox(disk);
@@ -503,7 +544,10 @@ function DiskBox({
 
     // The lid shuts while the list's room closes up.
     playCue("boxClose");
-    await Promise.all([scene.shut(), shrinkRoom(list).finished.catch(() => {})]);
+    await Promise.all([
+      scene.shut(),
+      shrinkRoom(list).finished.catch(() => {}),
+    ]);
     setDealt(false);
     movingRef.current = false;
   }, [playCue, projects, reduceMotion, scene]);
@@ -513,7 +557,8 @@ function DiskBox({
   // after the first. Waits for the 3D box (unless it won't come), so the opening plays.
   useEffect(() => {
     const box = boxRef.current;
-    if (!box || openedRef.current || (!scene && !sceneFailed && !reduceMotion)) return;
+    if (!box || openedRef.current || (!scene && !sceneFailed && !reduceMotion))
+      return;
     let timer = 0;
     const observer = new IntersectionObserver(
       ([entry]) => {
@@ -521,7 +566,8 @@ function DiskBox({
         if (!entry || entry.intersectionRatio < 0.6) return;
         timer = window.setTimeout(
           () => {
-            if (openedRef.current || movingRef.current || dealtRef.current) return;
+            if (openedRef.current || movingRef.current || dealtRef.current)
+              return;
             openedRef.current = true;
             observer.disconnect();
             takeOut();
@@ -538,7 +584,9 @@ function DiskBox({
     };
   }, [place, reduceMotion, scene, sceneFailed, takeOut]);
 
-  const hint = dealt ? "Click the box to put them back." : "Click the box to take them out.";
+  const hint = dealt
+    ? "Click the box to put them back."
+    : "Click the box to take them out.";
 
   return (
     <div className={styles.shelf} data-place={place} data-dealt={dealt}>
@@ -588,7 +636,9 @@ function DiskBox({
               <span
                 key={project.id}
                 className={clsx(styles.disk, styles.still, styles.ghost)}
-                style={{ ...diskColors(project), "--slot": index } as CSSProperties}
+                style={
+                  { ...diskColors(project), "--slot": index } as CSSProperties
+                }
               >
                 <DiskFace project={project} number={firstNumber + index} />
               </span>
@@ -619,7 +669,10 @@ function DiskBox({
             <p className={styles.dealtLabel}>
               {title} · {note}
             </p>
-            <div className={styles.listHints} data-hidden={hintsDone || undefined}>
+            <div
+              className={styles.listHints}
+              data-hidden={hintsDone || undefined}
+            >
               <GestureHints hints={workHints} active />
             </div>
           </div>
@@ -637,7 +690,8 @@ function DiskBox({
                 onClick={(event) => {
                   // Anywhere on the row opens the case study, growing out of its disk; the
                   // row's own buttons and links do their own thing.
-                  if ((event.target as HTMLElement).closest("a, button")) return;
+                  if ((event.target as HTMLElement).closest("a, button"))
+                    return;
                   const disk = diskRefs.current[index]?.querySelector("button");
                   if (!disk) return;
                   playCue("insert");
@@ -667,7 +721,8 @@ function DiskBox({
                     number={firstNumber + index}
                     onOpen={() => {
                       // The window grows out of the disk, whichever was clicked.
-                      const disk = diskRefs.current[index]?.querySelector("button");
+                      const disk =
+                        diskRefs.current[index]?.querySelector("button");
                       if (disk) onOpen(project, disk);
                     }}
                   />
@@ -745,7 +800,8 @@ function EntryCopy({
             onMouseEnter={() => playCue("tap")}
             aria-label={`Visit ${project.link.label} (opens in a new tab)`}
           >
-            <span className={styles.entryLinkLabel}>{project.link.label}</span> ↗
+            <span className={styles.entryLinkLabel}>{project.link.label}</span>
+            <ArrowIcon direction="up-right" size={14} />
           </a>
         )}
       </div>
@@ -897,7 +953,10 @@ function DiskWindow({
     }
     morph.style.display = "block";
     disk.animate({ opacity: [1, 0] }, { duration: 140, fill: "forwards" });
-    const grow = morph.animate([box.disk, box.window], { ...morphOpen, fill: "forwards" });
+    const grow = morph.animate([box.disk, box.window], {
+      ...morphOpen,
+      fill: "forwards",
+    });
     panel.animate(
       { opacity: [0, 1] },
       { duration: 200, delay: morphOpen.duration * 0.6, fill: "backwards" },
@@ -942,7 +1001,10 @@ function DiskWindow({
     dialog.classList.add(styles.closing);
     morph.style.display = "block";
     panel.animate({ opacity: [1, 0] }, { duration: 120, fill: "forwards" });
-    const shrink = morph.animate([box.window, box.disk], { ...morphClose, fill: "forwards" });
+    const shrink = morph.animate([box.window, box.disk], {
+      ...morphClose,
+      fill: "forwards",
+    });
     disk.animate(
       { opacity: [0, 1] },
       { duration: 140, delay: morphClose.duration - 140, fill: "forwards" },

@@ -35,6 +35,7 @@ import {
   type Project,
   type ScreenItem,
 } from "./projects";
+import { ArrowIcon } from "./icons/ArrowIcon";
 import styles from "./ProjectView.module.css";
 
 const padNumber = (number: number) => String(number).padStart(2, "0");
@@ -48,7 +49,11 @@ const caseHints: GestureHint[] = [
   { gesture: "Click", does: "a key to change channel", device: "mouse" },
   { gesture: "Click", does: "◀ ▶ for the next picture", device: "mouse" },
   { gesture: "Click", does: "power to eject", device: "mouse" },
-  { gesture: "Tap", does: "Look closer to see the screen full size", device: "touch" },
+  {
+    gesture: "Tap",
+    does: "Look closer to see the screen full size",
+    device: "touch",
+  },
   { gesture: "Tap", does: "any picture to see it full size", device: "touch" },
 ];
 
@@ -66,7 +71,9 @@ const readingMinutes = (project: Project) => {
       section.heading,
       ...section.paragraphs,
       ...(section.points ?? []),
-      ...sectionPictures(section).map((figure) => (figure.type === "card" ? "" : (figure.caption ?? ""))),
+      ...sectionPictures(section).map((figure) =>
+        figure.type === "card" ? "" : (figure.caption ?? ""),
+      ),
     ]),
   ].join(" ");
   return Math.max(1, Math.round(text.split(/\s+/).length / 200));
@@ -104,7 +111,10 @@ export function ProjectView({
   /** Hover tick for the controls (the overlay's sound). */
   onTap?: () => void;
   /** The monitor's own sounds: its keys, the disk going in and out, and looking closer. */
-  onCue?: (cue: "remoteKey" | "driveLoad" | "driveEject" | "insert" | "crtOn" | "static") => void;
+  onCue?: (
+    cue:
+      "remoteKey" | "driveLoad" | "driveEject" | "insert" | "crtOn" | "static",
+  ) => void;
   className?: string;
   ref?: Ref<HTMLElement>;
 }) {
@@ -137,7 +147,14 @@ export function ProjectView({
       sections.flatMap((section, position) => {
         const items = sectionPictures(section);
         return items.length
-          ? [{ part: position, tag: `${padNumber(position + 1)} · ${section.label}`, label: section.label, items }]
+          ? [
+              {
+                part: position,
+                tag: `${padNumber(position + 1)} · ${section.label}`,
+                label: section.label,
+                items,
+              },
+            ]
           : [];
       }),
     [sections],
@@ -196,7 +213,10 @@ export function ProjectView({
 
   // The title flips in as the project opens (after the disk has grown into the page).
   useEffect(() => {
-    const timer = window.setTimeout(() => setTitleShown(true), reduceMotion ? 0 : 320);
+    const timer = window.setTimeout(
+      () => setTitleShown(true),
+      reduceMotion ? 0 : 320,
+    );
     return () => window.clearTimeout(timer);
   }, [project.id, reduceMotion]);
 
@@ -216,7 +236,8 @@ export function ProjectView({
       const line = window.innerHeight * readingLine;
       let reading = 0;
       partRefs.current.forEach((part, position) => {
-        if (part && part.getBoundingClientRect().top <= line) reading = position;
+        if (part && part.getBoundingClientRect().top <= line)
+          reading = position;
       });
       setCurrent(reading);
     };
@@ -228,14 +249,19 @@ export function ProjectView({
       release = window.setTimeout(() => (heldRef.current = false), 60);
     };
     // Captured on the document, so it hears the overlay's own scrolling as well as the page's.
-    document.addEventListener("scroll", handleScroll, { capture: true, passive: true });
+    document.addEventListener("scroll", handleScroll, {
+      capture: true,
+      passive: true,
+    });
     document.addEventListener("scrollend", handleScrollEnd, { capture: true });
     update();
     return () => {
       cancelAnimationFrame(frame);
       window.clearTimeout(release);
       document.removeEventListener("scroll", handleScroll, { capture: true });
-      document.removeEventListener("scrollend", handleScrollEnd, { capture: true });
+      document.removeEventListener("scrollend", handleScrollEnd, {
+        capture: true,
+      });
     };
   }, [sections]);
 
@@ -266,7 +292,10 @@ export function ProjectView({
       heldRef.current = true;
       // In case nothing scrolls (already there), or scrollend never comes.
       window.setTimeout(() => (heldRef.current = false), 1400);
-      part.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "start" });
+      part.scrollIntoView({
+        behavior: reduceMotion ? "auto" : "smooth",
+        block: "start",
+      });
     },
     [reduceMotion],
   );
@@ -303,7 +332,12 @@ export function ProjectView({
   useEffect(() => {
     const shown = shownChannelRef.current;
     shownChannelRef.current = { id: project.id, channel: tvChannel };
-    if (shown.id !== project.id || shown.channel === tvChannel || !litRef.current) return;
+    if (
+      shown.id !== project.id ||
+      shown.channel === tvChannel ||
+      !litRef.current
+    )
+      return;
     onCue?.("static");
   }, [onCue, project.id, tvChannel]);
 
@@ -326,11 +360,13 @@ export function ProjectView({
   // Keys: ← and → move a part, 1–9 jump to one.
   useEffect(() => {
     const handleKey = (event: KeyboardEvent) => {
-      if (closer !== null || event.metaKey || event.ctrlKey || event.altKey) return;
+      if (closer !== null || event.metaKey || event.ctrlKey || event.altKey)
+        return;
       const target = event.target as HTMLElement | null;
       if (target?.closest("input, textarea, select, [contenteditable]")) return;
       let goal = -1;
-      if (event.key === "ArrowRight") goal = Math.min(current + 1, sections.length - 1);
+      if (event.key === "ArrowRight")
+        goal = Math.min(current + 1, sections.length - 1);
       else if (event.key === "ArrowLeft") goal = Math.max(current - 1, 0);
       else if (/^[1-9]$/.test(event.key)) goal = Number(event.key) - 1;
       if (goal < 0 || goal >= sections.length || goal === current) return;
@@ -346,13 +382,16 @@ export function ProjectView({
   const figureRefs = useRef(new Map<string, HTMLElement>());
   const figureRect = (part: number, item: number) =>
     figureRefs.current.get(`${part}:${item}`)?.getBoundingClientRect() ?? null;
-  const storyChannel = closer?.from === "story" ? storyChannels[closer.channel] : undefined;
+  const storyChannel =
+    closer?.from === "story" ? storyChannels[closer.channel] : undefined;
 
   return (
     <article
       ref={setViewRef}
       className={clsx(styles.view, className)}
-      style={{ "--disk": project.disk, "--disk-ink": project.ink } as CSSProperties}
+      style={
+        { "--disk": project.disk, "--disk-ink": project.ink } as CSSProperties
+      }
       aria-labelledby="project-title"
     >
       {/* A floating pill, like the site's own nav: the disk and its name, a tick per part of
@@ -392,11 +431,26 @@ export function ProjectView({
             className={styles.eject}
             onClick={eject}
             onMouseEnter={onTap}
-            aria-label={onClose ? "Eject: close the case study" : "Eject: back to all work"}
+            aria-label={
+              onClose
+                ? "Eject: close the case study"
+                : "Eject: back to all work"
+            }
           >
-            <svg className={styles.ejectIcon} viewBox="0 0 12 12" aria-hidden="true">
+            <svg
+              className={styles.ejectIcon}
+              viewBox="0 0 12 12"
+              aria-hidden="true"
+            >
               <path d="M6 1.5 10.5 7h-9z" fill="currentColor" />
-              <rect x="1.5" y="8.6" width="9" height="1.9" rx="0.5" fill="currentColor" />
+              <rect
+                x="1.5"
+                y="8.6"
+                width="9"
+                height="1.9"
+                rx="0.5"
+                fill="currentColor"
+              />
             </svg>
             Eject
           </button>
@@ -411,7 +465,11 @@ export function ProjectView({
             <p className={clsx(styles.credits, styles.arrive)}>
               {project.context === "Spotmies" && (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img src="/logos/spotmies-dark.png" alt="Spotmies" className={styles.creditLogo} />
+                <img
+                  src="/logos/spotmies-dark.png"
+                  alt="Spotmies"
+                  className={styles.creditLogo}
+                />
               )}
               {project.context === "Spotmies" && clients.length > 0 && (
                 <span className={styles.creditCross} aria-label="for">
@@ -421,7 +479,9 @@ export function ProjectView({
               {/* A client with more than one brand: each, split by a rule. */}
               {clients.map((client, index) => (
                 <Fragment key={client.logo}>
-                  {index > 0 && <span className={styles.creditRule} aria-label="and" />}
+                  {index > 0 && (
+                    <span className={styles.creditRule} aria-label="and" />
+                  )}
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={client.logo}
@@ -431,7 +491,10 @@ export function ProjectView({
                     // pushing the title down.
                     style={
                       client.height
-                        ? { height: client.height, margin: `${(34 - client.height) / 2}px 0` }
+                        ? {
+                            height: client.height,
+                            margin: `${(34 - client.height) / 2}px 0`,
+                          }
                         : undefined
                     }
                   />
@@ -446,9 +509,17 @@ export function ProjectView({
             {study && ` · ${study.timeframe}`}
             {minutes > 0 && ` · ${minutes} min read`}
           </p>
-          <h1 id="project-title" className={styles.title} aria-label={project.title}>
+          <h1
+            id="project-title"
+            className={styles.title}
+            aria-label={project.title}
+          >
             <span aria-hidden="true">
-              <FlapWords text={project.title} active={titleShown} onFlap={playFlap} />
+              <FlapWords
+                text={project.title}
+                active={titleShown}
+                onFlap={playFlap}
+              />
             </span>
           </h1>
           {study?.headline ? (
@@ -460,9 +531,14 @@ export function ProjectView({
           )}
           {/* With a headline, the brief below says the rest. */}
           {!study?.headline && (
-            <p className={clsx(styles.summary, styles.arrive)}>{project.summary}</p>
+            <p className={clsx(styles.summary, styles.arrive)}>
+              {project.summary}
+            </p>
           )}
-          <div className={clsx(styles.actions, styles.arrive)} style={{ "--order": 1 } as CSSProperties}>
+          <div
+            className={clsx(styles.actions, styles.arrive)}
+            style={{ "--order": 1 } as CSSProperties}
+          >
             {project.link && (
               <div className={styles.links}>
                 {[project.link, project.alsoLink].map(
@@ -473,11 +549,17 @@ export function ProjectView({
                         href={link.href}
                         target="_blank"
                         rel="noreferrer noopener"
-                        className={index === 0 ? styles.visit : styles.visitAlso}
+                        className={
+                          index === 0 ? styles.visit : styles.visitAlso
+                        }
                         onMouseEnter={onTap}
                       >
-                        Visit {link.label} ↗
-                        <span className={styles.srOnly}> (opens in a new tab)</span>
+                        Visit {link.label}
+                        <ArrowIcon direction="up-right" size={14} />
+                        <span className={styles.srOnly}>
+                          {" "}
+                          (opens in a new tab)
+                        </span>
                       </a>
                     ),
                 )}
@@ -542,14 +624,26 @@ export function ProjectView({
                 <dt className={styles.briefLabel}>{fact.label}</dt>
                 <dd className={styles.briefValue}>
                   {fact.people ? (
-                    <span className={styles.briefPeople} role="list" aria-label={fact.value}>
+                    <span
+                      className={styles.briefPeople}
+                      role="list"
+                      aria-label={fact.value}
+                    >
                       {fact.people.map((person) => {
                         const photo = (
                           // eslint-disable-next-line @next/next/no-img-element
-                          <img src={person.photo} alt={person.name} className={styles.briefFace} />
+                          <img
+                            src={person.photo}
+                            alt={person.name}
+                            className={styles.briefFace}
+                          />
                         );
                         return (
-                          <span key={person.name} role="listitem" title={person.name}>
+                          <span
+                            key={person.name}
+                            role="listitem"
+                            title={person.name}
+                          >
                             {person.href ? (
                               <a
                                 href={person.href}
@@ -559,40 +653,61 @@ export function ProjectView({
                                 onMouseEnter={onTap}
                               >
                                 {photo}
-                                <span className={styles.srOnly}> (opens in a new tab)</span>
+                                <span className={styles.srOnly}>
+                                  {" "}
+                                  (opens in a new tab)
+                                </span>
                               </a>
                             ) : (
-                              <span className={styles.briefPerson}>{photo}</span>
+                              <span className={styles.briefPerson}>
+                                {photo}
+                              </span>
                             )}
                           </span>
                         );
                       })}
                     </span>
-                  ) : (() => {
-                    const value = fact.logo ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={fact.logo} alt={fact.value} className={styles.briefLogo} />
-                    ) : (
-                      fact.value
-                    );
-                    return fact.href ? (
-                      <a
-                        href={fact.href}
-                        target="_blank"
-                        rel="noreferrer noopener"
-                        className={styles.briefLink}
-                        onMouseEnter={onTap}
-                      >
-                        {value}
-                        <span aria-hidden="true" className={styles.briefArrow}>
-                          ↗
-                        </span>
-                        <span className={styles.srOnly}> (opens in a new tab)</span>
-                      </a>
-                    ) : (
-                      value
-                    );
-                  })()}
+                  ) : (
+                    (() => {
+                      const value = fact.logo ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={fact.logo}
+                          alt={fact.value}
+                          className={styles.briefLogo}
+                        />
+                      ) : (
+                        fact.value
+                      );
+                      return fact.href ? (
+                        <a
+                          href={fact.href}
+                          target="_blank"
+                          rel="noreferrer noopener"
+                          className={styles.briefLink}
+                          onMouseEnter={onTap}
+                        >
+                          {value}
+                          <span
+                            aria-hidden="true"
+                            className={styles.briefArrow}
+                          >
+                            <ArrowIcon
+                              direction="up-right"
+                              size={12}
+                              animated={false}
+                            />
+                          </span>
+                          <span className={styles.srOnly}>
+                            {" "}
+                            (opens in a new tab)
+                          </span>
+                        </a>
+                      ) : (
+                        value
+                      );
+                    })()
+                  )}
                 </dd>
                 {fact.note && <dd className={styles.briefNote}>{fact.note}</dd>}
               </div>
@@ -635,8 +750,11 @@ export function ProjectView({
 
       <div className={styles.story}>
         {sections.map((section, position) => {
-          const channel = storyChannels.findIndex((entry) => entry.part === position);
-          const textCount = section.paragraphs.length + (section.points?.length ?? 0);
+          const channel = storyChannels.findIndex(
+            (entry) => entry.part === position,
+          );
+          const textCount =
+            section.paragraphs.length + (section.points?.length ?? 0);
           // Pictures are numbered across the part (the lead first), as the closer look and the
           // monitor count them.
           const lead = section.lead ? 1 : 0;
@@ -650,7 +768,11 @@ export function ProjectView({
             setLeaving(false);
             setCloser({ from: "story", channel, item });
           };
-          const figureGrid = (figures: ScreenItem[], layout: string, offset: number) => (
+          const figureGrid = (
+            figures: ScreenItem[],
+            layout: string,
+            offset: number,
+          ) => (
             <div className={styles.figures} data-layout={layout}>
               {figures.map((figure, index) => {
                 const item = index + offset;
@@ -670,7 +792,9 @@ export function ProjectView({
                       <FigureMedia figure={figure} layout={layout} />
                     </button>
                     {figure.type !== "card" && figure.caption && (
-                      <figcaption className={styles.caption}>{figure.caption}</figcaption>
+                      <figcaption className={styles.caption}>
+                        {figure.caption}
+                      </figcaption>
                     )}
                   </figure>
                 );
@@ -726,7 +850,11 @@ export function ProjectView({
                       <li
                         key={point}
                         className={styles.arrive}
-                        style={{ "--order": section.paragraphs.length + order } as CSSProperties}
+                        style={
+                          {
+                            "--order": section.paragraphs.length + order,
+                          } as CSSProperties
+                        }
                       >
                         {point}
                       </li>
@@ -736,15 +864,17 @@ export function ProjectView({
               </div>
 
               {section.lead && figureGrid([section.lead], "wide", 0)}
-              {section.layout === "carousel" && section.figures && section.figures.length > 0 && (
-                <FigureCarousel
-                  figures={section.figures}
-                  className={styles.arrive}
-                  style={{ "--order": textCount + lead } as CSSProperties}
-                  setRef={(item, node) => setFigureRef(item + lead, node)}
-                  onOpen={(item) => open(item + lead)}
-                />
-              )}
+              {section.layout === "carousel" &&
+                section.figures &&
+                section.figures.length > 0 && (
+                  <FigureCarousel
+                    figures={section.figures}
+                    className={styles.arrive}
+                    style={{ "--order": textCount + lead } as CSSProperties}
+                    setRef={(item, node) => setFigureRef(item + lead, node)}
+                    onOpen={(item) => open(item + lead)}
+                  />
+                )}
               {section.layout !== "carousel" &&
                 section.figures &&
                 section.figures.length > 0 &&
@@ -784,7 +914,9 @@ export function ProjectView({
             onCue?.("remoteKey");
             setCloser({ from: "story", channel, item: 0 });
             // Keep the page under the view on the same part, so stepping back lands on it.
-            partRefs.current[storyChannels[channel].part]?.scrollIntoView({ block: "start" });
+            partRefs.current[storyChannels[channel].part]?.scrollIntoView({
+              block: "start",
+            });
           }}
           screenRect={() => figureRect(storyChannel.part, closer.item)}
           onLeave={() => setLeaving(true)}
@@ -804,9 +936,11 @@ export function ProjectView({
           const content = (
             <>
               <span className={styles.pagerLabel}>
-                {arrow === "←" && `${arrow} `}
+                {arrow === "←" && (
+                  <ArrowIcon direction="left" size={12} animated={false} />
+                )}
                 {label} disk
-                {arrow === "→" && ` ${arrow}`}
+                {arrow === "→" && <ArrowIcon size={12} animated={false} />}
               </span>
               <span className={styles.pagerTitle}>
                 <span
@@ -818,7 +952,10 @@ export function ProjectView({
               </span>
             </>
           );
-          const pagerClass = clsx(styles.pagerLink, arrow === "→" && styles.pagerNext);
+          const pagerClass = clsx(
+            styles.pagerLink,
+            arrow === "→" && styles.pagerNext,
+          );
           return onSelect ? (
             <button
               key={label}
@@ -868,14 +1005,20 @@ function FigureCarousel({
   const videoRefs = useRef<(HTMLVideoElement | null)[]>([]);
   const barRefs = useRef<(HTMLSpanElement | null)[]>([]);
   const count = figures.length;
-  const next = useCallback(() => setActive((current) => (current + 1) % count), [count]);
+  const next = useCallback(
+    () => setActive((current) => (current + 1) % count),
+    [count],
+  );
 
   useEffect(() => {
     const root = rootRef.current;
     if (!root) return;
-    const observer = new IntersectionObserver(([entry]) => setInView(entry.isIntersecting), {
-      threshold: 0.35,
-    });
+    const observer = new IntersectionObserver(
+      ([entry]) => setInView(entry.isIntersecting),
+      {
+        threshold: 0.35,
+      },
+    );
     observer.observe(root);
     return () => observer.disconnect();
   }, []);
@@ -905,7 +1048,10 @@ function FigureCarousel({
     const tabs = tabsRef.current;
     const tab = tabs?.children[active] as HTMLElement | undefined;
     if (!tabs || !tab || tabs.scrollWidth <= tabs.clientWidth) return;
-    tabs.scrollTo({ left: tab.offsetLeft - (tabs.clientWidth - tab.offsetWidth) / 2, behavior: "smooth" });
+    tabs.scrollTo({
+      left: tab.offsetLeft - (tabs.clientWidth - tab.offsetWidth) / 2,
+      behavior: "smooth",
+    });
   }, [active]);
 
   const current = figures[active];
@@ -965,7 +1111,12 @@ function FigureCarousel({
           {current?.type === "card" ? current.note : current?.caption}
         </p>
         {count > 1 && (
-          <div ref={tabsRef} className={styles.carouselTabs} role="tablist" aria-label="Pictures">
+          <div
+            ref={tabsRef}
+            className={styles.carouselTabs}
+            role="tablist"
+            aria-label="Pictures"
+          >
             {figures.map((figure, item) => (
               <button
                 key={figure.type === "card" ? figure.title : figure.src}
@@ -998,7 +1149,13 @@ function FigureCarousel({
 }
 
 // A picture in the story, sized for how its part lays them out.
-function FigureMedia({ figure, layout }: { figure: ScreenItem; layout: string }) {
+function FigureMedia({
+  figure,
+  layout,
+}: {
+  figure: ScreenItem;
+  layout: string;
+}) {
   if (figure.type === "card") {
     return (
       <span className={styles.figureCard}>
@@ -1072,5 +1229,12 @@ function FlapWords({
       .split(" ")
       .map((word) => ({ text: word, className: styles.flapWord }));
   }, [text]);
-  return <SplitFlapText lines={lines} active={active} lineGap={0.06} onFlap={onFlap} />;
+  return (
+    <SplitFlapText
+      lines={lines}
+      active={active}
+      lineGap={0.06}
+      onFlap={onFlap}
+    />
+  );
 }

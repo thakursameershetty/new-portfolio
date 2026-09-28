@@ -454,3 +454,14 @@
     transition: none;
   }
 }
+
+/* At the foot of the About page, the disc steps aside so the credits show (AboutFooter sets
+   <html data-page-end>). Its own animation drives transform, so this fades it only. */
+.disc {
+  transition: opacity 250ms ease;
+}
+
+:global(html[data-page-end]) .disc {
+  opacity: 0 !important;
+  pointer-events: none;
+}

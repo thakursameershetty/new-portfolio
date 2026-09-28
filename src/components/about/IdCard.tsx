@@ -28,6 +28,13 @@ const photo = "/about/id/photo.webp";
 // from its top-left) and how far each is turned. All can be peeled and moved.
 const stickers = [
   {
+    src: "/about/id/stickers/cat.webp",
+    x: 0.25,
+    y: 0.64,
+    size: 0.19,
+    rotate: 6,
+  },
+  {
     src: "/about/id/stickers/feel-right.png",
     x: 0.04,
     y: 0.08,

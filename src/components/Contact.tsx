@@ -111,31 +111,44 @@ export function Contact() {
           </span>
         </div>
 
-        <div className={styles.keys}>
-          <EmailKey />
-          <div className={styles.socials}>
-            {socials.map((social) => (
-              <LinkKey key={social.label} {...social} />
-            ))}
-          </div>
-        </div>
-
-        <footer className={styles.footer}>
-          <span>© {new Date().getFullYear()} Thakur Sameer Shetty</span>
-          <span>
-            Designed and built by me · Next.js, Three.js, WebGL, Web Audio,
-            Claude, Gemini
-          </span>
-        </footer>
+        <ContactKeys />
+        <Credits />
       </div>
     </section>
+  );
+}
+
+/** The email key and the social keys: here, and at the foot of the About page. */
+export function ContactKeys() {
+  return (
+    <div className={styles.keys}>
+      <EmailKey />
+      <div className={styles.socials}>
+        {socials.map((social) => (
+          <LinkKey key={social.label} {...social} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/** The site's closing line: here, and at the foot of the About page. */
+export function Credits() {
+  return (
+    <footer className={styles.footer}>
+      <span>© {new Date().getFullYear()} Thakur Sameer Shetty</span>
+      <span>
+        Designed and built by me · Next.js, Three.js, WebGL, Web Audio, Claude,
+        Gemini
+      </span>
+    </footer>
   );
 }
 
 // Drives the grid's reveal from scroll: writes 0–1 into `reveal` each frame the page scrolls,
 // calls `onRow` as the front crosses each row (for a tick), and reports whether the grid is
 // fully revealed (then its hover sounds switch on).
-function useScrollReveal(
+export function useScrollReveal(
   sectionRef: React.RefObject<HTMLElement | null>,
   reveal: { current: number },
   onRow: () => void,
