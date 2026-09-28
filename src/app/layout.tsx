@@ -88,6 +88,15 @@ export const metadata: Metadata = {
       "max-snippet": -1,
     },
   },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: site.title,
+  },
+  // Add your Google Search Console verification string here to track search performance
+  verification: {
+    google: "", 
+  },
   formatDetection: { telephone: false, email: false, address: false },
 };
 
