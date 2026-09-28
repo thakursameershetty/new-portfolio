@@ -134,7 +134,7 @@ function MoreLink() {
 
   return (
     <Link href="/about" className={styles.more} onMouseEnter={() => playCue("tap")}>
-      Read more about me
+      More about me
       <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none">
         <path
           d="M5 12h14M13 6l6 6-6 6"

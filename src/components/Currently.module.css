@@ -104,10 +104,12 @@
 }
 
 @keyframes nudge {
+
   25%,
   65% {
     transform: translateX(0.13em);
   }
+
   45%,
   85% {
     transform: translateX(0);
@@ -147,14 +149,21 @@
 .more {
   display: inline-flex;
   align-items: center;
-  gap: 10px;
-  padding: 8px 0;
-  border-bottom: 1px solid rgba(245, 241, 234, 0.3);
-  color: var(--ink);
+  gap: 12px;
+  padding: 16px 20px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  background: #2a2a2a;
+  color: #f5f1ea;
   font-size: 17px;
   font-weight: 500;
   text-decoration: none;
-  transition: border-color 150ms ease;
+  box-shadow:
+    0 6px 0 #555,
+    0 12px 24px rgba(0, 0, 0, 0.3);
+  transition:
+    transform 110ms ease,
+    box-shadow 110ms ease;
 }
 
 .more svg {
@@ -162,11 +171,17 @@
 }
 
 .more:hover {
-  border-color: var(--ink);
+  transform: translateY(-2px);
+  box-shadow:
+    0 8px 0 #555,
+    0 16px 28px rgba(0, 0, 0, 0.4);
 }
 
 .more:active {
-  opacity: 0.6;
+  transform: translateY(5px);
+  box-shadow:
+    0 1px 0 #555,
+    0 4px 10px rgba(0, 0, 0, 0.3);
 }
 
 .more:hover svg {
@@ -361,6 +376,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+
   .key,
   .keyArrow,
   .muted,

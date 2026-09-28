@@ -305,9 +305,42 @@ export function IdCard() {
           : { type: "spring", stiffness: 170, damping: 16, duration },
       );
     };
-    const showCard = (on: boolean) => {
+    // The card (with the loop through it) and the Flip key under it. Coming back, the loop
+    // hooks down from the clip into the slot, and the key fades back up; going, the key
+    // slips away. `instant` for tidying up.
+    const loops = () =>
+      cardZone.querySelectorAll<HTMLElement>(
+        `.${styles.loopBack}, .${styles.loopFront}`,
+      );
+    const showCard = (on: boolean, instant = false) => {
+      const still = instant || reducedRef.current;
+      // Tucked up before the card shows, so the first frame doesn't flash the whole loop.
+      if (on && !still)
+        for (const el of loops()) el.style.clipPath = "inset(0 0 100% 0)";
       cardZone.style.visibility = on ? "" : "hidden";
-      under.style.visibility = on ? "" : "hidden";
+      under.style.pointerEvents = on ? "" : "none";
+      if (on) {
+        animateValue(
+          [...loops()],
+          { clipPath: ["inset(0 0 100% 0)", "inset(0 0 0% 0)"] },
+          { duration: still ? 0 : 0.32, ease: [0.34, 1.4, 0.64, 1] },
+        );
+        animateValue(
+          under,
+          { opacity: 1, y: 0 },
+          {
+            duration: still ? 0 : 0.45,
+            delay: still ? 0 : 0.12,
+            ease: [0.22, 1, 0.36, 1],
+          },
+        );
+      } else {
+        animateValue(
+          under,
+          { opacity: 0, y: 10 },
+          { duration: still ? 0 : 0.2 },
+        );
+      }
     };
 
     const dock = document.createElement("button");
@@ -484,7 +517,7 @@ export function IdCard() {
       window.removeEventListener("resize", onResize);
       reel?.stop();
       dock.remove();
-      showCard(true);
+      showCard(true, true);
       lanyard.style.transform = "";
       lanyard.style.opacity = "";
     };
@@ -669,31 +702,38 @@ export function IdCard() {
         </motion.div>
       </motion.div>
 
-      <div ref={underRef} className={styles.under}>
-        <button type="button" className={key.key} onClick={flip}>
-          <svg
-            aria-hidden="true"
-            width="18"
-            height="18"
-            viewBox="0 0 24 24"
-            fill="none"
-          >
-            <path
-              d="M4 12a8 8 0 0 1 13.7-5.6L20 8.7M20 4v4.7h-4.7M20 12a8 8 0 0 1-13.7 5.6L4 15.3M4 20v-4.7h4.7"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-          {side === "front" ? "Flip it over" : "Flip back"}
-        </button>
-        <p className={styles.hint}>
-          {side === "front"
-            ? "Stickers on the back"
-            : "Peel the stickers and move them around"}
-        </p>
-      </div>
+      {/* The Flip key waits for the card to drop in, then fades up under it. */}
+      <motion.div
+        initial={reduced ? false : { opacity: 0, y: 10 }}
+        animate={ready || reduced ? { opacity: 1, y: 0 } : undefined}
+        transition={{ delay: 0.75, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+      >
+        <div ref={underRef} className={styles.under}>
+          <button type="button" className={key.key} onClick={flip}>
+            <svg
+              aria-hidden="true"
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+            >
+              <path
+                d="M4 12a8 8 0 0 1 13.7-5.6L20 8.7M20 4v4.7h-4.7M20 12a8 8 0 0 1-13.7 5.6L4 15.3M4 20v-4.7h4.7"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+            {side === "front" ? "Flip it over" : "Flip back"}
+          </button>
+          <p className={styles.hint}>
+            {side === "front"
+              ? "Stickers on the back"
+              : "Peel the stickers and move them around"}
+          </p>
+        </div>
+      </motion.div>
     </div>
   );
 }

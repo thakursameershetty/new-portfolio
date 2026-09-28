@@ -83,6 +83,11 @@
   text-wrap: balance;
 }
 
+/* "I'm Thakur." on a line of its own, then the rest. */
+.statementLine {
+  display: block;
+}
+
 .lede {
   max-width: 36em;
   margin-top: 28px;

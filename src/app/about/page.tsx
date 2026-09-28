@@ -81,7 +81,10 @@ export default function AboutPage() {
             <div className={styles.intro}>
               <p className={styles.label}>About</p>
               <h1 className={styles.statement}>
-                I&rsquo;m Thakur. I design products, and I build what I design.
+                <span className={styles.statementLine}>I&rsquo;m Thakur.</span>{" "}
+                <span className={styles.statementLine}>
+                  I draw rectangles until they look like real products.
+                </span>
               </h1>
               <p className={styles.lede}>
                 I started out in electrical and electronics engineering, moved
