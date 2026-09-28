@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { MiniPlayer } from "@/components/MiniPlayer";
 import { site } from "@/components/site";
 import localFont from "next/font/local";
 import { ThemeProvider } from "next-themes";
@@ -72,11 +73,20 @@ export const metadata: Metadata = {
     title: site.title,
     description: site.description,
   },
-  twitter: { card: "summary_large_image", title: site.title, description: site.description },
+  twitter: {
+    card: "summary_large_image",
+    title: site.title,
+    description: site.description,
+  },
   robots: {
     index: true,
     follow: true,
-    googleBot: { index: true, follow: true, "max-image-preview": "large", "max-snippet": -1 },
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
   },
   formatDetection: { telephone: false, email: false, address: false },
 };
@@ -89,10 +99,16 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en" className={`${sans.variable} ${display.variable} ${hero.variable} ${script.variable}`} suppressHydrationWarning>
+    <html
+      lang="en"
+      className={`${sans.variable} ${display.variable} ${hero.variable} ${script.variable}`}
+      suppressHydrationWarning
+    >
       <body>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           {children}
+          {/* The music's mini disc: here in the layout, so it carries on across pages. */}
+          <MiniPlayer />
         </ThemeProvider>
       </body>
     </html>

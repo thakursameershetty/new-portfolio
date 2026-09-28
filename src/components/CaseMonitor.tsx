@@ -25,7 +25,6 @@ export function CaseMonitor({
   onPower,
   onCue,
   onLookCloser,
-  onUsed,
   screenRectRef,
   ejectRef,
 }: {
@@ -41,8 +40,6 @@ export function CaseMonitor({
   onCue?: (cue: "remoteKey" | "driveLoad") => void;
   /** Look closer at the screen, starting from this item of the current channel. */
   onLookCloser: (item: number) => void;
-  /** The set was pressed (dragged, or its screen or a key clicked). */
-  onUsed: () => void;
   /** Filled with a way to find the screen on the page, for the closer look to grow from. */
   screenRectRef?: { current: (() => DOMRect | null) | null };
   /** Filled with the set's eject (the disk out, the tube off), to play before closing. */
@@ -192,7 +189,6 @@ export function CaseMonitor({
       ref={monitorRef}
       className={styles.monitor}
       // Any press on the set (a drag, the screen, a key) shows it's been found.
-      onPointerDown={onUsed}
       onPointerMove={(event) => {
         const bounds = event.currentTarget.getBoundingClientRect();
         pointerRef.current = { x: event.clientX - bounds.left, y: event.clientY - bounds.top };

@@ -380,7 +380,9 @@ function DiskBox({
             if (!cancelled) setSceneFailed(true);
           });
       },
-      { rootMargin: "600px 0px" },
+      // Well ahead of it: the build is done in pieces (see diskBox3d), so it can start early
+      // without holding up the page, and is ready by the time the box comes into view.
+      { rootMargin: "1200px 0px" },
     );
     observer.observe(box);
 

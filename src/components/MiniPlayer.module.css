@@ -1,0 +1,456 @@
+/* ---- The disc in the corner ---- */
+
+.disc {
+  position: fixed;
+  bottom: max(20px, env(safe-area-inset-bottom));
+  left: 20px;
+  z-index: 55;
+  display: grid;
+  place-items: center;
+  width: 72px;
+  height: 72px;
+  padding: 0;
+  border: 0;
+  border-radius: 19px;
+  background: none;
+  cursor: pointer;
+  filter: drop-shadow(0 10px 16px rgba(0, 0, 0, 0.55));
+  will-change: transform;
+}
+
+.disc:focus-visible {
+  outline: 3px solid var(--ink);
+  outline-offset: 6px;
+}
+
+/* ---- The MiniDisc ---- */
+
+/* The frosted shell: a milky, translucent rounded square, lit from the top. */
+.shell {
+  position: absolute;
+  inset: 0;
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  border-radius: 19px;
+  background:
+    linear-gradient(160deg, rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.08) 55%),
+    rgba(214, 206, 232, 0.72);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.8),
+    inset 0 -2px 5px rgba(60, 40, 90, 0.18);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+}
+
+.screw {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 40% 35%, rgba(255, 255, 255, 0.9), rgba(150, 140, 175, 0.9) 70%);
+  box-shadow: inset 0 0 0 1px rgba(90, 80, 120, 0.35);
+}
+
+.screwTL {
+  top: 5px;
+  left: 5px;
+}
+
+.screwTR {
+  top: 5px;
+  right: 5px;
+}
+
+.screwBL {
+  bottom: 5px;
+  left: 5px;
+}
+
+.screwBR {
+  right: 5px;
+  bottom: 5px;
+}
+
+/* The disc: black vinyl, as in the pop-up and on the About page: fine grooves, with a
+   sheen that holds still against the light while the label turns. */
+.cd {
+  position: absolute;
+  inset: 7px;
+  border-radius: 50%;
+  background:
+    conic-gradient(
+      from 30deg,
+      transparent 0deg,
+      rgba(255, 255, 255, 0.13) 30deg,
+      transparent 60deg,
+      transparent 180deg,
+      rgba(255, 255, 255, 0.09) 210deg,
+      transparent 240deg
+    ),
+    repeating-radial-gradient(circle, #121212 0 0.8px, #1f1f1f 0.8px 1.6px),
+    #111;
+  box-shadow:
+    inset 0 0 0 1px rgba(0, 0, 0, 0.5),
+    0 1px 3px rgba(0, 0, 0, 0.35);
+}
+
+/* The label: the song's album art, turning while it plays. */
+.hub {
+  position: absolute;
+  inset: 31%;
+  border-radius: 50%;
+  box-shadow: 0 0 0 1.5px #0c0c0c;
+}
+
+.hubArt {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background-position: center;
+  background-size: cover;
+}
+
+/* The spindle hole. */
+.hubArt::after {
+  content: "";
+  position: absolute;
+  inset: 42%;
+  border-radius: 50%;
+  background: #0c0c0c;
+}
+
+/* The shutter: brushed metal like the floppy disk's, engraved with the MiniDisc mark,
+   its foot filling in red as the preview plays. */
+.shutter {
+  position: absolute;
+  top: 34%;
+  right: 3px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  width: 42%;
+  height: 32%;
+  border-radius: 4px;
+  background: linear-gradient(90deg, #a9afb3, #eef0f1 42%, #c2c7ca 70%, #a4aaae);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.7),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.2),
+    -2px 1px 4px rgba(0, 0, 0, 0.3);
+}
+
+.infinity {
+  width: 60%;
+  fill: none;
+  stroke: rgba(70, 76, 80, 0.55);
+  stroke-width: 1.4;
+  filter: drop-shadow(0 0.6px 0 rgba(255, 255, 255, 0.8));
+}
+
+.shutterMeter {
+  width: 70%;
+  height: 2px;
+  overflow: hidden;
+  border-radius: 1px;
+  background: rgba(0, 0, 0, 0.15);
+}
+
+.shutterFill {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: var(--tone-work);
+  transform-origin: left;
+  transition: transform 250ms linear;
+}
+
+/* The pop-up's record: grooves in vinyl black, the album art as its label, a sheen that
+   stays put. */
+.bigRecord {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background:
+    conic-gradient(
+      from 30deg,
+      transparent 0deg,
+      rgba(255, 255, 255, 0.1) 30deg,
+      transparent 60deg,
+      transparent 180deg,
+      rgba(255, 255, 255, 0.07) 210deg,
+      transparent 240deg
+    ),
+    repeating-radial-gradient(circle, #121212 0 1.2px, #1d1d1d 1.2px 2.4px),
+    #111;
+}
+
+.bigLabel {
+  position: absolute;
+  inset: 30%;
+  border-radius: 50%;
+  background-position: center;
+  background-size: cover;
+  box-shadow: 0 0 0 2px #0c0c0c;
+}
+
+/* The spindle hole. */
+.bigLabel::after {
+  content: "";
+  position: absolute;
+  inset: 42%;
+  border-radius: 50%;
+  background: #0c0c0c;
+}
+
+.spinning {
+  animation: spin 1.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* The song, slid out beside the disc on hover. */
+.name {
+  position: absolute;
+  top: 50%;
+  left: calc(100% + 14px);
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  padding: 7px 12px 8px;
+  border-radius: 10px;
+  background: rgba(245, 241, 234, 0.95);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.35);
+  color: #16140f;
+  text-align: left;
+  white-space: nowrap;
+  opacity: 0;
+  transform: translate(-6px, -50%);
+  pointer-events: none;
+  transition:
+    opacity 160ms ease,
+    transform 220ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.disc:hover .name,
+.disc:focus-visible .name {
+  opacity: 1;
+  transform: translate(0, -50%);
+}
+
+.nameArtist {
+  font-family: var(--font-display), sans-serif;
+  font-size: 12px;
+  color: rgba(22, 20, 15, 0.6);
+}
+
+.nameTitle {
+  font-family: var(--font-display), sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+/* ---- The pop-up ---- */
+
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(0, 0, 0, 0.55);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+}
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+  width: min(380px, 100%);
+  padding: 22px 24px 26px;
+  border: 1px solid rgba(245, 241, 234, 0.08);
+  border-radius: 28px;
+  background:
+    radial-gradient(120% 90% at 0% 0%, rgba(245, 241, 234, 0.05), transparent 60%),
+    #121211;
+  box-shadow: 0 40px 80px -30px rgba(0, 0, 0, 0.8);
+  color: var(--ink);
+}
+
+.bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  align-self: stretch;
+}
+
+.heading {
+  font-family: var(--font-hero), monospace;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+
+/* The sleeve with the record half out of it, as on the About page. */
+.deck {
+  position: relative;
+  width: 250px;
+  height: 160px;
+}
+
+.sleeve {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 160px;
+  height: 160px;
+  border-radius: 10px;
+  object-fit: cover;
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.5),
+    12px 0 28px -10px rgba(0, 0, 0, 0.7);
+}
+
+/* Where the record sits, half out of the sleeve; it slides here from behind it. */
+.recordSlot {
+  position: absolute;
+  top: 6px;
+  left: 96px;
+  width: 148px;
+  height: 148px;
+}
+
+.bigRecord {
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.55);
+}
+
+/* The sleeve sits over the record, so it rolls out from behind it. */
+.sleeve {
+  z-index: 1;
+}
+
+.flipWrap {
+  display: flex;
+  justify-content: center;
+}
+
+.stretch {
+  align-self: stretch;
+}
+
+.flip {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  text-align: center;
+  animation: flipIn 420ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes flipIn {
+  from {
+    opacity: 0;
+    transform: perspective(400px) rotateX(-70deg);
+  }
+}
+
+.artist {
+  font-family: var(--font-display), sans-serif;
+  font-size: 15px;
+  color: var(--ink-muted);
+}
+
+.title {
+  font-family: var(--font-display), sans-serif;
+  font-size: 21px;
+  font-weight: 500;
+  text-wrap: balance;
+}
+
+.readout {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  align-self: stretch;
+  padding: 10px 18px 12px;
+  border: 1px solid rgba(0, 0, 0, 0.6);
+  border-radius: 10px;
+  background: #080807;
+  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.8);
+  cursor: pointer;
+  touch-action: none;
+  user-select: none;
+}
+
+.readout:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 3px;
+}
+
+.digits {
+  font-family: var(--font-hero), monospace;
+  font-size: 16px;
+  font-variant-numeric: tabular-nums;
+}
+
+.slash {
+  margin: 0 0.6em;
+  color: var(--ink-muted);
+}
+
+.meter {
+  position: relative;
+  width: 100%;
+  height: 3px;
+  overflow: hidden;
+  border-radius: 2px;
+  background: rgba(245, 241, 234, 0.12);
+}
+
+.meter::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--tone-work);
+  transform: scaleX(var(--progress));
+  transform-origin: left;
+}
+
+.transport {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 4px;
+}
+
+.stop {
+  --face: #2a0c0a;
+  --skirt: #120404;
+  color: #ffb3ad;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .flip {
+    animation: none;
+  }
+
+  .name,
+  .shutterFill {
+    transition: none;
+  }
+}

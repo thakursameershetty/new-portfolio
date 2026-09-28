@@ -8,6 +8,7 @@ import {
   useMemo,
   useRef,
   useState,
+  useSyncExternalStore,
   type ReactNode,
 } from "react";
 import {
@@ -30,6 +31,8 @@ import { requestTilt } from "./deviceTilt";
 import { buzz } from "./haptics";
 import { SiteNav } from "./SiteNav";
 import { VolumeIcon } from "./icons/VolumeIcon";
+import clsx from "clsx";
+import nudge from "./SoundNudge.module.css";
 import styles from "./SiteIntro.module.css";
 
 const revealDuration = 1.8;
@@ -89,6 +92,167 @@ function buzzRipple(duration: number) {
 }
 const soundKey = "sound";
 
+// ---- Sound, shared by every page ----
+// One audio engine for the whole site, kept at module level so it survives moving between
+// pages (Home, About, a case study): once it's running, the next page plays straight away.
+// The visitor's choice (on unless they've muted it) is what the sound keys show, from the
+// first paint; the audio itself can only start at a click, tap or key press, as browsers
+// require, so until then sounds are simply skipped (never queued up to burst out later).
+let engine: { context: AudioContext; sounds: PointerSounds } | null = null;
+const soundChange = "sound-change";
+// When storage is blocked, the choice still holds for this visit.
+let soundChoice: boolean | null = null;
+
+// Whether the audio is running is read from the engine itself, whenever it changes (starting,
+// suspending after a mute, resuming), rather than tracked alongside it, so what the sound
+// keys show can't drift from what's actually playing.
+const engineListeners = new Set<() => void>();
+const notifyEngine = () => {
+  for (const listener of engineListeners) listener();
+};
+function subscribeEngine(listener: () => void) {
+  engineListeners.add(listener);
+  return () => {
+    engineListeners.delete(listener);
+  };
+}
+
+function startEngine() {
+  if (!engine) {
+    const context = new AudioContext();
+    context.addEventListener("statechange", notifyEngine);
+    engine = { context, sounds: createPointerSounds(context) };
+    notifyEngine();
+  }
+  void engine.context.resume();
+  return engine;
+}
+const engineLive = () => engine?.context.state === "running";
+
+const readSoundOn = () => soundChoice ?? readStorage(soundKey) !== "off";
+function writeSoundOn(on: boolean) {
+  soundChoice = on;
+  writeStorage(soundKey, on ? "on" : "off");
+  window.dispatchEvent(new Event(soundChange));
+}
+function subscribeSoundOn(onChange: () => void) {
+  window.addEventListener(soundChange, onChange);
+  window.addEventListener("storage", onChange);
+  return () => {
+    window.removeEventListener(soundChange, onChange);
+    window.removeEventListener("storage", onChange);
+  };
+}
+
+/**
+ * The site's sound, for a page's provider: the visitor's choice (`soundOn`), whether the
+ * audio is actually running yet (`live`), `active()` for "play it now", and the key's
+ * `toggle`. Starts the audio at the first gesture when sound is on.
+ */
+function useSiteSound() {
+  const soundOn = useSyncExternalStore(
+    subscribeSoundOn,
+    readSoundOn,
+    () => false,
+  );
+  const soundOnRef = useRef(soundOn);
+  const live = useSyncExternalStore(subscribeEngine, engineLive, () => false);
+  const suspendTimerRef = useRef(0);
+
+  useEffect(() => {
+    soundOnRef.current = soundOn;
+  }, [soundOn]);
+
+  // Sound switching on: the switch's click, then everything eases in from silence, so the
+  // first sounds after it (often set off by the very click that switched it on) can't burst.
+  const bringIn = useCallback((context: AudioContext) => {
+    window.clearTimeout(suspendTimerRef.current);
+    playSoundSwitch(context, true);
+    fadeSound(context, true);
+    buzz(10);
+  }, []);
+
+  const toggle = useCallback(() => {
+    if (soundOnRef.current) {
+      // On, but still waiting for the browser to allow it: this click is what it was
+      // waiting for, so it starts the sound rather than muting it.
+      if (!engineLive()) {
+        try {
+          bringIn(startEngine().context);
+        } catch {
+          // No Web Audio support: nothing to start.
+        }
+        return;
+      }
+      writeSoundOn(false);
+      if (!engine) return;
+      const { context } = engine;
+      // The switch clicks, the sound fades out, and only then does the audio stop.
+      playSoundSwitch(context, false);
+      fadeSound(context, false);
+      window.clearTimeout(suspendTimerRef.current);
+      suspendTimerRef.current = window.setTimeout(
+        () => void context.suspend(),
+        soundFadeOut * 1000 + 250,
+      );
+      return;
+    }
+    try {
+      bringIn(startEngine().context);
+      writeSoundOn(true);
+    } catch {
+      // No Web Audio support: leave sound off.
+    }
+  }, [bringIn]);
+
+  // The first gesture starts the audio, when sound's on and it isn't running already.
+  useEffect(() => {
+    const gestures = [
+      "pointerdown",
+      "pointerup",
+      "touchend",
+      "keydown",
+    ] as const;
+    const remove = () => {
+      for (const type of gestures) window.removeEventListener(type, resume);
+    };
+    function resume(event: Event) {
+      if (!readSoundOn()) return;
+      if (engineLive()) {
+        return remove();
+      }
+      // The sound key's own click would turn it straight back off: let the key do it.
+      if ((event.target as Element | null)?.closest?.("[data-sound-toggle]"))
+        return;
+      try {
+        const { context } = startEngine();
+        // A touch that starts a scroll isn't a gesture the browser accepts; keep listening
+        // until one is and the audio is actually running.
+        void context.resume().then(() => {
+          if (context.state !== "running") return;
+          bringIn(context);
+          remove();
+        });
+      } catch {
+        remove();
+      }
+    }
+    for (const type of gestures) window.addEventListener(type, resume);
+    return remove;
+  }, [bringIn]);
+
+  useEffect(() => () => window.clearTimeout(suspendTimerRef.current), []);
+
+  const active = useCallback(() => soundOnRef.current && engineLive(), []);
+  const sounds = useCallback(
+    () => (active() ? (engine?.sounds ?? null) : null),
+    [active],
+  );
+  // On, but the browser hasn't let it start yet: the sound keys nudge for a tap.
+  const waiting = soundOn && !live;
+  return { soundOn, live, waiting, toggle, active, sounds, soundOnRef };
+}
+
 // Pointer speed, in px per ms, that counts as a full-speed sweep for the hover ticks.
 const fastPointerSpeed = 2.5;
 
@@ -137,6 +301,7 @@ export function feel(cue: IntroCue) {
 // The sound key for pages without the intro, which have no nav to carry one.
 const SoundKeyContext = createContext<{
   on: boolean;
+  waiting: boolean;
   toggle: () => void;
 } | null>(null);
 
@@ -149,66 +314,20 @@ const SoundKeyContext = createContext<{
  * server component, like the page's keys) plays that cue when pressed, and ticks on hover.
  */
 export function PageSound({ children }: { children: ReactNode }) {
-  const [soundOn, setSoundOn] = useState(false);
-  const soundOnRef = useRef(false);
-  const audioRef = useRef<AudioContext | null>(null);
-  const soundsRef = useRef<PointerSounds | null>(null);
-  const suspendTimerRef = useRef(0);
+  const { soundOn, waiting, toggle, active, sounds } = useSiteSound();
 
-  useEffect(() => {
-    soundOnRef.current = soundOn;
-  }, [soundOn]);
-
-  const startAudio = useCallback(() => {
-    let context = audioRef.current;
-    if (!context) {
-      context = new AudioContext();
-      audioRef.current = context;
-      soundsRef.current = createPointerSounds(context);
-    }
-    void context.resume();
-    return context;
-  }, []);
-
-  const bringSoundIn = useCallback((context: AudioContext) => {
-    window.clearTimeout(suspendTimerRef.current);
-    playSoundSwitch(context, true);
-    fadeSound(context, true);
-    buzz(10);
-  }, []);
-
-  const toggle = useCallback(() => {
-    if (soundOnRef.current) {
-      const context = audioRef.current;
-      setSoundOn(false);
-      writeStorage(soundKey, "off");
-      if (!context) return;
-      playSoundSwitch(context, false);
-      fadeSound(context, false);
-      window.clearTimeout(suspendTimerRef.current);
-      suspendTimerRef.current = window.setTimeout(
-        () => void context.suspend(),
-        soundFadeOut * 1000 + 250,
-      );
-      return;
-    }
-    try {
-      bringSoundIn(startAudio());
-      setSoundOn(true);
-      writeStorage(soundKey, "on");
-    } catch {
-      // No Web Audio support: leave sound off.
-    }
-  }, [bringSoundIn, startAudio]);
-
-  const playCue = useCallback((cue: IntroCue) => {
-    if (soundOnRef.current) soundsRef.current?.cue(cue);
-    feel(cue);
-  }, []);
-  const playFlap = useCallback((across: number, landed: boolean) => {
-    if (soundOnRef.current) soundsRef.current?.flap(across, landed);
-  }, []);
-  const getSounds = useCallback(() => soundsRef.current, []);
+  const playCue = useCallback(
+    (cue: IntroCue) => {
+      if (active()) sounds()?.cue(cue);
+      feel(cue);
+    },
+    [active, sounds],
+  );
+  const playFlap = useCallback(
+    (across: number, landed: boolean) => sounds()?.flap(across, landed),
+    [sounds],
+  );
+  const getSounds = sounds;
 
   const value = useMemo<IntroState>(
     () => ({
@@ -223,7 +342,10 @@ export function PageSound({ children }: { children: ReactNode }) {
     }),
     [soundOn, getSounds, playFlap, playCue],
   );
-  const key = useMemo(() => ({ on: soundOn, toggle }), [soundOn, toggle]);
+  const key = useMemo(
+    () => ({ on: soundOn, waiting, toggle }),
+    [soundOn, waiting, toggle],
+  );
 
   // Phones that ask before sharing their tilt (iOS) only may from a tap: ask on the first,
   // for the ID card.
@@ -231,40 +353,6 @@ export function PageSound({ children }: { children: ReactNode }) {
     window.addEventListener("click", requestTilt, { once: true });
     return () => window.removeEventListener("click", requestTilt);
   }, []);
-
-  // Sound on at the first gesture, unless it was muted.
-  useEffect(() => {
-    if (readStorage(soundKey) === "off") return;
-    const gestures = [
-      "pointerdown",
-      "pointerup",
-      "touchend",
-      "keydown",
-    ] as const;
-    const remove = () => {
-      for (const type of gestures) window.removeEventListener(type, resume);
-    };
-    function resume(event: Event) {
-      if (readStorage(soundKey) === "off" || soundOnRef.current)
-        return remove();
-      // The sound key's own click would turn it straight back off: let the key do it.
-      if ((event.target as Element | null)?.closest?.("[data-sound-toggle]"))
-        return;
-      try {
-        const context = startAudio();
-        void context.resume().then(() => {
-          if (context.state !== "running" || soundOnRef.current) return;
-          bringSoundIn(context);
-          setSoundOn(true);
-          remove();
-        });
-      } catch {
-        remove();
-      }
-    }
-    for (const type of gestures) window.addEventListener(type, resume);
-    return remove;
-  }, [startAudio, bringSoundIn]);
 
   // data-feel: the cue on press, and the home keys' hover tick on the way in.
   useEffect(() => {
@@ -275,10 +363,10 @@ export function PageSound({ children }: { children: ReactNode }) {
       if (element) playCue(element.dataset.feel as IntroCue);
     };
     const over = (event: PointerEvent) => {
-      if (event.pointerType !== "mouse" || !soundOnRef.current) return;
+      if (event.pointerType !== "mouse") return;
       const element = marked(event.target);
       if (element && !element.contains(event.relatedTarget as Node | null)) {
-        soundsRef.current?.cue("tap");
+        sounds()?.cue("tap");
       }
     };
     document.addEventListener("pointerdown", press);
@@ -287,15 +375,7 @@ export function PageSound({ children }: { children: ReactNode }) {
       document.removeEventListener("pointerdown", press);
       document.removeEventListener("pointerover", over);
     };
-  }, [playCue]);
-
-  useEffect(
-    () => () => {
-      window.clearTimeout(suspendTimerRef.current);
-      void audioRef.current?.close();
-    },
-    [],
-  );
+  }, [playCue, sounds]);
 
   return (
     <IntroContext.Provider value={value}>
@@ -313,13 +393,25 @@ export function SoundKey({ className }: { className?: string }) {
   return (
     <button
       type="button"
-      className={className}
+      className={clsx(className, key.waiting && nudge.waiting)}
       data-sound-toggle=""
-      aria-pressed={key.on}
-      aria-label={key.on ? "Turn sound off" : "Turn sound on"}
+      aria-pressed={key.on && !key.waiting}
+      aria-label={
+        key.waiting
+          ? "Start sound"
+          : key.on
+            ? "Turn sound off"
+            : "Turn sound on"
+      }
       onClick={key.toggle}
     >
-      <VolumeIcon on={key.on} size={18} />
+      {/* What can be heard right now: muted until the browser lets it start. */}
+      <VolumeIcon on={key.on && !key.waiting} size={18} />
+      {key.waiting && (
+        <span aria-hidden="true" className={nudge.label}>
+          Tap for sound
+        </span>
+      )}
     </button>
   );
 }
@@ -332,18 +424,18 @@ export function SoundKey({ className }: { className?: string }) {
  */
 export function SiteIntro({ children }: SiteIntroProps) {
   const [entered, setEntered] = useState(false);
-  const [soundOn, setSoundOn] = useState(false);
-  const audioRef = useRef<AudioContext | null>(null);
-  const soundsRef = useRef<PointerSounds | null>(null);
+  const {
+    soundOn,
+    live,
+    waiting,
+    toggle: toggleSound,
+    active,
+    sounds,
+  } = useSiteSound();
   const revealEndsAtRef = useRef(0);
-  const soundOnRef = useRef(false);
   const [introDone, setIntroDone] = useState(false);
   const [instant, setInstant] = useState(false);
   const gridRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    soundOnRef.current = soundOn;
-  }, [soundOn]);
 
   // Publish the grid's cell size as --grid-cell, so type can be sized in cells ("HI" fills
   // the four center cells).
@@ -381,37 +473,46 @@ export function SiteIntro({ children }: SiteIntroProps) {
     };
   }, [entered, instant]);
 
-  const playFlap = useCallback((across: number, landed: boolean) => {
-    // A suspended context would queue these and play them all at once on resume.
-    if (!soundOnRef.current) return;
-    soundsRef.current?.flap(across, landed);
-  }, []);
+  // Sounds only while the audio is actually running (a suspended one would queue them and
+  // play them all at once on resume); on the home page the haptics go with the sound.
+  const playFlap = useCallback(
+    (across: number, landed: boolean) => sounds()?.flap(across, landed),
+    [sounds],
+  );
 
-  const playCue = useCallback((cue: IntroCue) => {
-    if (!soundOnRef.current) return;
-    soundsRef.current?.cue(cue);
-    for (const [delay, length] of cueHaptics[cue] ?? []) buzz(length, delay);
-  }, []);
+  const playCue = useCallback(
+    (cue: IntroCue) => {
+      if (!active()) return;
+      sounds()?.cue(cue);
+      feel(cue);
+    },
+    [active, sounds],
+  );
 
-  const playRipple = useCallback((duration: number, from?: RevealFrom) => {
-    const context = audioRef.current;
-    if (!soundOnRef.current || !context) return;
-    playRevealSound(context, duration, from);
-    buzzRipple(duration);
-  }, []);
+  const playRipple = useCallback(
+    (duration: number, from?: RevealFrom) => {
+      if (!active() || !engine) return;
+      playRevealSound(engine.context, duration, from);
+      buzzRipple(duration);
+    },
+    [active],
+  );
 
   // Remembered, so turning sound on while the monitor is up brings its hum in too.
   const humWantedRef = useRef(false);
-  const setHum = useCallback((on: boolean) => {
-    humWantedRef.current = on;
-    soundsRef.current?.hum(on && soundOnRef.current);
-  }, []);
+  const setHum = useCallback(
+    (on: boolean) => {
+      humWantedRef.current = on;
+      engine?.sounds.hum(on && active());
+    },
+    [active],
+  );
 
   useEffect(() => {
-    soundsRef.current?.hum(soundOn && humWantedRef.current);
-  }, [soundOn]);
+    engine?.sounds.hum(soundOn && live && humWantedRef.current);
+  }, [soundOn, live]);
 
-  const getSounds = useCallback(() => soundsRef.current, []);
+  const getSounds = sounds;
 
   const intro = useMemo(
     () => ({
@@ -441,19 +542,12 @@ export function SiteIntro({ children }: SiteIntroProps) {
     () => performance.now() >= revealEndsAtRef.current,
     [],
   );
-  useGridPointerSounds(gridRef, entered && soundOn, getSounds, heroGridReady);
-
-  // Must run inside a click so the browser lets the audio start.
-  const startAudio = () => {
-    let context = audioRef.current;
-    if (!context) {
-      context = new AudioContext();
-      audioRef.current = context;
-      soundsRef.current = createPointerSounds(context);
-    }
-    void context.resume();
-    return context;
-  };
+  useGridPointerSounds(
+    gridRef,
+    entered && soundOn && live,
+    getSounds,
+    heroGridReady,
+  );
 
   const enter = () => {
     if (entered) return;
@@ -463,53 +557,11 @@ export function SiteIntro({ children }: SiteIntroProps) {
     setEntered(true);
   };
 
-  // Sound switching on: the switch's click, then everything eases in from silence, so the
-  // first sounds after it (often set off by the very click that switched it on) can't burst.
-  const suspendTimerRef = useRef(0);
-  const bringSoundIn = (context: AudioContext) => {
-    window.clearTimeout(suspendTimerRef.current);
-    playSoundSwitch(context, true);
-    fadeSound(context, true);
-    buzz(10);
-  };
-
-  const toggleSound = () => {
-    if (soundOn) {
-      const context = audioRef.current;
-      setSoundOn(false);
-      writeStorage(soundKey, "off");
-      if (!context) return;
-      // The switch clicks, the sound fades out, and only then does the audio stop.
-      playSoundSwitch(context, false);
-      fadeSound(context, false);
-      window.clearTimeout(suspendTimerRef.current);
-      suspendTimerRef.current = window.setTimeout(
-        () => void context.suspend(),
-        soundFadeOut * 1000 + 250,
-      );
-      return;
-    }
-
-    try {
-      bringSoundIn(startAudio());
-      setSoundOn(true);
-      writeStorage(soundKey, "on");
-    } catch {
-      // No Web Audio support: leave sound off.
-    }
-  };
-
   // A first visit plays the intro; a reload in the same tab skips it and the hero loads
-  // already finished. Sound is on by default, but browsers only allow it after a gesture (a
-  // click, tap or key press; scrolling doesn't count), so it switches on at the first one,
-  // unless the visitor has muted it before.
+  // already finished. (Sound starts at the first gesture, in useSiteSound.)
   const enterRef = useRef(enter);
-  const startAudioRef = useRef(startAudio);
-  const bringSoundInRef = useRef(bringSoundIn);
   useEffect(() => {
     enterRef.current = enter;
-    startAudioRef.current = startAudio;
-    bringSoundInRef.current = bringSoundIn;
   });
 
   useEffect(() => {
@@ -541,50 +593,8 @@ export function SiteIntro({ children }: SiteIntroProps) {
     const askTilt = () => requestTilt();
     window.addEventListener("click", askTilt, { once: true });
 
-    if (readStorage(soundKey) === "off") {
-      return () => {
-        stop();
-        window.removeEventListener("click", askTilt);
-      };
-    }
-    const resumeSound = (event: Event) => {
-      // Muted since, or already on (the nav's sound key turns it on itself).
-      if (readStorage(soundKey) === "off" || soundOnRef.current) {
-        removeListeners();
-        return;
-      }
-      // The sound key's own click would turn it straight back off: let the key do it.
-      if ((event.target as Element | null)?.closest?.("[data-sound-toggle]"))
-        return;
-      try {
-        const context = startAudioRef.current();
-        // A touch that starts a scroll isn't a gesture the browser accepts; keep listening
-        // until one is and the audio is actually running.
-        void context.resume().then(() => {
-          if (context.state !== "running" || soundOnRef.current) return;
-          bringSoundInRef.current(context);
-          setSoundOn(true);
-          removeListeners();
-        });
-      } catch {
-        // No Web Audio support: stay silent.
-        removeListeners();
-      }
-    };
-    const gestures = [
-      "pointerdown",
-      "pointerup",
-      "touchend",
-      "keydown",
-    ] as const;
-    const removeListeners = () => {
-      for (const type of gestures)
-        window.removeEventListener(type, resumeSound);
-    };
-    for (const type of gestures) window.addEventListener(type, resumeSound);
     return () => {
       stop();
-      removeListeners();
       window.removeEventListener("click", askTilt);
     };
   }, []);
@@ -608,6 +618,7 @@ export function SiteIntro({ children }: SiteIntroProps) {
       <SiteNav
         visible={introDone}
         soundOn={soundOn}
+        soundWaiting={waiting}
         onToggleSound={toggleSound}
         onHover={() => playCue("tap")}
       />

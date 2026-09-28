@@ -16,7 +16,8 @@ import styles from "./AboutTimeline.module.css";
 
 // Months are counted from January 2020, where the ruler starts: (year - 2020) * 12 + month.
 const firstYear = 2020;
-export const monthOf = (year: number, month: number) => (year - firstYear) * 12 + month - 1;
+export const monthOf = (year: number, month: number) =>
+  (year - firstYear) * 12 + month - 1;
 
 // What "now" is while the page is built and hydrated; the browser then moves it to the real
 // month. A fixed value keeps the server's HTML and the first client render identical.
@@ -33,8 +34,22 @@ const labelReach = 6;
 const tailMonths = 3;
 // The entrance: how long the needle takes to sweep from 2020 to now.
 const sweepSeconds = 2.2;
-const names = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
-const monthName = (m: number) => `${names[m % 12]} ${firstYear + Math.floor(m / 12)}`;
+const names = [
+  "JAN",
+  "FEB",
+  "MAR",
+  "APR",
+  "MAY",
+  "JUN",
+  "JUL",
+  "AUG",
+  "SEP",
+  "OCT",
+  "NOV",
+  "DEC",
+];
+const monthName = (m: number) =>
+  `${names[m % 12]} ${firstYear + Math.floor(m / 12)}`;
 
 export interface TimelineItem {
   id: string;
@@ -58,7 +73,9 @@ export interface TimelineItem {
 /** Ids of the items running during month `m`. */
 export function itemsAt(items: TimelineItem[], m: number, now: number) {
   return items
-    .filter((item) => m >= item.from && m <= (item.to === "now" ? now : item.to))
+    .filter(
+      (item) => m >= item.from && m <= (item.to === "now" ? now : item.to),
+    )
     .map((item) => item.id);
 }
 
@@ -90,7 +107,9 @@ export function AboutTimeline({
   // then "done". Server HTML and reduced motion show it finished.
   const reduceMotion = useReducedMotion();
   const [intro, setIntro] = useState<"waiting" | "running" | "done">("done");
-  const [introMonth, setIntroMonth] = useState(0);
+  // The month the sweeping needle is on, written straight into the readout's text (a React
+  // update per month would re-render the whole ruler some 80 times in two seconds).
+  const readoutRef = useRef<HTMLSpanElement>(null);
   // Just landed on now at the end of the sweep: the readout settles with a bounce.
   const [landed, setLanded] = useState(false);
   useEffect(() => {
@@ -99,9 +118,24 @@ export function AboutTimeline({
     return () => window.clearTimeout(timer);
   }, [landed]);
   const sweepRef = useRef<AnimationPlaybackControls | null>(null);
-  // All of it on screen, and clear of the bottom quarter, so it plays where you're looking,
-  // not as it peeks in at the bottom edge.
-  const inView = useInView(rulerRef, 1, "0px 0px -25% 0px");
+  // Ready ahead of time, played the moment it's seen: once the ruler is within a screen of
+  // coming into view (about when the visitor reaches the section above it), it waits for a
+  // quiet moment and is "primed"; then as soon as half of it is on screen, the sweep starts
+  // with no further wait.
+  const near = useInView(rulerRef, 0, "0px 0px 100% 0px");
+  const inView = useInView(rulerRef, 0.5, "0px 0px -8% 0px");
+  const [primed, setPrimed] = useState(false);
+  useEffect(() => {
+    if (!near || primed) return;
+    const prime = () => setPrimed(true);
+    const idle = window.requestIdleCallback
+      ? window.requestIdleCallback(prime, { timeout: 300 })
+      : window.setTimeout(prime, 60);
+    return () => {
+      if (window.cancelIdleCallback) window.cancelIdleCallback(idle);
+      else window.clearTimeout(idle);
+    };
+  }, [near, primed]);
   useEffect(() => {
     // Only a browser that can play it waits for it.
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -123,11 +157,14 @@ export function AboutTimeline({
       const near =
         last &&
         (item.from <= last.end ||
-          (isPoint(item) && last.items.every(isPoint) && item.from <= last.end + labelReach));
+          (isPoint(item) &&
+            last.items.every(isPoint) &&
+            item.from <= last.end + labelReach));
       if (last && near) {
         last.items.push(item);
         last.end = Math.max(last.end, endOf(item));
-      } else clusters.push({ items: [item], from: item.from, end: endOf(item) });
+      } else
+        clusters.push({ items: [item], from: item.from, end: endOf(item) });
     }
     return clusters.map((cluster) => ({ lane, ...cluster }));
   });
@@ -143,7 +180,10 @@ export function AboutTimeline({
   const needle = useSpring(target, { stiffness: 260, damping: 30, mass: 0.8 });
   const left = useTransform(needle, (m) => `${(m / span) * 100}%`);
   // The readout stays on the ruler: pinned left at the start, right at the end.
-  const shift = useTransform(needle, (m) => `translateX(${-(m / span) * 100}%)`);
+  const shift = useTransform(
+    needle,
+    (m) => `translateX(${-(m / span) * 100}%)`,
+  );
 
   useEffect(() => {
     if (intro === "done") needle.set(target);
@@ -160,31 +200,34 @@ export function AboutTimeline({
   // labels are uncovered behind it (by --sweep, in months, and --progress, 0 to 1).
   useEffect(() => {
     const ruler = rulerRef.current;
-    if (intro !== "waiting" || !inView || !ruler) return;
-    // Started here and left to run: this effect re-runs as the state moves to "running", and
-    // its cleanup mustn't stop the sweep it just began (the unmount effect below does that).
-    setIntro("running");
+    if (intro !== "waiting" || !inView || !primed || !ruler) return;
+    // Left to run: this effect re-runs as the state moves to "running", and its cleanup
+    // mustn't stop the sweep it began (the unmount effect does).
     let shown = -1;
-    sweepRef.current = animate(0, now + 1, {
-      duration: sweepSeconds,
-      delay: 0.15,
-      ease: [0.6, 0, 0.25, 1],
-      onUpdate: (m) => {
-        needle.jump(m);
-        ruler.style.setProperty("--sweep", String(m));
-        ruler.style.setProperty("--progress", String(m / (now + 1)));
-        const month = Math.min(Math.floor(m), now);
-        if (month !== shown) {
-          shown = month;
-          setIntroMonth(month);
-        }
-      },
-      onComplete: () => {
-        setIntro("done");
-        setLanded(true);
-      },
-    });
-  }, [intro, inView, needle, now]);
+    const start = () => {
+      setIntro("running");
+      sweepRef.current = animate(0, now + 1, {
+        duration: sweepSeconds,
+        ease: [0.6, 0, 0.25, 1],
+        onUpdate: (m) => {
+          needle.jump(m);
+          ruler.style.setProperty("--sweep", String(m));
+          ruler.style.setProperty("--progress", String(m / (now + 1)));
+          const month = Math.min(Math.floor(m), now);
+          const text = readoutRef.current?.firstChild;
+          if (month !== shown && text) {
+            shown = month;
+            text.nodeValue = monthName(month);
+          }
+        },
+        onComplete: () => {
+          setIntro("done");
+          setLanded(true);
+        },
+      });
+    };
+    start();
+  }, [intro, inView, primed, needle, now]);
   useEffect(() => () => sweepRef.current?.stop(), []);
 
   // Reaching for the ruler mid-sweep finishes it at once.
@@ -222,16 +265,16 @@ export function AboutTimeline({
 
   const readout =
     intro !== "done"
-      ? monthName(introMonth)
+      ? monthName(0)
       : scrub !== null
-      ? monthName(scrub)
-      : focused
-        ? focused.yearOnly
-          ? String(firstYear + Math.floor(focused.from / 12))
-          : focused.to === focused.from
-            ? monthName(focused.from)
-            : `${monthName(focused.from)} – ${focused.to === "now" ? "NOW" : monthName(focused.to)}`
-        : "NOW";
+        ? monthName(scrub)
+        : focused
+          ? focused.yearOnly
+            ? String(firstYear + Math.floor(focused.from / 12))
+            : focused.to === focused.from
+              ? monthName(focused.from)
+              : `${monthName(focused.from)} – ${focused.to === "now" ? "NOW" : monthName(focused.to)}`
+          : "NOW";
 
   return (
     <div
@@ -245,7 +288,8 @@ export function AboutTimeline({
         .join(", ")}.`}
       onPointerMove={(event) => {
         // Mice scrub by hovering; touch scrubs only while dragging, so the page still scrolls.
-        if (event.pointerType === "mouse" || dragging.current) scrubTo(monthAt(event.clientX));
+        if (event.pointerType === "mouse" || dragging.current)
+          scrubTo(monthAt(event.clientX));
       }}
       onPointerDown={(event) => {
         dragging.current = true;
@@ -297,15 +341,19 @@ export function AboutTimeline({
               .flatMap((label) => {
                 // Late on the ruler, a label hangs from its end, or it would run off.
                 const fromEnd = label.from / span > 0.6;
-                const group = label.items.length > 1 ? label.items[0].group : undefined;
-                const litItems = label.items.filter((item) => lit?.includes(item.id));
+                const group =
+                  label.items.length > 1 ? label.items[0].group : undefined;
+                const litItems = label.items.filter((item) =>
+                  lit?.includes(item.id),
+                );
                 const tone = { "--tone": `var(--tone-${label.items[0].tone})` };
                 const main = (
                   <span
                     key={label.items.map((item) => item.id).join()}
                     className={clsx(
                       styles.barLabel,
-                      label.items.some((item) => item.to === "now") && styles.labelOngoing,
+                      label.items.some((item) => item.to === "now") &&
+                        styles.labelOngoing,
                       // A group's name steps aside while one of its own names shows.
                       group
                         ? litItems.length > 0 && styles.labelAway
@@ -315,8 +363,12 @@ export function AboutTimeline({
                       {
                         ...tone,
                         "--from": label.from,
-                        left: fromEnd ? "auto" : `${(label.from / span) * 100}%`,
-                        right: fromEnd ? `${(1 - (label.end + 1) / span) * 100}%` : "auto",
+                        left: fromEnd
+                          ? "auto"
+                          : `${(label.from / span) * 100}%`,
+                        right: fromEnd
+                          ? `${(1 - (label.end + 1) / span) * 100}%`
+                          : "auto",
                       } as React.CSSProperties
                     }
                   >
@@ -373,7 +425,11 @@ export function AboutTimeline({
         )}
         style={{ left }}
       >
-        <motion.span className={styles.readout} style={{ transform: shift }}>
+        <motion.span
+          ref={readoutRef}
+          className={styles.readout}
+          style={{ transform: shift }}
+        >
           {readout}
         </motion.span>
         <span className={styles.handle} />

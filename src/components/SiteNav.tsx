@@ -16,6 +16,7 @@ import { LayoutDashboardIcon } from "./icons/LayoutDashboardIcon";
 import { ProfileCardIcon } from "./icons/ProfileCardIcon";
 import { VolumeIcon } from "./icons/VolumeIcon";
 import type { AnimatedIconHandle } from "./icons/types";
+import nudge from "./SoundNudge.module.css";
 import styles from "./SiteNav.module.css";
 
 type NavIcon = ComponentType<
@@ -34,13 +35,21 @@ interface SiteNavProps {
   /** Drops the bar in; before that it is hidden and inert. */
   visible: boolean;
   soundOn: boolean;
+  /** Sound is on but the browser hasn't let it start: the key nudges for a tap. */
+  soundWaiting?: boolean;
   onToggleSound: () => void;
   /** Called when a nav item is hovered or focused, for its tick. */
   onHover: () => void;
 }
 
 /** The rectangular bar at the top: section links plus the sound switch. */
-export function SiteNav({ visible, soundOn, onToggleSound, onHover }: SiteNavProps) {
+export function SiteNav({
+  visible,
+  soundOn,
+  soundWaiting = false,
+  onToggleSound,
+  onHover,
+}: SiteNavProps) {
   const active = useActiveSection();
   const navRef = useRef<HTMLElement>(null);
   // The bar's tints are tuned for what's behind it: a dark tile vanishes on black.
@@ -53,7 +62,11 @@ export function SiteNav({ visible, soundOn, onToggleSound, onHover }: SiteNavPro
     <nav
       ref={navRef}
       aria-label="Main"
-      className={clsx(styles.nav, visible && styles.visible, onDark && styles.onDark)}
+      className={clsx(
+        styles.nav,
+        visible && styles.visible,
+        onDark && styles.onDark,
+      )}
       inert={!visible}
     >
       <div ref={plateRef} className={clsx(styles.plate, styles.links)}>
@@ -83,14 +96,30 @@ export function SiteNav({ visible, soundOn, onToggleSound, onHover }: SiteNavPro
       </div>
       <button
         type="button"
-        className={clsx(styles.plate, styles.sound)}
+        className={clsx(
+          styles.plate,
+          styles.sound,
+          soundWaiting && nudge.waiting,
+        )}
         onClick={onToggleSound}
         data-sound-toggle=""
         onMouseEnter={onHover}
-        aria-pressed={soundOn}
-        aria-label={soundOn ? "Turn sound off" : "Turn sound on"}
+        aria-pressed={soundOn && !soundWaiting}
+        aria-label={
+          soundWaiting
+            ? "Start sound"
+            : soundOn
+              ? "Turn sound off"
+              : "Turn sound on"
+        }
       >
-        <VolumeIcon on={soundOn} size={18} />
+        {/* What can be heard right now: muted until the browser lets it start. */}
+        <VolumeIcon on={soundOn && !soundWaiting} size={18} />
+        {soundWaiting && (
+          <span aria-hidden="true" className={nudge.label}>
+            Tap for sound
+          </span>
+        )}
       </button>
     </nav>
   );
@@ -109,7 +138,9 @@ function useOverRed(navRef: React.RefObject<HTMLElement | null>) {
       if (!nav) return;
       const navRect = nav.getBoundingClientRect();
       const y = navRect.top + navRect.height / 2;
-      const surfaces = document.querySelectorAll<HTMLElement>('[data-nav-surface="red"]');
+      const surfaces = document.querySelectorAll<HTMLElement>(
+        '[data-nav-surface="red"]',
+      );
       setOverRed(
         Array.from(surfaces).some((surface) => {
           const rect = surface.getBoundingClientRect();
@@ -141,7 +172,11 @@ function useIndicatorTarget(
   plateRef: React.RefObject<HTMLDivElement | null>,
   active: string,
 ) {
-  const [target, setTarget] = useState<{ x: number; width: number; glide: boolean }>();
+  const [target, setTarget] = useState<{
+    x: number;
+    width: number;
+    glide: boolean;
+  }>();
 
   useLayoutEffect(() => {
     const plate = plateRef.current;
@@ -220,7 +255,10 @@ function useActiveSection() {
       let current = links[0].id;
       for (const link of links) {
         const section = document.getElementById(link.id);
-        if (section && section.getBoundingClientRect().top <= window.innerHeight * 0.4) {
+        if (
+          section &&
+          section.getBoundingClientRect().top <= window.innerHeight * 0.4
+        ) {
           current = link.id;
         }
       }

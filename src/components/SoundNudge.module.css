@@ -1,0 +1,83 @@
+/* The sound keys' nudge, while sound is on but the browser hasn't let it start (it waits
+   for a click, tap or key press; scrolling doesn't count): a soft black ring pulsing out from
+   the key, and a small dark label under it. Both go the moment sound starts. */
+.waiting {
+  position: relative;
+}
+
+.waiting::after {
+  content: "";
+  position: absolute;
+  inset: -3px;
+  border: 2px solid #0a0a0a;
+  border-radius: 10px;
+  /* A faint cream edge, so the black ring still shows over the dark parts of the page. */
+  box-shadow: 0 0 0 1px rgba(245, 241, 234, 0.18);
+  opacity: 0;
+  pointer-events: none;
+  animation: ping 1.9s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+}
+
+@keyframes ping {
+  0% {
+    opacity: 0.85;
+    transform: scale(0.94);
+  }
+  70%,
+  100% {
+    opacity: 0;
+    transform: scale(1.28);
+  }
+}
+
+.label {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  padding: 6px 9px 5px;
+  border: 1px solid rgba(245, 241, 234, 0.14);
+  border-radius: 6px;
+  background: #121211;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.45);
+  color: #f5f1ea;
+  font-family: var(--font-hero), monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  pointer-events: none;
+  animation: labelIn 420ms cubic-bezier(0.22, 1, 0.36, 1) 700ms both;
+}
+
+/* A little point up to the key. */
+.label::before {
+  content: "";
+  position: absolute;
+  top: -4px;
+  right: 17px;
+  width: 8px;
+  height: 8px;
+  border-top: 1px solid rgba(245, 241, 234, 0.14);
+  border-left: 1px solid rgba(245, 241, 234, 0.14);
+  background: inherit;
+  transform: rotate(45deg);
+}
+
+@keyframes labelIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .waiting::after {
+    animation: none;
+    opacity: 0.7;
+  }
+
+  .label {
+    animation: none;
+  }
+}

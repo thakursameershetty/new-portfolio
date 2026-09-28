@@ -67,7 +67,25 @@ const easeOutBack = (t: number) => {
   return 1 + (c + 1) * Math.pow(t - 1, 3) + c * Math.pow(t - 1, 2);
 };
 
-export async function createDiskBoxScene(
+// Building a box is a lot of work at once (the renderer and its lighting, a texture per disk,
+// the shaders), so it's done in pieces, handing the page back between them, and one box at
+// a time: scrolling and the page's other animations keep their frames while it builds.
+const breathe = () =>
+  new Promise<void>((resolve) => {
+    if (window.requestIdleCallback) window.requestIdleCallback(() => resolve(), { timeout: 100 });
+    else window.setTimeout(resolve, 16);
+  });
+let building: Promise<unknown> = Promise.resolve();
+
+export function createDiskBoxScene(
+  ...args: Parameters<typeof buildDiskBoxScene>
+): Promise<DiskBoxScene> {
+  const run = building.then(() => buildDiskBoxScene(...args));
+  building = run.catch(() => {});
+  return run;
+}
+
+async function buildDiskBoxScene(
   canvas: HTMLCanvasElement,
   disks: BoxDisk[],
   {
@@ -106,6 +124,7 @@ export async function createDiskBoxScene(
   scene.environment = pmrem.fromScene(room, 0.04).texture;
   scene.environmentIntensity = 0.6;
   room.dispose();
+  await breathe();
 
   const key = new THREE.DirectionalLight(0xffffff, 0.8);
   key.position.set(-2, 4, 5);
@@ -205,8 +224,14 @@ export async function createDiskBoxScene(
 
   const maxAnisotropy = renderer.capabilities.getMaxAnisotropy();
   const tilts = [-0.035, 0.025, -0.015, 0.03, -0.025, 0.02];
+  // The disks' faces, drawn one per breath.
+  const faces: THREE.CanvasTexture[] = [];
+  for (const disk of disks) {
+    faces.push(keep(drawDisk(disk, fonts)));
+    await breathe();
+  }
   const slots = disks.map((disk, index) => {
-    const texture = keep(drawDisk(disk, fonts));
+    const texture = faces[index];
     texture.anisotropy = maxAnisotropy;
     const mesh = new THREE.Mesh(diskGeometry, [
       keep(new THREE.MeshStandardMaterial({ map: texture, roughness: 0.55 })),
@@ -478,6 +503,11 @@ export async function createDiskBoxScene(
   resizeObserver.observe(canvas);
   fit();
   compose();
+  // Shaders compiled off the main thread where the browser allows it, and the textures sent
+  // to the GPU, before the first frame, which would otherwise do all of it at once.
+  await renderer.compileAsync(scene, camera);
+  for (const texture of faces) renderer.initTexture(texture);
+  await breathe();
   renderer.render(scene, camera);
 
   // The on-screen box around a disk's front face.

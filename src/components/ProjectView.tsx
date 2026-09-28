@@ -52,16 +52,6 @@ const caseHints: GestureHint[] = [
   { gesture: "Tap", does: "any picture to see it full size", device: "touch" },
 ];
 
-// Where the hints can open on their own: wide screens with a mouse. Elsewhere they'd cover the
-// title, so they wait to be asked for.
-const roomyQuery = "(min-width: 1000px) and (hover: hover) and (pointer: fine)";
-const subscribeRoomy = (onChange: () => void) => {
-  const query = window.matchMedia(roomyQuery);
-  query.addEventListener("change", onChange);
-  return () => query.removeEventListener("change", onChange);
-};
-const readRoomy = () => window.matchMedia(roomyQuery).matches;
-
 // A part counts as the one being read once its top passes this far down the screen.
 const readingLine = 0.38;
 
@@ -158,17 +148,14 @@ export function ProjectView({
   const [tvChannel, setTvChannel] = useState(0);
   // Still at the top: the cue to scroll shows.
   const [atTop, setAtTop] = useState(true);
-  // The how-to hints: shown until the set is first used (where there's room), unless the
-  // visitor has chosen with the hints switch, which then holds (on stays on through use; off stays
-  // off).
+  // The how-to hints: put away until the visitor asks for them with the hints switch, which
+  // is remembered.
   const hintPreference = useSyncExternalStore(
     subscribeHintPreference,
     readHintPreferenceOrMemory,
     () => null,
   );
-  const [triedSet, setTriedSet] = useState(false);
-  const roomy = useSyncExternalStore(subscribeRoomy, readRoomy, () => false);
-  const hintsShown = hintPreference === "on" || (hintPreference === null && !triedSet && roomy);
+  const hintsShown = hintPreference === "on";
   const toggleHints = () => {
     onCue?.("remoteKey");
     writeHintPreference(hintsShown ? "off" : "on");
@@ -534,7 +521,6 @@ export function ProjectView({
             screenRectRef={screenRectRef}
             ejectRef={ejectRef}
             onPower={eject}
-            onUsed={() => setTriedSet(true)}
             onCue={monitorCue}
             onLookCloser={(item) => {
               onCue?.("insert");

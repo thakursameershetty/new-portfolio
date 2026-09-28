@@ -15,6 +15,7 @@ import {
 } from "framer-motion";
 import { onTilt } from "../deviceTilt";
 import { useIntro } from "../SiteIntro";
+import { useInView } from "../useInView";
 import { StickerPeel } from "./StickerPeel";
 import key from "./Keycap.module.css";
 import styles from "./IdCard.module.css";
@@ -230,6 +231,33 @@ export function IdCard() {
     return () => cancelAnimationFrame(frame);
   }, [side, backSize]);
 
+  // ---- Arrival ----
+  // The card drops in only once everything it's made of is ready (the photo decoded, the
+  // fonts in), it's well on screen, and the page has a quiet moment: started any earlier it
+  // would fight the page's loading for frames, and stutter.
+  const areaRef = useRef<HTMLDivElement>(null);
+  const seen = useInView(areaRef, 0.35);
+  const [ready, setReady] = useState(false);
+  useEffect(() => {
+    if (!seen || ready) return;
+    let cancelled = false;
+    const photoImg =
+      hangRef.current?.querySelector<HTMLImageElement>("article img");
+    const decoded = photoImg
+      ? photoImg.decode().catch(() => {})
+      : Promise.resolve();
+    void Promise.all([decoded, document.fonts.ready]).then(() => {
+      if (cancelled) return;
+      const go = () => !cancelled && setReady(true);
+      if (window.requestIdleCallback)
+        window.requestIdleCallback(go, { timeout: 400 });
+      else window.setTimeout(go, 60);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [seen, ready]);
+
   // ---- Docking ----
   // Scrolled half past the card, it lifts off the lanyard: a copy of it (as it is: the side
   // showing, the stickers where they were moved) shrinks, spins over once and settles in
@@ -382,7 +410,12 @@ export function IdCard() {
       showCard(false);
       reelUp();
       cueRef.current("swap");
-      fly(onCard, () => corner(width, height), [0, 360], 0.85);
+      // A frame for the copy to be laid out and painted before it moves, so the flight
+      // starts smoothly rather than on a frame spent building it.
+      requestAnimationFrame(() => {
+        // Scrolled straight back in that frame: it's undocking now, not leaving.
+        if (docked) fly(onCard, () => corner(width, height), [0, 360], 0.85);
+      });
     };
 
     const dockOut = () => {
@@ -458,12 +491,12 @@ export function IdCard() {
   }, [swing]);
 
   return (
-    <div className={styles.area}>
+    <div ref={areaRef} className={styles.area}>
       <motion.div
         ref={hangRef}
         className={styles.hang}
         initial={reduced ? false : { y: -120, rotate: -8, opacity: 0 }}
-        animate={{ y: 0, rotate: 0, opacity: 1 }}
+        animate={ready || reduced ? { y: 0, rotate: 0, opacity: 1 } : undefined}
         transition={{
           type: "spring",
           stiffness: 120,

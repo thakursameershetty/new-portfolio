@@ -1,7 +1,6 @@
 "use client";
 
 import {
-  useCallback,
   useEffect,
   useRef,
   useState,
@@ -15,15 +14,13 @@ import {
   useReducedMotion,
 } from "framer-motion";
 import { useIntro } from "../SiteIntro";
+import * as music from "../music";
 import { tracks, type Track } from "./taste";
 import key from "./Keycap.module.css";
 import styles from "./ListeningTo.module.css";
 
-// How many covers the shelf fans out at once, and how long the volume ramps take (ms), so
-// starting, pausing and skipping never click.
+// How many covers the shelf fans out at once.
 const shelfSize = 9;
-const fadeIn = 260;
-const fadeOut = 160;
 // How far (px) the covers either side of the one picked part to make room for it, the
 // nearest most.
 const part = 22;
@@ -65,7 +62,8 @@ function shuffled(count: number) {
  * slides over, the record rolls out and spins, and its 30-second preview plays (media keys
  * and the lock screen work too, through the Media Session API). On touch screens the crate
  * becomes a strip of covers to swipe through. Every move has its haptic tap, like the home
- * page's (on phones that allow it).
+ * page's (on phones that allow it). The playing lives in ../music, so a song carries on
+ * after the visitor scrolls away or leaves the page, on the mini disc in the corner.
  */
 export function ListeningTo() {
   const reduced = useReducedMotion();
@@ -75,40 +73,34 @@ export function ListeningTo() {
     tracks.map((_, i) => i).slice(0, shelfSize),
   );
   const [spins, setSpins] = useState(0);
-  const [open, setOpen] = useState<number | null>(null);
-  const step = useCallback(
-    (by: number) =>
-      setOpen((current) =>
-        current === null
-          ? current
-          : (current + by + tracks.length) % tracks.length,
-      ),
-    [],
-  );
-  // A preview that runs out moves on to the next song.
-  const player = usePreview(open === null ? null : tracks[open], () => step(1));
+  const player = music.useMusic();
+  const open = player.track;
 
-  // Media keys and the lock screen's controls.
+  // Whether this big player is on screen: while it is, the mini disc keeps out of the way.
+  const cardRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
-    if (open === null || !("mediaSession" in navigator)) return;
-    const track = tracks[open];
-    navigator.mediaSession.metadata = new MediaMetadata({
-      title: track.title,
-      artist: track.artist,
-      album: track.album,
-      artwork: [{ src: track.artwork, sizes: "600x600", type: "image/jpeg" }],
-    });
-    navigator.mediaSession.setActionHandler("previoustrack", () => step(-1));
-    navigator.mediaSession.setActionHandler("nexttrack", () => step(1));
+    const card = cardRef.current;
+    if (!card) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => music.setBigShown(!!entry?.isIntersecting),
+      { threshold: 0.35 },
+    );
+    observer.observe(card);
     return () => {
-      navigator.mediaSession.setActionHandler("previoustrack", null);
-      navigator.mediaSession.setActionHandler("nexttrack", null);
+      observer.disconnect();
+      music.setBigShown(false);
     };
-  }, [open, step]);
+  }, []);
 
   return (
     <LayoutGroup>
-      <motion.div layout transition={spring} className={styles.card}>
+      <motion.div
+        ref={cardRef}
+        id="listening"
+        layout
+        transition={spring}
+        className={styles.card}
+      >
         <AnimatePresence mode="popLayout" initial={false}>
           {open === null ? (
             <motion.div
@@ -154,8 +146,7 @@ export function ListeningTo() {
               {(() => {
                 const onOpen = (index: number) => {
                   playCue("insert");
-                  player.start(tracks[index]);
-                  setOpen(index);
+                  music.start(index);
                 };
                 return touch ? (
                   <SwipeShelf order={order} onOpen={onOpen} />
@@ -178,10 +169,7 @@ export function ListeningTo() {
                   type="button"
                   className={key.key}
                   data-feel="diskOut"
-                  onClick={() => {
-                    player.stop();
-                    setOpen(null);
-                  }}
+                  onClick={() => music.stop()}
                 >
                   <svg
                     aria-hidden="true"
@@ -228,13 +216,7 @@ export function ListeningTo() {
                 </a>
               </div>
 
-              <Player
-                track={tracks[open]}
-                index={open}
-                player={player}
-                onPrevious={() => step(-1)}
-                onNext={() => step(1)}
-              />
+              <Player track={tracks[open]} index={open} player={player} />
             </motion.div>
           )}
         </AnimatePresence>
@@ -463,19 +445,26 @@ function Player({
   track,
   index,
   player,
-  onPrevious,
-  onNext,
 }: {
   track: Track;
   index: number;
-  player: ReturnType<typeof usePreview>;
-  onPrevious: () => void;
-  onNext: () => void;
+  player: music.MusicState;
 }) {
   const reduced = useReducedMotion();
   const { playCue } = useIntro();
   const progress = player.duration ? player.time / player.duration : 0;
   const scrubbedRef = useRef(-1);
+  const onPrevious = () => music.step(-1);
+  const onNext = () => music.step(1);
+
+  // Its record is where the mini disc flies out of, and back into.
+  const recordRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    music.registerRecord(
+      () => recordRef.current?.getBoundingClientRect() ?? null,
+    );
+    return () => music.registerRecord(null);
+  }, []);
 
   // The record lands on the deck with a thunk, as it finishes rolling out of the sleeve.
   useEffect(() => {
@@ -489,6 +478,7 @@ function Player({
         {/* The record rolls out from behind the sleeve once it lands, and spins while the
             song plays. Its label is the album art. */}
         <motion.div
+          ref={recordRef}
           key={`record-${index}`}
           aria-hidden="true"
           className={clsx(
@@ -549,7 +539,7 @@ function Player({
               );
               if (second !== scrubbedRef.current) playCue("detent");
               scrubbedRef.current = second;
-              player.seek(to);
+              music.seek(to);
             };
             seekTo(event.clientX);
             const move = (e: PointerEvent) => seekTo(e.clientX);
@@ -561,8 +551,8 @@ function Player({
             );
           }}
           onKeyDown={(event) => {
-            if (event.key === "ArrowRight") player.seek(player.time + 5);
-            else if (event.key === "ArrowLeft") player.seek(player.time - 5);
+            if (event.key === "ArrowRight") music.seek(player.time + 5);
+            else if (event.key === "ArrowLeft") music.seek(player.time - 5);
             else return;
             event.preventDefault();
           }}
@@ -602,7 +592,7 @@ function Player({
               className={clsx(key.key, key.square, key.big, key.cream)}
               onClick={() => {
                 playCue(player.playing ? "switchOff" : "switchOn");
-                player.toggle();
+                music.toggle();
               }}
               aria-label={player.playing ? "Pause" : "Play"}
             >
@@ -662,132 +652,6 @@ function Player({
       </div>
     </div>
   );
-}
-
-/**
- * One audio element for the page. `start` is called in the click that opens the player, so
- * browsers allow the sound; changing `track` after that keeps playing. Volume ramps in and
- * out so nothing clicks.
- */
-function usePreview(track: Track | null, onEnded: () => void) {
-  const audioRef = useRef<HTMLAudioElement | null>(null);
-  const onEndedRef = useRef(onEnded);
-  useEffect(() => {
-    onEndedRef.current = onEnded;
-  }, [onEnded]);
-  const rampRef = useRef(0);
-  const wantRef = useRef(false);
-  const [playing, setPlaying] = useState(false);
-  const [time, setTime] = useState(0);
-  const [duration, setDuration] = useState(30);
-  const [failed, setFailed] = useState(false);
-
-  const audio = useCallback(() => {
-    if (!audioRef.current) {
-      const element = new Audio();
-      element.preload = "auto";
-      element.addEventListener("timeupdate", () =>
-        setTime(element.currentTime),
-      );
-      element.addEventListener("loadedmetadata", () => {
-        if (Number.isFinite(element.duration)) setDuration(element.duration);
-      });
-      element.addEventListener("play", () => setPlaying(true));
-      element.addEventListener("pause", () => setPlaying(false));
-      element.addEventListener("ended", () => onEndedRef.current());
-      element.addEventListener("error", () => setFailed(true));
-      audioRef.current = element;
-    }
-    return audioRef.current;
-  }, []);
-
-  const ramp = useCallback((to: number, ms: number, then?: () => void) => {
-    const element = audioRef.current;
-    if (!element) return;
-    cancelAnimationFrame(rampRef.current);
-    const from = element.volume;
-    const began = performance.now();
-    const tick = (now: number) => {
-      const t = Math.min((now - began) / ms, 1);
-      element.volume = from + (to - from) * t;
-      if (t < 1) rampRef.current = requestAnimationFrame(tick);
-      else then?.();
-    };
-    rampRef.current = requestAnimationFrame(tick);
-  }, []);
-
-  const play = useCallback(() => {
-    const element = audio();
-    wantRef.current = true;
-    element.volume = 0;
-    element
-      .play()
-      .then(() => ramp(1, fadeIn))
-      .catch(() => {
-        // Interrupted by a newer track, or blocked: leave it paused, the button still works.
-      });
-  }, [audio, ramp]);
-
-  const pause = useCallback(() => {
-    wantRef.current = false;
-    ramp(0, fadeOut, () => audioRef.current?.pause());
-  }, [ramp]);
-
-  // Load each new track, and carry on playing if a song was playing.
-  const src = track?.preview;
-  useEffect(() => {
-    if (!src) return;
-    const element = audio();
-    if (element.src === src) return;
-    setFailed(false);
-    setTime(0);
-    element.src = src;
-    if (wantRef.current) play();
-  }, [src, audio, play]);
-
-  useEffect(
-    () => () => {
-      cancelAnimationFrame(rampRef.current);
-      audioRef.current?.pause();
-    },
-    [],
-  );
-
-  return {
-    playing,
-    time,
-    duration,
-    failed,
-    // Called in the click that opens the player, so the browser (Safari especially) counts
-    // it as the visitor's own play; the track effect then finds the song already loaded.
-    start: (first: Track) => {
-      // A Back pressed a moment ago may still be fading out; it mustn't stop this song.
-      cancelAnimationFrame(rampRef.current);
-      const element = audio();
-      setFailed(false);
-      setTime(0);
-      element.src = first.preview;
-      play();
-    },
-    stop: () => {
-      wantRef.current = false;
-      ramp(0, fadeOut, () => {
-        const element = audioRef.current;
-        if (!element) return;
-        element.pause();
-        element.removeAttribute("src");
-        element.load();
-      });
-      setTime(0);
-    },
-    toggle: () => (playing ? pause() : play()),
-    seek: (to: number) => {
-      const element = audioRef.current;
-      if (!element) return;
-      element.currentTime = Math.min(Math.max(to, 0), duration - 0.05);
-      setTime(element.currentTime);
-    },
-  };
 }
 
 function AppleMusicIcon() {
