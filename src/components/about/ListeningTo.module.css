@@ -1,0 +1,401 @@
+/* The reference's soft card, in the site's dark: a raised panel with a hairline edge, cream
+   type, Disket Mono for the labels and digits, and keycaps for the controls. */
+.card {
+  --line: rgba(245, 241, 234, 0.08);
+  --cover: clamp(128px, 24vw, 232px);
+  position: relative;
+  overflow: hidden;
+  padding: clamp(20px, 3.4vw, 40px);
+  border: 1px solid var(--line);
+  border-radius: clamp(24px, 3vw, 36px);
+  background:
+    radial-gradient(120% 90% at 0% 0%, rgba(245, 241, 234, 0.05), transparent 60%),
+    #121211;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.04),
+    0 30px 60px -30px rgba(0, 0, 0, 0.6);
+}
+
+.view {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(24px, 3.4vw, 36px);
+}
+
+.bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.heading {
+  font-family: var(--font-hero), monospace;
+  font-size: clamp(18px, 2.2vw, 26px);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+  color: var(--ink);
+}
+
+/* ---- The shelf ---- */
+
+/* Covers overlap like records in a crate: each a step further right and further back, the
+   steps sized so the last one ends at the card's edge. The space below holds their
+   reflections. */
+.shelf {
+  position: relative;
+  height: calc(var(--cover) + clamp(28px, 4vw, 44px));
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  touch-action: pan-y;
+}
+
+.slot {
+  position: absolute;
+  top: 0;
+  left: calc((100% - var(--cover)) * var(--slot) / max(var(--count) - 1, 1));
+  width: var(--cover);
+}
+
+/* Parting: the covers either side of the picked one slide away from it, and it lifts clear,
+   tipping back a touch like a record pulled up out of the crate. */
+.cover {
+  position: relative;
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+  transform: translateX(var(--part, 0px));
+  transition: transform 420ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.slotPicked .cover {
+  transform: translateY(-18px) rotate(-1.5deg) scale(1.03);
+}
+
+.art {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: 10px;
+  object-fit: cover;
+  background: #222;
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.5),
+    -10px 0 24px -12px rgba(0, 0, 0, 0.8);
+  -webkit-box-reflect: below 6px linear-gradient(transparent 72%, rgba(255, 255, 255, 0.14));
+  user-select: none;
+  transition: box-shadow 420ms ease;
+}
+
+.slotPicked .art {
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.5),
+    0 24px 40px -12px rgba(0, 0, 0, 0.85);
+}
+
+.cover:focus-visible {
+  outline: none;
+}
+
+.cover:focus-visible .art {
+  outline: 2px solid var(--ink);
+  outline-offset: 3px;
+}
+
+/* The label that pops up over the picked cover, as in the reference: artist, then title. */
+.tip {
+  position: absolute;
+  top: 14%;
+  left: 62%;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: max-content;
+  max-width: 260px;
+  padding: 8px 14px 9px;
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  border-radius: 10px;
+  background: rgba(245, 241, 234, 0.94);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.35);
+  color: #16140f;
+  text-align: left;
+  opacity: 0;
+  transform: translateY(6px) scale(0.96);
+  transform-origin: left bottom;
+  pointer-events: none;
+  transition:
+    opacity 160ms ease,
+    transform 220ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.tipLeft {
+  right: 62%;
+  left: auto;
+  text-align: right;
+  transform-origin: right bottom;
+}
+
+.slotPicked .tip {
+  opacity: 1;
+  transform: none;
+}
+
+.tipArtist {
+  font-family: var(--font-display), sans-serif;
+  font-size: 14px;
+  color: rgba(22, 20, 15, 0.6);
+}
+
+.tipTitle {
+  font-family: var(--font-display), sans-serif;
+  font-size: 17px;
+  font-weight: 500;
+}
+
+/* ---- The player ---- */
+
+.player {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: clamp(24px, 5vw, 64px);
+}
+
+/* The sleeve, and the record half out of it. The deck is wide enough for both. */
+.deck {
+  position: relative;
+  width: calc(var(--cover) * 1.56);
+  aspect-ratio: 1.56;
+}
+
+.sleeve {
+  position: relative;
+  z-index: 1;
+  width: calc(100% / 1.56);
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.5),
+    12px 0 28px -10px rgba(0, 0, 0, 0.7);
+}
+
+/* Grooves in vinyl black, a sheen that stays put while the disc turns (it's on ::after,
+   outside the spin), and the album art as the centre label. */
+.record {
+  position: absolute;
+  top: 4%;
+  left: 0;
+  width: calc(100% / 1.56 * 0.92);
+  aspect-ratio: 1;
+  border-radius: 50%;
+}
+
+.record::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background:
+    repeating-radial-gradient(circle, #121212 0 1.5px, #1c1c1c 1.5px 3px),
+    #111;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.55);
+}
+
+.record::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: conic-gradient(
+    from 30deg,
+    transparent 0deg,
+    rgba(255, 255, 255, 0.08) 30deg,
+    transparent 60deg,
+    transparent 180deg,
+    rgba(255, 255, 255, 0.06) 210deg,
+    transparent 240deg
+  );
+  pointer-events: none;
+}
+
+.recordLabel {
+  position: absolute;
+  inset: 32%;
+  z-index: 1;
+  border-radius: 50%;
+  background-position: center;
+  background-size: cover;
+  box-shadow: 0 0 0 2px #0c0c0c;
+}
+
+/* The spindle hole. */
+.recordLabel::after {
+  content: "";
+  position: absolute;
+  inset: 45%;
+  border-radius: 50%;
+  background: #121211;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.2);
+}
+
+.recordSpinning .recordLabel,
+.recordSpinning::before {
+  animation: spin 1.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  min-width: 0;
+  text-align: center;
+}
+
+/* A new song's artist and title flip in, like the Contact key's label. */
+.flip {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-width: 100%;
+  animation: flipIn 420ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes flipIn {
+  from {
+    opacity: 0;
+    transform: perspective(400px) rotateX(-70deg);
+  }
+}
+
+.artist {
+  font-family: var(--font-display), sans-serif;
+  font-size: clamp(15px, 1.5vw, 18px);
+  color: var(--ink-muted);
+  text-wrap: balance;
+}
+
+.title {
+  font-family: var(--font-display), sans-serif;
+  font-size: clamp(20px, 2.2vw, 28px);
+  font-weight: 500;
+  line-height: 1.2;
+  color: var(--ink);
+  text-wrap: balance;
+}
+
+/* The readout: a small inset display with the time in Disket Mono, and a meter along its
+   foot that fills in the grid's red. */
+.readout {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  min-width: 200px;
+  padding: 10px 18px 12px;
+  border: 1px solid rgba(0, 0, 0, 0.6);
+  border-radius: 10px;
+  background: #080807;
+  box-shadow:
+    inset 0 2px 6px rgba(0, 0, 0, 0.8),
+    0 1px 0 rgba(255, 255, 255, 0.06);
+  cursor: pointer;
+  touch-action: none;
+  user-select: none;
+}
+
+.readout:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 3px;
+}
+
+.digits {
+  font-family: var(--font-hero), monospace;
+  font-size: 18px;
+  letter-spacing: 0.04em;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+}
+
+.slash {
+  margin: 0 0.6em;
+  color: var(--ink-muted);
+}
+
+.meter {
+  position: relative;
+  width: 100%;
+  height: 3px;
+  overflow: hidden;
+  border-radius: 2px;
+  background: rgba(245, 241, 234, 0.12);
+}
+
+.meter::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--tone-work);
+  transform: scaleX(var(--progress));
+  transform-origin: left;
+}
+
+.transport {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 6px;
+}
+
+.failed {
+  font-size: 14px;
+  color: var(--ink-muted);
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* Phones: the player stacks. */
+@media (max-width: 600px) {
+  .card {
+    --cover: clamp(120px, 44vw, 200px);
+  }
+
+  .shelf {
+    --cover: clamp(104px, 34vw, 160px);
+  }
+
+  .player {
+    grid-template-columns: 1fr;
+    justify-items: center;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cover,
+  .tip,
+  .art {
+    transition: none;
+  }
+
+  .flip {
+    animation: none;
+  }
+}

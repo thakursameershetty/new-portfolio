@@ -10,6 +10,8 @@
   --tone-work: #e54b45;
   --tone-study: #f5f1ea;
   --tone-event: #f0c44c;
+  /* Personal projects, on the About page's longer timeline. */
+  --tone-project: #7bd8c4;
 }
 
 @media (prefers-color-scheme: dark) {

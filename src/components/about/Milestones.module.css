@@ -1,0 +1,118 @@
+/* A dated column, then a rail of dots in each entry's colour, then the story. */
+.list {
+  position: relative;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.item {
+  position: relative;
+  display: grid;
+  grid-template-columns: 7.5em 24px 1fr;
+  gap: 0 20px;
+  padding-bottom: 32px;
+}
+
+/* The rail, running from each dot down to the next. */
+.item::before {
+  content: "";
+  position: absolute;
+  top: 18px;
+  bottom: -2px;
+  left: calc(7.5em + 20px + 11px);
+  width: 1px;
+  background: rgba(245, 241, 234, 0.12);
+}
+
+.item:last-child::before {
+  display: none;
+}
+
+.when {
+  padding-top: 2px;
+  font-family: var(--font-hero), monospace;
+  font-size: 13px;
+  letter-spacing: 0.06em;
+  text-align: right;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.dot {
+  justify-self: center;
+  width: 11px;
+  height: 11px;
+  margin-top: 5px;
+  border-radius: 50%;
+  background: var(--tone);
+  box-shadow: 0 0 0 4px var(--ground);
+}
+
+.title {
+  font-family: var(--font-display), sans-serif;
+  font-size: 19px;
+  font-weight: 500;
+  color: var(--ink);
+}
+
+.detail {
+  max-width: 38em;
+  margin-top: 4px;
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--ink-muted);
+}
+
+.link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 10px;
+  font-family: var(--font-hero), monospace;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.link svg {
+  transition: transform 200ms ease;
+}
+
+.link:hover svg {
+  transform: translateX(3px);
+}
+
+.link:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 4px;
+}
+
+/* Phones: the date moves above the story, and the rail runs down the left. */
+@media (max-width: 600px) {
+  .item {
+    grid-template-columns: 24px 1fr;
+    gap: 2px 14px;
+  }
+
+  .item::before {
+    left: 11px;
+  }
+
+  .when {
+    grid-column: 2;
+    text-align: left;
+  }
+
+  .dot {
+    grid-row: 1;
+    grid-column: 1;
+  }
+
+  .body {
+    grid-column: 2;
+  }
+}

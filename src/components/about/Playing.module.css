@@ -1,0 +1,178 @@
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), 1fr));
+  gap: 16px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* Game Center's card, cut like the site's floppy disks: the game's colour with the disks'
+   sheen and shade, the chamfered top-right corner, and its rank standing big and
+   translucent behind the icon, in Disket Mono. */
+.card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  overflow: hidden;
+  min-height: 300px;
+  padding: 26px 26px 24px;
+  border-radius: 28px;
+  background:
+    linear-gradient(160deg, rgba(255, 255, 255, 0.2), transparent 38%),
+    linear-gradient(0deg, rgba(0, 0, 0, 0.24), transparent 45%),
+    var(--game);
+  color: #fff;
+  clip-path: polygon(0 0, calc(100% - 30px) 0, 100% 30px, 100% 100%, 0 100%);
+  transition: transform 320ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.card:hover {
+  transform: translateY(-4px);
+}
+
+.rank {
+  position: absolute;
+  top: 10px;
+  left: 18px;
+  font-family: var(--font-hero), monospace;
+  font-size: 140px;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.06em;
+  color: rgba(255, 255, 255, 0.28);
+}
+
+.icon {
+  position: relative;
+  display: block;
+  width: 108px;
+  height: 108px;
+  margin: 26px 0 auto 58px;
+  border-radius: 24px;
+  object-fit: cover;
+  box-shadow: 0 14px 28px rgba(0, 0, 0, 0.35);
+  transform: rotate(-4deg);
+  transition: transform 320ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.card:hover .icon {
+  transform: rotate(0deg) scale(1.04);
+}
+
+.iconStandIn {
+  display: grid;
+  place-items: center;
+  border: 3px solid rgba(255, 255, 255, 0.85);
+  background:
+    radial-gradient(80% 80% at 30% 20%, rgba(255, 255, 255, 0.5), transparent 60%),
+    linear-gradient(160deg, var(--game), #111 140%);
+  font-family: var(--font-hero), monospace;
+  font-size: 34px;
+  font-weight: 700;
+  color: #fff;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+}
+
+.name {
+  margin-top: 24px;
+  font-family: var(--font-display), sans-serif;
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.genre {
+  max-width: 100%;
+  overflow: hidden;
+  margin-top: 2px;
+  font-family: var(--font-display), sans-serif;
+  font-size: 17px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.72);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.view {
+  margin-top: 16px;
+  padding: 9px 26px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.24);
+  font-family: var(--font-display), sans-serif;
+  font-size: 17px;
+  font-weight: 600;
+  color: #fff;
+  text-decoration: none;
+  transition: background-color 150ms ease;
+}
+
+.view:hover {
+  background: rgba(255, 255, 255, 0.34);
+}
+
+.view:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 3px;
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* Phones: two across, as in Game Center, with everything scaled down to fit. */
+@media (max-width: 600px) {
+  .grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  .card {
+    min-height: 236px;
+    padding: 18px 16px 16px;
+    border-radius: 24px;
+  }
+
+  .rank {
+    left: 10px;
+    font-size: 100px;
+  }
+
+  .icon {
+    width: 76px;
+    height: 76px;
+    margin: 18px 0 auto 36px;
+    border-radius: 18px;
+  }
+
+  .iconStandIn {
+    font-size: 24px;
+  }
+
+  .name {
+    margin-top: 18px;
+    font-size: 17px;
+  }
+
+  .genre {
+    font-size: 14px;
+  }
+
+  .view {
+    padding: 7px 20px;
+    font-size: 15px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card,
+  .icon {
+    transition: none;
+  }
+}

@@ -1,0 +1,278 @@
+/* A dark stage, the poster in focus lit by its own ambient light. */
+.stage {
+  --card: clamp(180px, 26vw, 290px);
+  /* The even space between neighbouring posters. */
+  --gap: clamp(12px, 1.6vw, 20px);
+  position: relative;
+  overflow: hidden;
+  padding: clamp(32px, 5vw, 56px) 0 28px;
+  border-radius: clamp(24px, 3vw, 36px);
+  background: #050505;
+  outline: none;
+  touch-action: pan-y;
+  user-select: none;
+}
+
+.stage:focus-visible {
+  box-shadow: 0 0 0 2px var(--ink);
+}
+
+/* The ambient light: a blurred, saturated copy of the poster just behind the focused spot,
+   a little larger than it, so its colours spill softly past its edges and no further. */
+.ambient {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  z-index: 0;
+  width: var(--card);
+  aspect-ratio: 2 / 3;
+  border-radius: 22px;
+  background-position: center;
+  background-size: cover;
+  filter: blur(38px) saturate(1.5);
+  opacity: 0;
+  transform: translateX(-50%) scale(1.12);
+  transition: opacity 650ms ease;
+  pointer-events: none;
+}
+
+.ambientOn {
+  opacity: 0.6;
+}
+
+/* The Films / Series keys, centred above the posters. */
+.kinds {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: clamp(24px, 4vw, 40px);
+}
+
+.kindCount {
+  font-family: var(--font-hero), monospace;
+  font-size: 12px;
+  opacity: 0.6;
+}
+
+.reel {
+  position: relative;
+  animation: dealIn 480ms cubic-bezier(0.22, 1, 0.36, 1);
+  height: calc(var(--card) * 1.5);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* Every poster is centred, then pushed out by its distance from the one in focus: smaller,
+   dimmer and further back the further away it is, with the same gap between each pair
+   (Watching.tsx works out how far, from the posters' shrunken widths). */
+.card {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: var(--card);
+  aspect-ratio: 2 / 3;
+  overflow: hidden;
+  border: 1.5px solid rgba(255, 255, 255, 0.22);
+  border-radius: 22px;
+  cursor: pointer;
+  opacity: calc(1 - var(--distance) * 0.28);
+  transform: translateX(
+      calc(-50% + var(--side) * (var(--reach) * var(--card) + var(--gaps) * var(--gap)))
+    )
+    scale(var(--scale));
+  transition:
+    transform 520ms cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 400ms ease,
+    filter 400ms ease;
+  filter: saturate(calc(1 - min(var(--distance), 1) * 0.35));
+}
+
+.cardActive {
+  cursor: default;
+  box-shadow: 0 30px 60px -20px rgba(0, 0, 0, 0.8);
+}
+
+/* The poster, or until there is one a tint washed into a gradient. */
+.poster {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(90% 60% at 30% 20%, rgba(255, 255, 255, 0.28), transparent 60%),
+    linear-gradient(160deg, var(--tint, #333), #0b0b0b 95%);
+  background-position: center;
+  background-size: cover;
+}
+
+/* Scanlines and a soft vignette, like a picture on the home page's CRT. */
+.card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: repeating-linear-gradient(
+    180deg,
+    rgba(0, 0, 0, 0.16) 0 1px,
+    transparent 1px 3px
+  );
+  box-shadow: inset 0 0 60px rgba(0, 0, 0, 0.45);
+  pointer-events: none;
+}
+
+.rating {
+  position: absolute;
+  top: 14px;
+  right: 16px;
+  z-index: 2;
+  display: flex;
+  gap: 2px;
+  font-family: var(--font-hero), monospace;
+  font-size: clamp(18px, 2vw, 26px);
+  font-weight: 700;
+  color: #fff;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.45);
+}
+
+.rating span {
+  font-size: 0.5em;
+  line-height: 1.4;
+}
+
+/* The title in focus, under the posters. */
+.showing {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  margin-top: clamp(20px, 3vw, 32px);
+  padding: 0 24px;
+  text-align: center;
+  animation: flipIn 420ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes flipIn {
+  from {
+    opacity: 0;
+    transform: perspective(400px) rotateX(-70deg);
+  }
+}
+
+.title {
+  font-family: var(--font-display), sans-serif;
+  font-size: clamp(20px, 2.2vw, 28px);
+  font-weight: 500;
+  line-height: 1.15;
+  color: #fff;
+  text-wrap: balance;
+}
+
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.chip {
+  padding: 4px 10px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.3);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  font-family: var(--font-display), sans-serif;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.controls {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 24px;
+}
+
+/* The counter over its progress line. */
+.counter {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.progress {
+  position: relative;
+  width: 56px;
+  height: 2px;
+  overflow: hidden;
+  border-radius: 1px;
+  background: rgba(245, 241, 234, 0.14);
+}
+
+.progressFill {
+  position: absolute;
+  inset: 0;
+  background: var(--tone-work);
+  transform: scaleX(0);
+  transform-origin: left;
+}
+
+.progressRunning {
+  animation: fill var(--dwell) linear forwards;
+}
+
+@keyframes fill {
+  to {
+    transform: scaleX(1);
+  }
+}
+
+.count {
+  min-width: 5em;
+  font-family: var(--font-hero), monospace;
+  font-size: 13px;
+  letter-spacing: 0.08em;
+  text-align: center;
+  color: var(--ink-muted);
+}
+
+@keyframes dealIn {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+}
+
+@media (max-width: 600px) {
+  .stage {
+    --card: 52vw;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ambient {
+    transition: none;
+  }
+
+  .reel,
+  .showing {
+    animation: none;
+  }
+
+  .card {
+    transition: none;
+  }
+}

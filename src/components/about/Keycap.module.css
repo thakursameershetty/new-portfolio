@@ -1,0 +1,82 @@
+/* The site's keycaps (the Résumé and Contact keys) at control size, for the About page: a
+   face on a darker skirt, lifting a touch on hover and sinking onto the skirt when pressed.
+   Dark by default; `cream` is the primary key. */
+.key {
+  --face: #1c1c1b;
+  --skirt: #050505;
+  --edge: rgba(255, 255, 255, 0.08);
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 44px;
+  padding: 0 16px;
+  border: 1px solid var(--edge);
+  border-radius: 10px;
+  background: var(--face);
+  color: var(--ink);
+  font-family: var(--font-display), sans-serif;
+  font-size: 15px;
+  font-weight: 500;
+  text-decoration: none;
+  cursor: pointer;
+  box-shadow:
+    0 4px 0 var(--skirt),
+    0 10px 20px rgba(0, 0, 0, 0.4);
+  transition:
+    transform 110ms ease,
+    box-shadow 110ms ease,
+    background-color 150ms ease;
+}
+
+.key:hover {
+  transform: translateY(-1px);
+  box-shadow:
+    0 5px 0 var(--skirt),
+    0 12px 22px rgba(0, 0, 0, 0.45);
+}
+
+.key:active {
+  transform: translateY(3px);
+  box-shadow:
+    0 1px 0 var(--skirt),
+    0 3px 8px rgba(0, 0, 0, 0.4);
+}
+
+.key:disabled {
+  opacity: 0.35;
+  cursor: default;
+  transform: none;
+  box-shadow: 0 4px 0 var(--skirt);
+}
+
+.key:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 4px;
+}
+
+.cream {
+  --face: #f5f1ea;
+  --skirt: #b9ad9c;
+  --edge: rgba(0, 0, 0, 0.06);
+  color: #1a0605;
+}
+
+/* Icon-only keys. */
+.square {
+  width: 44px;
+  padding: 0;
+}
+
+.big {
+  width: 56px;
+  height: 56px;
+  border-radius: 12px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .key {
+    transition: none;
+  }
+}

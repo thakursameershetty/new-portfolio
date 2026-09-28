@@ -1,0 +1,130 @@
+/* A strip of the hero's red cell grid across the top, fading down into the dark, so the
+   page reads as the home page carried on. */
+.shell {
+  position: relative;
+  background: var(--ground);
+}
+
+.band {
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  height: clamp(160px, 26vh, 260px);
+  background-color: var(--tone-work);
+  background-image:
+    linear-gradient(90deg, rgba(150, 32, 30, 0.2) 1px, transparent 1px),
+    linear-gradient(0deg, rgba(150, 32, 30, 0.2) 1px, transparent 1px);
+  background-position: center top;
+  background-size: 56px 56px;
+  -webkit-mask-image: linear-gradient(180deg, #000 20%, transparent);
+  mask-image: linear-gradient(180deg, #000 20%, transparent);
+  pointer-events: none;
+}
+
+/* The About page: the home page's near-black ground and cream type, in the same column. */
+.page {
+  position: relative;
+  min-height: 100svh;
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 24px 24px clamp(96px, 14vh, 160px);
+  color: var(--ink);
+}
+
+.top {
+  display: flex;
+  padding: 8px 0;
+}
+
+.header {
+  padding: clamp(64px, 12vh, 140px) 0 clamp(48px, 8vh, 96px);
+}
+
+.label,
+.sectionLabel {
+  margin-bottom: 28px;
+  font-family: var(--font-hero), monospace;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+
+.statement {
+  max-width: 18em;
+  font-size: clamp(32px, 5vw, 60px);
+  font-weight: 500;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+}
+
+.lede {
+  max-width: 36em;
+  margin-top: 28px;
+  font-size: clamp(17px, 1.6vw, 20px);
+  line-height: 1.55;
+  color: var(--ink-muted);
+  text-wrap: pretty;
+}
+
+.section {
+  padding-top: clamp(56px, 9vh, 112px);
+}
+
+.ruler {
+  margin-bottom: 56px;
+}
+
+.outside {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(48px, 8vh, 88px);
+}
+
+.subheading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 24px;
+  font-family: var(--font-hero), monospace;
+  font-size: clamp(18px, 2.2vw, 26px);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+}
+
+/* The little controller before "Top played games" gives a wiggle when it's hovered, like
+   a pad being picked up. */
+.controller {
+  flex: none;
+  filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.5));
+  transform-origin: 50% 70%;
+}
+
+.subheading:hover .controller {
+  animation: wiggle 520ms cubic-bezier(0.36, 0.07, 0.19, 0.97);
+}
+
+@keyframes wiggle {
+  20% {
+    transform: rotate(-9deg) translateY(-2px);
+  }
+  45% {
+    transform: rotate(7deg) translateY(-2px);
+  }
+  70% {
+    transform: rotate(-4deg);
+  }
+  100% {
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .subheading:hover .controller {
+    animation: none;
+  }
+}
