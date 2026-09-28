@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import clsx from "clsx";
 import { useReducedMotion } from "framer-motion";
+import { useIntro } from "../SiteIntro";
 import { films, type Film } from "./taste";
 import key from "./Keycap.module.css";
 import styles from "./Watching.module.css";
@@ -47,8 +48,15 @@ export function Watching() {
   const list = films.filter((film) => film.kind === kind);
   const [active, setActive] = useState(0);
   const drag = useRef<{ x: number; moved: boolean } | null>(null);
-  const go = (to: number) =>
-    setActive(Math.min(Math.max(to, 0), list.length - 1));
+  const { playCue } = useIntro();
+  // A turn by hand clicks like a detent (the arrow keys add their own press instead);
+  // turns the slideshow makes itself stay silent.
+  const go = (to: number, tick = true) => {
+    const next = Math.min(Math.max(to, 0), list.length - 1);
+    if (next === active) return;
+    if (tick) playCue("detent");
+    setActive(next);
+  };
 
   const stageRef = useRef<HTMLDivElement>(null);
   const reduced = useReducedMotion();
@@ -128,6 +136,7 @@ export function Watching() {
               type="button"
               className={clsx(key.key, option.kind === kind && key.cream)}
               aria-pressed={option.kind === kind}
+              data-feel="switchOn"
               onClick={() => {
                 if (option.kind === kind) return;
                 setKind(option.kind);
@@ -228,7 +237,8 @@ export function Watching() {
         <button
           type="button"
           className={clsx(key.key, key.square)}
-          onClick={() => go(active - 1)}
+          data-feel="remoteKey"
+          onClick={() => go(active - 1, false)}
           disabled={active === 0}
           aria-label="Previous"
         >
@@ -269,7 +279,8 @@ export function Watching() {
         <button
           type="button"
           className={clsx(key.key, key.square)}
-          onClick={() => go(active + 1)}
+          data-feel="remoteKey"
+          onClick={() => go(active + 1, false)}
           disabled={active === list.length - 1}
           aria-label="Next"
         >

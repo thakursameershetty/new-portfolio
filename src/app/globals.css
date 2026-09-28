@@ -23,6 +23,9 @@
 
 html {
   height: 100%;
+  /* No blue box flashed over whatever's tapped (Android Chrome's default): every control
+     here has its own press state instead, like the keycaps sinking. */
+  -webkit-tap-highlight-color: transparent;
 }
 
 /* Nav links glide to their sections. */

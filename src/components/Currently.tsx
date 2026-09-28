@@ -26,15 +26,18 @@ export function Currently() {
       </h2>
       <p className={styles.statement}>
         Designing and building at{" "}
-        <Image
-          src="/spotmies-mark.png"
-          alt=""
-          width={692}
-          height={684}
-          className={styles.mark}
-        />
-        <strong>Spotmies</strong>. I started as a UI/UX designer and now lead full stack
-        builds,{" "}
+        {/* The mark and the name wrap as one word, so the logo never ends a line alone. */}
+        <span className={styles.brand}>
+          <Image
+            src="/spotmies-mark.png"
+            alt=""
+            width={692}
+            height={684}
+            className={styles.mark}
+          />
+          <strong>Spotmies</strong>.
+        </span>{" "}
+        I started as a UI/UX designer and now lead full stack builds,{" "}
         <span className={clsx(styles.muted, lineOn && styles.mutedOn)}>
           with a soft spot for <LineSwitch on={lineOn} onToggle={setLineOn} />
           micro-interactions: the small moments that make a product feel right.

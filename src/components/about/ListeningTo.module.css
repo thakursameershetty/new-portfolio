@@ -77,6 +77,11 @@
   transform: translateY(-18px) rotate(-1.5deg) scale(1.03);
 }
 
+.slotPicked .cover:active {
+  transform: translateY(-12px) rotate(-1deg) scale(0.99);
+  transition-duration: 120ms;
+}
+
 .art {
   display: block;
   width: 100%;
@@ -156,6 +161,93 @@
   font-family: var(--font-display), sans-serif;
   font-size: 17px;
   font-weight: 500;
+}
+
+/* ---- The strip, for touch screens ---- */
+
+/* Bleeds to the card's edges, so covers slide in and out from the sides. */
+.swipe {
+  display: flex;
+  flex-direction: column;
+  margin: 0 calc(-1 * clamp(20px, 3.4vw, 40px));
+}
+
+/* A native sideways scroller: each cover snaps to the middle; the padding lets the first
+   and last reach it too. */
+.strip {
+  --cover: min(58vw, 240px);
+  display: flex;
+  column-gap: 14px;
+  margin: 0;
+  padding: 8px calc(50% - var(--cover) / 2) 22px;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  list-style: none;
+}
+
+.strip::-webkit-scrollbar {
+  display: none;
+}
+
+/* The covers off to the sides sit back, smaller and dimmer; the middle one comes forward. */
+.stripItem {
+  flex: none;
+  width: var(--cover);
+  scroll-snap-align: center;
+  opacity: 0.5;
+  transform: scale(0.84);
+  transition:
+    transform 320ms cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 320ms ease;
+}
+
+.stripItemOn {
+  opacity: 1;
+  transform: none;
+}
+
+.stripCover {
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+}
+
+.stripCover {
+  transition: transform 120ms ease;
+}
+
+.stripCover:active {
+  transform: scale(0.96);
+}
+
+.stripCover:focus-visible {
+  outline: none;
+}
+
+.stripCover:focus-visible .art {
+  outline: 2px solid var(--ink);
+  outline-offset: 3px;
+}
+
+.stripLabel {
+  align-items: center;
+  padding: 0 24px;
+  text-align: center;
+}
+
+.hint {
+  margin-top: 14px;
+  font-family: var(--font-hero), monospace;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-align: center;
+  text-transform: uppercase;
+  color: var(--ink-muted);
 }
 
 /* ---- The player ---- */
@@ -389,6 +481,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .stripItem,
   .cover,
   .tip,
   .art {

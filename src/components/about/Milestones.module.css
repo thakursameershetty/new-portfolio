@@ -82,6 +82,10 @@
   transition: transform 200ms ease;
 }
 
+.link:active {
+  opacity: 0.6;
+}
+
 .link:hover svg {
   transform: translateX(3px);
 }

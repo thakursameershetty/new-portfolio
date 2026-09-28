@@ -70,7 +70,8 @@
   color: rgba(245, 241, 234, 0.7);
   transition:
     color 150ms ease,
-    background-color 150ms ease;
+    background-color 150ms ease,
+    transform 120ms ease;
 }
 
 .link:hover,
@@ -94,7 +95,9 @@
   justify-content: center;
   color: rgba(245, 241, 234, 0.85);
   cursor: pointer;
-  transition: background-color 150ms ease;
+  transition:
+    background-color 150ms ease,
+    transform 120ms ease;
 }
 
 .sound:hover,
@@ -167,4 +170,9 @@
   .nav {
     transition: none;
   }
+}
+/* Pressed: the tab or key sinks a touch, in place of the browser's tap highlight. */
+.link:active,
+.sound:active {
+  transform: scale(0.94);
 }

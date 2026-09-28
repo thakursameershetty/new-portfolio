@@ -10,6 +10,7 @@ export function Playing() {
         <li
           key={game.name}
           className={styles.card}
+          data-feel="diskTap"
           style={{ "--game": game.color } as React.CSSProperties}
         >
           <span aria-hidden="true" className={styles.rank}>
@@ -19,8 +20,17 @@ export function Playing() {
           <p className={styles.name}>{game.name}</p>
           <p className={styles.genre}>{game.genre}</p>
           {game.link && (
-            <a className={styles.view} href={game.link} target="_blank" rel="noreferrer noopener">
-              View<span className={styles.srOnly}> {game.name} (opens in a new tab)</span>
+            <a
+              className={styles.view}
+              href={game.link}
+              target="_blank"
+              rel="noreferrer noopener"
+            >
+              View
+              <span className={styles.srOnly}>
+                {" "}
+                {game.name} (opens in a new tab)
+              </span>
             </a>
           )}
         </li>
@@ -32,7 +42,15 @@ export function Playing() {
 // The app icon, or until there is one a stand-in: the game's colour with its initials.
 function GameIcon({ game }: { game: Game }) {
   if (game.icon) {
-    return <Image src={game.icon} alt="" width={108} height={108} className={styles.icon} />;
+    return (
+      <Image
+        src={game.icon}
+        alt=""
+        width={108}
+        height={108}
+        className={styles.icon}
+      />
+    );
   }
   const initials = game.name
     .replace(/[^A-Za-z ]/g, "")

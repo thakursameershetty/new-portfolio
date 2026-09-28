@@ -32,6 +32,11 @@
   transform: translateY(-4px);
 }
 
+.card:active {
+  transform: scale(0.97);
+  transition-duration: 120ms;
+}
+
 .rank {
   position: absolute;
   top: 10px;

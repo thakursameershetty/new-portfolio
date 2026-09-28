@@ -124,6 +124,41 @@ export function useIntro() {
   return useContext(IntroContext);
 }
 
+/** Plays a cue's haptic taps alone, without its sound. */
+export function feel(cue: IntroCue) {
+  for (const [delay, length] of cueHaptics[cue] ?? []) buzz(length, delay);
+}
+
+// For pages without the intro (the About page): no grid, sound or scroll lock, but every
+// cue still gives its haptic tap, so the same components feel the same there. Haptics
+// don't wait on the sound key here, since there's no sound to switch on.
+const hapticsOnly: IntroState = {
+  entered: true,
+  instant: false,
+  soundOn: false,
+  getSounds: () => null,
+  playRipple: () => {},
+  playFlap: () => {},
+  playCue: feel,
+  setHum: () => {},
+};
+
+export function HapticsOnly({ children }: { children: ReactNode }) {
+  // Anything marked data-feel="<cue>" (even in a server component, like the page's keys)
+  // gives that cue's tap when a finger presses it.
+  useEffect(() => {
+    const press = (event: PointerEvent) => {
+      if (event.pointerType === "mouse") return;
+      const marked = (event.target as Element | null)?.closest<HTMLElement>("[data-feel]");
+      if (marked) feel(marked.dataset.feel as IntroCue);
+    };
+    document.addEventListener("pointerdown", press);
+    return () => document.removeEventListener("pointerdown", press);
+  }, []);
+
+  return <IntroContext.Provider value={hapticsOnly}>{children}</IntroContext.Provider>;
+}
+
 /**
  * Plays the intro on its own as the page loads: the dark grid unwinds and ripples red, and
  * the hero's type takes its cue from `entered`. There's no gate to click through, so it

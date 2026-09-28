@@ -181,6 +181,16 @@ export const films: Film[] = [
     tint: "#180858",
   },
   {
+    title: "Black Panther",
+    kind: "film",
+    year: "2018",
+    length: "2h 14m",
+    poster: "/about/films/black-panther.webp",
+    // The suit's vibranium purple; the picker went for the pale haze over the city.
+    glow: "#8a5cf0",
+    tint: "#2a2040",
+  },
+  {
     title: "The Lion King",
     kind: "film",
     year: "2019",

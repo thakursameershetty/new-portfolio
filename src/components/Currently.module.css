@@ -121,6 +121,10 @@
 
 /* Spotmies' "S" mark in front of the company name, at the height of the capitals and
    standing on the baseline, like a letter. */
+.brand {
+  white-space: nowrap;
+}
+
 .mark {
   display: inline-block;
   width: auto;
@@ -159,6 +163,10 @@
 
 .more:hover {
   border-color: var(--ink);
+}
+
+.more:active {
+  opacity: 0.6;
 }
 
 .more:hover svg {

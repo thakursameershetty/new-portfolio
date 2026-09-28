@@ -42,14 +42,16 @@ const milestones: Milestone[] = [
     when: "Jun 2026",
     tone: "work",
     title: "Peddi on Roblox",
-    detail: "Co-built the game world for the film's launch, announced by its official X account.",
+    detail:
+      "Co-built the game world for the film's launch, announced by its official X account.",
     project: "peddi",
   },
   {
     when: "May 2026",
     tone: "work",
     title: "TMN · Satara Today",
-    detail: "Designed a news app and website that work in English and Marathi alike.",
+    detail:
+      "Designed a news app and website that work in English and Marathi alike.",
     project: "tmn",
   },
   {
@@ -64,7 +66,8 @@ const milestones: Milestone[] = [
     when: "Feb 2026",
     tone: "work",
     title: "Spotmies' own website",
-    detail: "Researched, designed and built in Next.js, replacing a stock-photo template.",
+    detail:
+      "Researched, designed and built in Next.js, replacing a stock-photo template.",
     project: "spotmies",
   },
   {
@@ -99,7 +102,8 @@ const milestones: Milestone[] = [
     when: "Apr 2025",
     tone: "project",
     title: "AI Gym Trainer",
-    detail: "A fitness dashboard whose camera counts your bicep curls, built with MediaPipe and Flask.",
+    detail:
+      "A fitness dashboard whose camera counts your bicep curls, built with MediaPipe and Flask.",
     project: "gym",
   },
   {
@@ -130,7 +134,9 @@ export function Milestones() {
         <li
           key={`${milestone.when}-${milestone.title}`}
           className={styles.item}
-          style={{ "--tone": `var(--tone-${milestone.tone})` } as React.CSSProperties}
+          style={
+            { "--tone": `var(--tone-${milestone.tone})` } as React.CSSProperties
+          }
         >
           <span className={styles.when}>{milestone.when}</span>
           <span aria-hidden="true" className={styles.dot} />
@@ -138,10 +144,26 @@ export function Milestones() {
             <h4 className={styles.title}>{milestone.title}</h4>
             <p className={styles.detail}>{milestone.detail}</p>
             {milestone.project && (
-              <Link href={`/work/${milestone.project}`} className={styles.link}>
+              <Link
+                href={`/work/${milestone.project}`}
+                className={styles.link}
+                data-feel="tap"
+              >
                 Case study
-                <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none">
-                  <path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                <svg
+                  aria-hidden="true"
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                >
+                  <path
+                    d="M5 12h14M13 6l6 6-6 6"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
                 </svg>
               </Link>
             )}

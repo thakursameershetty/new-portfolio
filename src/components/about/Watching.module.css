@@ -89,6 +89,15 @@
   filter: saturate(calc(1 - min(var(--distance), 1) * 0.35));
 }
 
+/* Pressed, a side poster dips before it turns to the middle. */
+.card:not(.cardActive):active {
+  transform: translateX(
+      calc(-50% + var(--side) * (var(--reach) * var(--card) + var(--gaps) * var(--gap)))
+    )
+    scale(calc(var(--scale) * 0.96));
+  transition-duration: 120ms;
+}
+
 .cardActive {
   cursor: default;
   box-shadow: 0 30px 60px -20px rgba(0, 0, 0, 0.8);
