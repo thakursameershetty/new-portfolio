@@ -1,4 +1,5 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
+import { site } from "@/components/site";
 import localFont from "next/font/local";
 import { ThemeProvider } from "next-themes";
 import "./globals.css";
@@ -18,6 +19,14 @@ const display = localFont({
   weight: "400 700",
 });
 
+// A brush script, for the name written on the About page's ID card (Kaushan Script, Latin
+// subset, SIL Open Font License; self-hosted like the others).
+const script = localFont({
+  variable: "--font-script",
+  src: "../fonts/kaushan-script-latin.woff2",
+  weight: "400",
+});
+
 // Hero type: "HI", the name and the statement lines.
 const hero = localFont({
   variable: "--font-hero",
@@ -33,23 +42,54 @@ const hero = localFont({
   ],
 });
 
-const title = "Thakur Sameer Shetty — Product Designer";
-const description =
-  "Making things feel right. Product designer who prototypes in code: research, interfaces and micro-interactions, from Figma to production.";
-
-// The link preview image is src/app/opengraph-image.tsx; the icons are favicon.ico and
-// apple-icon.png beside this file.
+// Defaults for every page; pages set their own title (filling the template), description and
+// canonical URL. The link preview image is src/app/opengraph-image.tsx, the icons
+// favicon.ico and apple-icon.png beside this file, and the rest of the SEO lives in
+// robots.ts, sitemap.ts, manifest.ts and the JSON-LD from components/site.ts.
 export const metadata: Metadata = {
-  metadataBase: new URL("https://www.thakursameershetty.com"),
-  title,
-  description,
-  openGraph: { title, description, url: "/", siteName: "Thakur Sameer Shetty", type: "website" },
-  twitter: { card: "summary_large_image", title, description },
+  metadataBase: new URL(site.url),
+  title: { default: site.title, template: `%s — ${site.name}` },
+  description: site.description,
+  applicationName: site.name,
+  authors: [{ name: site.name, url: site.url }],
+  creator: site.name,
+  keywords: [
+    "Thakur Sameer Shetty",
+    "product designer",
+    "UI/UX designer",
+    "interaction design",
+    "micro-interactions",
+    "design engineer",
+    "portfolio",
+    "Visakhapatnam",
+  ],
+  alternates: { canonical: "/" },
+  openGraph: {
+    type: "website",
+    locale: "en_IN",
+    url: "/",
+    siteName: site.name,
+    title: site.title,
+    description: site.description,
+  },
+  twitter: { card: "summary_large_image", title: site.title, description: site.description },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: { index: true, follow: true, "max-image-preview": "large", "max-snippet": -1 },
+  },
+  formatDetection: { telephone: false, email: false, address: false },
+};
+
+// The browser's own chrome (and the phone's status bar) in the site's near-black.
+export const viewport: Viewport = {
+  themeColor: "#0a0a0a",
+  colorScheme: "dark",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en" className={`${sans.variable} ${display.variable} ${hero.variable}`} suppressHydrationWarning>
+    <html lang="en" className={`${sans.variable} ${display.variable} ${hero.variable} ${script.variable}`} suppressHydrationWarning>
       <body>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           {children}

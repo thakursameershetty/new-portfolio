@@ -12,14 +12,15 @@ import { GithubIcon } from "./icons/GithubIcon";
 import { LinkedinIcon } from "./icons/LinkedinIcon";
 import { MapPinIcon } from "./icons/MapPinIcon";
 import type { AnimatedIconHandle } from "./icons/types";
+import { site } from "./site";
 import styles from "./Contact.module.css";
 
 const email = "thakursst5002810@gmail.com";
 // On phones these shrink to three icon keys in a row (see Contact.module.css).
 const socials = [
-  { href: "https://www.linkedin.com/in/thakur-sameer-shetty-tammana/", label: "LinkedIn", Icon: LinkedinIcon },
-  { href: "https://dribbble.com/thakur5002", label: "Dribbble", Icon: DribbbleIcon },
-  { href: "https://github.com/thakursameershetty", label: "GitHub", Icon: GithubIcon },
+  { href: site.links.linkedin, label: "LinkedIn", Icon: LinkedinIcon },
+  { href: site.links.dribbble, label: "Dribbble", Icon: DribbbleIcon },
+  { href: site.links.github, label: "GitHub", Icon: GithubIcon },
 ];
 const timeZone = "Asia/Kolkata";
 const location = "Visakhapatnam, India";

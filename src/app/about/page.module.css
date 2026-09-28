@@ -34,11 +34,33 @@
 
 .top {
   display: flex;
+  justify-content: space-between;
   padding: 8px 0;
 }
 
+/* The introduction beside the ID card hanging from its lanyard; stacked on phones, the
+   card first under the text. */
 .header {
-  padding: clamp(64px, 12vh, 140px) 0 clamp(48px, 8vh, 96px);
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: clamp(32px, 5vw, 72px);
+  padding: clamp(40px, 8vh, 96px) 0 clamp(48px, 8vh, 96px);
+}
+
+.intro {
+  min-width: 0;
+}
+
+@media (max-width: 860px) {
+  .header {
+    grid-template-columns: 1fr;
+    justify-items: center;
+  }
+
+  .intro {
+    justify-self: stretch;
+  }
 }
 
 .label,

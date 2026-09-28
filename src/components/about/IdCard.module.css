@@ -1,0 +1,453 @@
+/* The space the card hangs in. */
+.area {
+  --card-w: clamp(300px, 40vw, 460px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.hang {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transform-origin: 50% 0;
+}
+
+/* Swings from the top of the strap, like a card hung on a lanyard. */
+.swing {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transform-origin: 50% 0;
+}
+
+/* ---- The lanyard ---- */
+
+/* The strap and clip together, so they can reel up and drop back as one. */
+.lanyard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* A red strap, woven with the domain, running up out of view. */
+.strap {
+  display: flex;
+  justify-content: center;
+  width: 30px;
+  height: 84px;
+  overflow: hidden;
+  background:
+    repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.12) 0 1px, transparent 1px 3px),
+    linear-gradient(90deg, rgba(0, 0, 0, 0.25), transparent 30%, transparent 70%, rgba(0, 0, 0, 0.25)),
+    var(--tone-work);
+  filter: brightness(0.82);
+  -webkit-mask-image: linear-gradient(180deg, transparent, #000 40%);
+  mask-image: linear-gradient(180deg, transparent, #000 40%);
+}
+
+.strapText {
+  font-family: var(--font-hero), monospace;
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  white-space: nowrap;
+  color: rgba(245, 241, 234, 0.85);
+  writing-mode: vertical-rl;
+}
+
+/* The clip, in the floppy disk shutter's brushed metal. */
+.clip {
+  position: relative;
+  z-index: 2;
+  width: 38px;
+  height: 28px;
+  margin-top: -2px;
+  border-radius: 6px 6px 10px 10px;
+  background: linear-gradient(90deg, #a9afb3, #eef0f1 42%, #c2c7ca 70%, #a4aaae);
+  box-shadow:
+    inset 0 -2px 0 rgba(0, 0, 0, 0.2),
+    0 4px 8px rgba(0, 0, 0, 0.4);
+}
+
+
+/* ---- The card ---- */
+
+/* A gap between the clip and the card, for the loop to show in. */
+.tiltZone {
+  margin-top: 14px;
+  perspective: 1000px;
+}
+
+.tilt,
+.flipper {
+  transform-style: preserve-3d;
+}
+
+.tilt {
+  position: relative;
+}
+
+/* The card's shadow lives here: the card itself has a hole cut in it (below), and a mask
+   would clip a box-shadow away. */
+.flipper {
+  filter: drop-shadow(0 22px 22px rgba(0, 0, 0, 0.55)) drop-shadow(0 6px 8px rgba(0, 0, 0, 0.35));
+}
+
+/* ---- The loop through the slot ----
+   The slot sits 3.4% of the card's width from its top and is 3.6% tall. The loop is two
+   pieces at the same place: the back one, the whole U, sits just behind the card, its curve
+   resting on the slot's lower edge (so it's seen above the card and, curve and all, through
+   the slot); the front one is a single leg down to the slot's top edge, just in front. So
+   one leg comes down over the card and the other behind it, joined in the slot: threaded
+   through. Turned over, the other leg is the one in front. */
+.loopBack,
+.loopFront {
+  --slot-top: calc(var(--card-w) * 0.034);
+  --slot-h: calc(var(--card-w) * 0.036);
+  position: absolute;
+  top: -16px;
+  left: 50%;
+  width: 20px;
+  border: 3px solid transparent;
+  border-top: 0;
+  pointer-events: none;
+}
+
+.loopBack {
+  height: calc(16px + var(--slot-top) + var(--slot-h) - 2px);
+  border-color: #aab0b4;
+  border-radius: 0 0 10px 10px;
+  transform: translateX(-50%) translateZ(-2px);
+}
+
+.loopFront {
+  z-index: 3;
+  height: calc(16px + var(--slot-top) + 1px);
+  border-bottom: 0;
+  transform: translateX(-50%) translateZ(2px);
+}
+
+/* Only one leg in front: the left from the front, the right from the back. */
+.legLeft {
+  border-left-color: #d9dcde;
+}
+
+.legRight {
+  border-right-color: #d9dcde;
+}
+
+/* Landscape, the proportions of a real ID card. Everything inside is sized in cqw (percent
+   of the card's width), so it scales as one piece down to a phone. */
+.card {
+  position: relative;
+  width: var(--card-w);
+  aspect-ratio: 1.586;
+  overflow: hidden;
+  border-radius: 22px;
+  background:
+    linear-gradient(160deg, rgba(255, 255, 255, 0.16), transparent 42%),
+    linear-gradient(0deg, rgba(0, 0, 0, 0.14), transparent 40%),
+    var(--tone-work);
+  color: #fff8f3;
+  container-type: inline-size;
+  /* The slot is a real hole, so the loop and the page show through it. Sized from
+     --card-w, not cqw: on the card's own properties cqw would measure its parent. */
+  -webkit-mask:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 7'%3E%3Crect width='30' height='7' rx='3.5'/%3E%3C/svg%3E")
+      50% calc(var(--card-w) * 0.034) / calc(var(--card-w) * 0.15) calc(var(--card-w) * 0.036) no-repeat,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 7'%3E%3Crect width='30' height='7' rx='3.5'/%3E%3C/svg%3E")
+      50% calc(var(--card-w) * 0.034) / calc(var(--card-w) * 0.15) calc(var(--card-w) * 0.036) no-repeat exclude,
+    linear-gradient(#000 0 0);
+}
+
+.card[hidden] {
+  display: none;
+}
+
+.front,
+.back {
+  cursor: pointer;
+}
+
+/* The punched slot's cut edge (the hole itself is the card's mask). */
+.slot {
+  position: absolute;
+  top: 3.4cqw;
+  left: 50%;
+  z-index: 1;
+  width: 15cqw;
+  height: 3.6cqw;
+  border-radius: 2cqw;
+  box-shadow: inset 0 1.5px 0 rgba(0, 0, 0, 0.35);
+  transform: translateX(-50%);
+}
+
+/* ---- Front ---- */
+
+.title {
+  margin: 8.4cqw 5.4cqw 0;
+  font-family: var(--font-hero), monospace;
+  font-size: 7.3cqw;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.03em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.frontBody {
+  display: grid;
+  grid-template-columns: 1fr 29cqw;
+  gap: 3cqw;
+  margin: 2.6cqw 5.4cqw 0;
+}
+
+/* Typed: a typewriter face, lower case, as on the reference card. */
+.type {
+  font-family: "Courier New", Courier, ui-monospace, monospace;
+  font-size: 3.1cqw;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+}
+
+.type + .type {
+  margin-top: 1.9cqw;
+}
+
+/* The name, written in by hand. */
+.signature {
+  margin: -0.6cqw 0 0.8cqw;
+  font-family: var(--font-script), cursive;
+  font-size: 8.6cqw;
+  line-height: 1;
+  transform: rotate(-4deg);
+  transform-origin: left center;
+}
+
+.position {
+  line-height: 1.02;
+}
+
+.photoSide {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.photoFrame {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1;
+}
+
+/* Fills the square frame (the photo is portrait, so it's cropped to fit). */
+.photoFrame .photo {
+  position: absolute;
+  inset: 0;
+}
+
+/* The starburst stands behind the photo's lower left corner, as on the reference. */
+.burst {
+  position: absolute;
+  bottom: -9cqw;
+  left: -13cqw;
+  z-index: 0;
+  width: 26cqw;
+  height: 26cqw;
+  fill: #ff8a80;
+}
+
+.photo {
+  position: relative;
+  z-index: 1;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: grayscale(1) contrast(1.12) brightness(1.02);
+  box-shadow: 0 0 0 0.5cqw rgba(0, 0, 0, 0.35);
+}
+
+.caption {
+  position: relative;
+  z-index: 1;
+  margin-top: 1.4cqw;
+  font-family: "Courier New", Courier, ui-monospace, monospace;
+  font-size: 2.8cqw;
+  line-height: 1.1;
+  text-align: right;
+}
+
+/* On the back the gloss sits under the stickers (they come later, at the same level). */
+.gloss.glossUnder {
+  z-index: auto;
+}
+
+.gloss {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  mix-blend-mode: soft-light;
+  pointer-events: none;
+}
+
+/* ---- Back ---- */
+
+/* Wear, all over the back and edge to edge (tiles, so no seams): a fine grain, and fine
+   crazing, the cracked-ink lines of an old card, gathered toward the top right and fading
+   out softly rather than stopping at an edge. */
+.scuff {
+  position: absolute;
+  inset: 0;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .1 0 0 0 0 .02 0 0 0 0 .02 0 0 0 -1.4 .9'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23g)'/%3E%3C/svg%3E");
+  opacity: 0.35;
+  mix-blend-mode: multiply;
+  pointer-events: none;
+}
+
+.scuff::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='360' height='240'%3E%3Cfilter id='c'%3E%3CfeTurbulence type='turbulence' baseFrequency='.018 .05' numOctaves='4' seed='11' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .1 0 0 0 0 .02 0 0 0 0 .02 -16 0 0 0 1.9'/%3E%3C/filter%3E%3Crect width='360' height='240' filter='url(%23c)'/%3E%3C/svg%3E")
+    0 0 / 100% 100%;
+  -webkit-mask-image: radial-gradient(75% 85% at 92% 8%, #000 25%, transparent 72%);
+  mask-image: radial-gradient(75% 85% at 92% 8%, #000 25%, transparent 72%);
+  opacity: 0.9;
+}
+
+/* The front wears the same way, but lighter, so the type stays crisp: the crazing
+   gathers at the bottom left instead, away from the name and the photo. */
+.scuffFront {
+  opacity: 0.28;
+}
+
+.scuffFront::after {
+  -webkit-mask-image: radial-gradient(60% 70% at 6% 96%, #000 20%, transparent 70%);
+  mask-image: radial-gradient(60% 70% at 6% 96%, #000 20%, transparent 70%);
+  opacity: 0.7;
+}
+
+/* Above the wear. */
+.title,
+.frontBody {
+  position: relative;
+}
+
+.nonTransfer {
+  position: absolute;
+  top: 60%;
+  right: 7cqw;
+  font-family: "Courier New", Courier, ui-monospace, monospace;
+  font-size: 3cqw;
+  letter-spacing: 0.04em;
+}
+
+.barcodeBlock {
+  position: absolute;
+  right: 7cqw;
+  bottom: 6cqw;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.8cqw;
+  width: 44cqw;
+  color: #1a0605;
+}
+
+.barcode {
+  width: 100%;
+  height: 10cqw;
+}
+
+.barcodeNo {
+  font-family: "Courier New", Courier, ui-monospace, monospace;
+  font-size: 2.4cqw;
+  letter-spacing: 0.08em;
+}
+
+/* ---- Under the card ---- */
+
+.under {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  margin-top: 28px;
+}
+
+.hint {
+  font-family: var(--font-hero), monospace;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-align: center;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+
+@media (max-width: 860px) {
+  /* Sized from the screen (a percentage here would be of a box that shrinks to fit the
+     card, which comes to nothing): the page's width less its 24px gutters. */
+  .area {
+    --card-w: min(calc(100vw - 48px), 460px);
+    width: 100%;
+  }
+}
+
+/* ---- Docked: the badge in the corner ----
+   Positioned from the top-left (x, y and scale are animated), with the spin on the inner
+   layer about its own middle; the two faces sit back to back. */
+.dock {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 60;
+  padding: 0;
+  border: 0;
+  background: none;
+  /* A button, but the card inside it keeps its own type and alignment. */
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transform-origin: 0 0;
+  perspective: 1200px;
+  filter: drop-shadow(0 14px 18px rgba(0, 0, 0, 0.55));
+}
+
+.dock[hidden] {
+  display: none;
+}
+
+.dock:focus-visible {
+  outline: 3px solid var(--ink);
+  outline-offset: 6px;
+  border-radius: 22px;
+}
+
+.dockSpin {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  transition: filter 150ms ease;
+}
+
+.dock:hover .dockSpin {
+  filter: brightness(1.06);
+}
+
+.dockFace {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+}
+
+.dockFaceBack {
+  transform: rotateY(180deg);
+}

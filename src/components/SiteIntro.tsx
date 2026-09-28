@@ -29,6 +29,7 @@ import { ClickSpark } from "./ClickSpark";
 import { requestTilt } from "./deviceTilt";
 import { buzz } from "./haptics";
 import { SiteNav } from "./SiteNav";
+import { VolumeIcon } from "./icons/VolumeIcon";
 import styles from "./SiteIntro.module.css";
 
 const revealDuration = 1.8;
@@ -68,6 +69,7 @@ const cueHaptics: Partial<Record<IntroCue, [number, number][]>> = {
   ],
   tap: [[0, 4]],
   detent: [[0, 4]],
+  clink: [[0, 5]],
   switchOn: [[28, 14]],
   switchOff: [[28, 12]],
 };
@@ -78,7 +80,10 @@ function buzzRipple(duration: number) {
   const pattern = [28];
   const rings = 6;
   for (let ring = 1; ring <= rings; ring++) {
-    pattern.push(Math.round(((duration * 1000) / rings) * (0.6 + ring * 0.12)), 9 - ring);
+    pattern.push(
+      Math.round(((duration * 1000) / rings) * (0.6 + ring * 0.12)),
+      9 - ring,
+    );
   }
   buzz(pattern, revealDelay * 1000);
 }
@@ -129,34 +134,194 @@ export function feel(cue: IntroCue) {
   for (const [delay, length] of cueHaptics[cue] ?? []) buzz(length, delay);
 }
 
-// For pages without the intro (the About page): no grid, sound or scroll lock, but every
-// cue still gives its haptic tap, so the same components feel the same there. Haptics
-// don't wait on the sound key here, since there's no sound to switch on.
-const hapticsOnly: IntroState = {
-  entered: true,
-  instant: false,
-  soundOn: false,
-  getSounds: () => null,
-  playRipple: () => {},
-  playFlap: () => {},
-  playCue: feel,
-  setHum: () => {},
-};
+// The sound key for pages without the intro, which have no nav to carry one.
+const SoundKeyContext = createContext<{
+  on: boolean;
+  toggle: () => void;
+} | null>(null);
 
-export function HapticsOnly({ children }: { children: ReactNode }) {
-  // Anything marked data-feel="<cue>" (even in a server component, like the page's keys)
-  // gives that cue's tap when a finger presses it.
+/**
+ * For pages without the intro (the About page): no grid, scroll lock or entrance, but the
+ * same sounds and haptics as the home page, so the same components sound and feel the same
+ * there. Sound follows the visitor's choice from the home page (on unless they muted it),
+ * starting at the first click, tap or key press, as browsers require; SoundKey switches it.
+ * Haptics play whether or not sound is on. Anything marked data-feel="<cue>" (even in a
+ * server component, like the page's keys) plays that cue when pressed, and ticks on hover.
+ */
+export function PageSound({ children }: { children: ReactNode }) {
+  const [soundOn, setSoundOn] = useState(false);
+  const soundOnRef = useRef(false);
+  const audioRef = useRef<AudioContext | null>(null);
+  const soundsRef = useRef<PointerSounds | null>(null);
+  const suspendTimerRef = useRef(0);
+
   useEffect(() => {
-    const press = (event: PointerEvent) => {
-      if (event.pointerType === "mouse") return;
-      const marked = (event.target as Element | null)?.closest<HTMLElement>("[data-feel]");
-      if (marked) feel(marked.dataset.feel as IntroCue);
-    };
-    document.addEventListener("pointerdown", press);
-    return () => document.removeEventListener("pointerdown", press);
+    soundOnRef.current = soundOn;
+  }, [soundOn]);
+
+  const startAudio = useCallback(() => {
+    let context = audioRef.current;
+    if (!context) {
+      context = new AudioContext();
+      audioRef.current = context;
+      soundsRef.current = createPointerSounds(context);
+    }
+    void context.resume();
+    return context;
   }, []);
 
-  return <IntroContext.Provider value={hapticsOnly}>{children}</IntroContext.Provider>;
+  const bringSoundIn = useCallback((context: AudioContext) => {
+    window.clearTimeout(suspendTimerRef.current);
+    playSoundSwitch(context, true);
+    fadeSound(context, true);
+    buzz(10);
+  }, []);
+
+  const toggle = useCallback(() => {
+    if (soundOnRef.current) {
+      const context = audioRef.current;
+      setSoundOn(false);
+      writeStorage(soundKey, "off");
+      if (!context) return;
+      playSoundSwitch(context, false);
+      fadeSound(context, false);
+      window.clearTimeout(suspendTimerRef.current);
+      suspendTimerRef.current = window.setTimeout(
+        () => void context.suspend(),
+        soundFadeOut * 1000 + 250,
+      );
+      return;
+    }
+    try {
+      bringSoundIn(startAudio());
+      setSoundOn(true);
+      writeStorage(soundKey, "on");
+    } catch {
+      // No Web Audio support: leave sound off.
+    }
+  }, [bringSoundIn, startAudio]);
+
+  const playCue = useCallback((cue: IntroCue) => {
+    if (soundOnRef.current) soundsRef.current?.cue(cue);
+    feel(cue);
+  }, []);
+  const playFlap = useCallback((across: number, landed: boolean) => {
+    if (soundOnRef.current) soundsRef.current?.flap(across, landed);
+  }, []);
+  const getSounds = useCallback(() => soundsRef.current, []);
+
+  const value = useMemo<IntroState>(
+    () => ({
+      entered: true,
+      instant: false,
+      soundOn,
+      getSounds,
+      playRipple: () => {},
+      playFlap,
+      playCue,
+      setHum: () => {},
+    }),
+    [soundOn, getSounds, playFlap, playCue],
+  );
+  const key = useMemo(() => ({ on: soundOn, toggle }), [soundOn, toggle]);
+
+  // Phones that ask before sharing their tilt (iOS) only may from a tap: ask on the first,
+  // for the ID card.
+  useEffect(() => {
+    window.addEventListener("click", requestTilt, { once: true });
+    return () => window.removeEventListener("click", requestTilt);
+  }, []);
+
+  // Sound on at the first gesture, unless it was muted.
+  useEffect(() => {
+    if (readStorage(soundKey) === "off") return;
+    const gestures = [
+      "pointerdown",
+      "pointerup",
+      "touchend",
+      "keydown",
+    ] as const;
+    const remove = () => {
+      for (const type of gestures) window.removeEventListener(type, resume);
+    };
+    function resume(event: Event) {
+      if (readStorage(soundKey) === "off" || soundOnRef.current)
+        return remove();
+      // The sound key's own click would turn it straight back off: let the key do it.
+      if ((event.target as Element | null)?.closest?.("[data-sound-toggle]"))
+        return;
+      try {
+        const context = startAudio();
+        void context.resume().then(() => {
+          if (context.state !== "running" || soundOnRef.current) return;
+          bringSoundIn(context);
+          setSoundOn(true);
+          remove();
+        });
+      } catch {
+        remove();
+      }
+    }
+    for (const type of gestures) window.addEventListener(type, resume);
+    return remove;
+  }, [startAudio, bringSoundIn]);
+
+  // data-feel: the cue on press, and the home keys' hover tick on the way in.
+  useEffect(() => {
+    const marked = (target: EventTarget | null) =>
+      (target as Element | null)?.closest?.<HTMLElement>("[data-feel]") ?? null;
+    const press = (event: PointerEvent) => {
+      const element = marked(event.target);
+      if (element) playCue(element.dataset.feel as IntroCue);
+    };
+    const over = (event: PointerEvent) => {
+      if (event.pointerType !== "mouse" || !soundOnRef.current) return;
+      const element = marked(event.target);
+      if (element && !element.contains(event.relatedTarget as Node | null)) {
+        soundsRef.current?.cue("tap");
+      }
+    };
+    document.addEventListener("pointerdown", press);
+    document.addEventListener("pointerover", over);
+    return () => {
+      document.removeEventListener("pointerdown", press);
+      document.removeEventListener("pointerover", over);
+    };
+  }, [playCue]);
+
+  useEffect(
+    () => () => {
+      window.clearTimeout(suspendTimerRef.current);
+      void audioRef.current?.close();
+    },
+    [],
+  );
+
+  return (
+    <IntroContext.Provider value={value}>
+      <SoundKeyContext.Provider value={key}>
+        {children}
+      </SoundKeyContext.Provider>
+    </IntroContext.Provider>
+  );
+}
+
+/** Switches PageSound's sound on and off, showing which it is. */
+export function SoundKey({ className }: { className?: string }) {
+  const key = useContext(SoundKeyContext);
+  if (!key) return null;
+  return (
+    <button
+      type="button"
+      className={className}
+      data-sound-toggle=""
+      aria-pressed={key.on}
+      aria-label={key.on ? "Turn sound off" : "Turn sound on"}
+      onClick={key.toggle}
+    >
+      <VolumeIcon on={key.on} size={18} />
+    </button>
+  );
 }
 
 /**
@@ -259,7 +424,16 @@ export function SiteIntro({ children }: SiteIntroProps) {
       playCue,
       setHum,
     }),
-    [entered, instant, soundOn, getSounds, playRipple, playFlap, playCue, setHum],
+    [
+      entered,
+      instant,
+      soundOn,
+      getSounds,
+      playRipple,
+      playFlap,
+      playCue,
+      setHum,
+    ],
   );
 
   // After the ripple settles, each grid cell the cursor enters ticks and each press clacks.
@@ -380,7 +554,8 @@ export function SiteIntro({ children }: SiteIntroProps) {
         return;
       }
       // The sound key's own click would turn it straight back off: let the key do it.
-      if ((event.target as Element | null)?.closest?.("[data-sound-toggle]")) return;
+      if ((event.target as Element | null)?.closest?.("[data-sound-toggle]"))
+        return;
       try {
         const context = startAudioRef.current();
         // A touch that starts a scroll isn't a gesture the browser accepts; keep listening
@@ -396,9 +571,15 @@ export function SiteIntro({ children }: SiteIntroProps) {
         removeListeners();
       }
     };
-    const gestures = ["pointerdown", "pointerup", "touchend", "keydown"] as const;
+    const gestures = [
+      "pointerdown",
+      "pointerup",
+      "touchend",
+      "keydown",
+    ] as const;
     const removeListeners = () => {
-      for (const type of gestures) window.removeEventListener(type, resumeSound);
+      for (const type of gestures)
+        window.removeEventListener(type, resumeSound);
     };
     for (const type of gestures) window.addEventListener(type, resumeSound);
     return () => {
@@ -530,7 +711,11 @@ function readStorage(key: string, lifetime: Lifetime = "lasting") {
   }
 }
 
-function writeStorage(key: string, value: string, lifetime: Lifetime = "lasting") {
+function writeStorage(
+  key: string,
+  value: string,
+  lifetime: Lifetime = "lasting",
+) {
   try {
     storage(lifetime).setItem(key, value);
   } catch {

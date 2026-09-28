@@ -1,0 +1,127 @@
+/* StickerPeel's styles (React Bits, MIT), scoped to a module. The sticker's face is clipped
+   back from the top as it's hovered or pressed, while its flap (a mirrored, greyed copy)
+   folds down to show the peeled underside. */
+.draggable {
+  --sticker-start: calc(-1 * var(--sticker-p));
+  --sticker-end: calc(100% + var(--sticker-p));
+  position: absolute;
+  top: 0;
+  left: 0;
+  cursor: grab;
+  transform: translateZ(0);
+}
+
+.draggable:active {
+  cursor: grabbing;
+}
+
+.defs {
+  position: absolute;
+}
+
+.container {
+  position: relative;
+  transform: rotate(var(--peel-direction));
+  transform-origin: center;
+}
+
+.container * {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.main {
+  clip-path: polygon(
+    var(--sticker-start) var(--sticker-start),
+    var(--sticker-end) var(--sticker-start),
+    var(--sticker-end) var(--sticker-end),
+    var(--sticker-start) var(--sticker-end)
+  );
+  transition: clip-path 0.6s ease-out;
+  will-change: clip-path, transform;
+}
+
+.main > * {
+  transform: rotate(calc(-1 * var(--peel-direction)));
+}
+
+.container:hover .main,
+.touchActive .main {
+  clip-path: polygon(
+    var(--sticker-start) var(--sticker-peelback-hover),
+    var(--sticker-end) var(--sticker-peelback-hover),
+    var(--sticker-end) var(--sticker-end),
+    var(--sticker-start) var(--sticker-end)
+  );
+}
+
+.container:active .main {
+  clip-path: polygon(
+    var(--sticker-start) var(--sticker-peelback-active),
+    var(--sticker-end) var(--sticker-peelback-active),
+    var(--sticker-end) var(--sticker-end),
+    var(--sticker-start) var(--sticker-end)
+  );
+}
+
+.image,
+.flapImage {
+  display: block;
+  width: var(--sticker-width, 200px);
+  transform: rotate(var(--sticker-rotate));
+}
+
+.flap {
+  position: absolute;
+  top: calc(-100% - var(--sticker-p) - var(--sticker-p));
+  left: 0;
+  width: 100%;
+  height: 100%;
+  clip-path: polygon(
+    var(--sticker-start) var(--sticker-start),
+    var(--sticker-end) var(--sticker-start),
+    var(--sticker-end) var(--sticker-start),
+    var(--sticker-start) var(--sticker-start)
+  );
+  transform: scaleY(-1);
+  transition: all 0.6s ease-out;
+  will-change: clip-path, transform;
+}
+
+.flap > * {
+  transform: rotate(calc(-1 * var(--peel-direction)));
+}
+
+.container:hover .flap,
+.touchActive .flap {
+  top: calc(-100% + 2 * var(--sticker-peelback-hover) - 1px);
+  clip-path: polygon(
+    var(--sticker-start) var(--sticker-start),
+    var(--sticker-end) var(--sticker-start),
+    var(--sticker-end) var(--sticker-peelback-hover),
+    var(--sticker-start) var(--sticker-peelback-hover)
+  );
+}
+
+.container:active .flap {
+  top: calc(-100% + 2 * var(--sticker-peelback-active) - 1px);
+  clip-path: polygon(
+    var(--sticker-start) var(--sticker-start),
+    var(--sticker-end) var(--sticker-start),
+    var(--sticker-end) var(--sticker-peelback-active),
+    var(--sticker-start) var(--sticker-peelback-active)
+  );
+}
+
+@media (hover: none) and (pointer: coarse) {
+  .draggable {
+    cursor: default;
+  }
+
+  .container {
+    touch-action: none;
+  }
+}
+

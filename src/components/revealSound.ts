@@ -65,6 +65,7 @@ export type IntroCue =
   | "crtOn"
   | "static"
   | "detent"
+  | "clink"
   | "switchOn"
   | "switchOff";
 
@@ -287,6 +288,15 @@ export function createPointerSounds(context: AudioContext): PointerSounds {
         // The timeline's pointer passing a year: a small, tight click, like a dial's detent.
         playClick(context, output, noise, at, 3400 + Math.random() * 300, 0.03);
         playKnock(context, output, at, 0.012, 0, 320);
+        return;
+      }
+      if (cue === "clink") {
+        // The ID card's metal loop knocking in its slot as the phone jolts it: a small tick,
+        // then two short, slightly clashing rings, like thin metal on plastic.
+        const lift = 0.94 + Math.random() * 0.12;
+        playClick(context, output, noise, at, 5200 * lift, 0.016);
+        playRing(context, output, noise, at + 0.004, 3150 * lift, 0.009);
+        playRing(context, output, noise, at + 0.011, 4780 * lift, 0.005);
         return;
       }
       if (cue === "switchOn" || cue === "switchOff") {

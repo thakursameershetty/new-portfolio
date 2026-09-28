@@ -4,10 +4,15 @@ import { Currently } from "@/components/Currently";
 import { Hero } from "@/components/Hero";
 import { SiteIntro } from "@/components/SiteIntro";
 import { Work } from "@/components/Work";
+import { homeJsonLd, jsonLd } from "@/components/site";
 
 export default function Home() {
   return (
     <SiteIntro>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: jsonLd(homeJsonLd) }}
+      />
       <main className={styles.main}>
         <Hero />
         <Currently />

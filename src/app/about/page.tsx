@@ -1,26 +1,57 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ControllerIcon } from "@/components/about/ControllerIcon";
+import { IdCard } from "@/components/about/IdCard";
 import { ListeningTo } from "@/components/about/ListeningTo";
 import { Milestones } from "@/components/about/Milestones";
 import { Playing } from "@/components/about/Playing";
 import { RecordTimeline } from "@/components/about/RecordTimeline";
 import { Watching } from "@/components/about/Watching";
-import { HapticsOnly } from "@/components/SiteIntro";
+import { PageSound, SoundKey } from "@/components/SiteIntro";
+import { aboutJsonLd, jsonLd } from "@/components/site";
 import key from "@/components/about/Keycap.module.css";
 import styles from "./page.module.css";
 
+const description =
+  "Thakur Sameer Shetty, product designer at Spotmies in Visakhapatnam: the longer story from electrical engineering to designing and building whole products, and what he's listening to, watching and playing.";
+
+// The site's link preview carries on here (a page's own openGraph replaces the one it
+// would inherit, images and all).
+const preview = {
+  url: "/opengraph-image",
+  width: 1200,
+  height: 630,
+  alt: "Thakur Sameer Shetty, Product Designer",
+};
+
 export const metadata: Metadata = {
-  title: "About — Thakur Sameer Shetty",
-  description:
-    "The longer story: from a diploma in electrical engineering to designing and building products at Spotmies, and what's playing outside work.",
+  title: "About",
+  description,
+  alternates: { canonical: "/about" },
+  openGraph: {
+    type: "profile",
+    url: "/about",
+    title: "About — Thakur Sameer Shetty",
+    description,
+    images: [preview],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "About — Thakur Sameer Shetty",
+    description,
+    images: [preview.url],
+  },
 };
 
 // The "Read more" from the home page's About section: the timeline at full length, then
 // what's playing outside work.
 export default function AboutPage() {
   return (
-    <HapticsOnly>
+    <PageSound>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: jsonLd(aboutJsonLd) }}
+      />
       <div className={styles.shell}>
         <div aria-hidden="true" className={styles.band} />
         <main className={styles.page}>
@@ -43,20 +74,24 @@ export default function AboutPage() {
               </svg>
               Home
             </Link>
+            <SoundKey className={`${key.key} ${key.square}`} />
           </nav>
 
           <header className={styles.header}>
-            <p className={styles.label}>About</p>
-            <h1 className={styles.statement}>
-              I&rsquo;m Thakur. I design products, and I build what I design.
-            </h1>
-            <p className={styles.lede}>
-              I started out in electrical and electronics engineering, moved to
-              computer science, and joined Spotmies as a UI/UX designer in
-              December 2025. The work grew from screens into whole products:
-              research, design, frontend and backend. I care most about the
-              small moments that make something feel right.
-            </p>
+            <div className={styles.intro}>
+              <p className={styles.label}>About</p>
+              <h1 className={styles.statement}>
+                I&rsquo;m Thakur. I design products, and I build what I design.
+              </h1>
+              <p className={styles.lede}>
+                I started out in electrical and electronics engineering, moved
+                to computer science, and joined Spotmies as a UI/UX designer in
+                December 2025. The work grew from screens into whole products:
+                research, design, frontend and backend. I care most about the
+                small moments that make something feel right.
+              </p>
+            </div>
+            <IdCard />
           </header>
 
           <section
@@ -95,6 +130,6 @@ export default function AboutPage() {
           </section>
         </main>
       </div>
-    </HapticsOnly>
+    </PageSound>
   );
 }
