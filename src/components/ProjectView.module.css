@@ -293,11 +293,15 @@
   margin-bottom: 28px;
 }
 
+/* 34px tall, or a client's own height (--logo-h, for a squarer mark), which reaches into
+   the space around the row rather than pushing the title down. */
 .creditLogo {
+  --row: 34px;
   display: block;
   width: auto;
   max-width: 180px;
-  height: 34px;
+  height: var(--logo-h, var(--row));
+  margin: calc((var(--row) - var(--logo-h, var(--row))) / 2) 0;
   object-fit: contain;
   object-position: left center;
 }
@@ -1404,4 +1408,37 @@ a.briefPerson:focus-visible {
 .visitAlso {
   align-items: center;
   column-gap: 8px;
+}
+
+/* Phones: the logos at about 70%, clients' own heights included. */
+@media (max-width: 600px) {
+  .credits {
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+
+  .creditLogo {
+    --row: 24px;
+    max-width: 126px;
+    height: calc(var(--logo-h, 34px) * 0.7);
+    margin: calc((24px - var(--logo-h, 34px) * 0.7) / 2) 0;
+  }
+
+  .creditCross {
+    font-size: 14px;
+  }
+}
+
+/* Below the side-by-side layout, the set leads: the monitor first, its hints under it, then
+   the title and the facts. */
+@media (max-width: 999px) {
+  .stage {
+    order: -2;
+    margin-top: 0;
+  }
+
+  .hintsCorner {
+    order: -1;
+    margin-bottom: 20px;
+  }
 }

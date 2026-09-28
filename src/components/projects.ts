@@ -5,8 +5,21 @@
 /** A still or a clip; `caption` is the short line shown under it in a case study, and `label`
  *  its name on a carousel's tab. */
 export type ProjectMedia =
-  | { type: "image"; src: string; alt: string; caption?: string; label?: string }
-  | { type: "video"; src: string; poster: string; alt: string; caption?: string; label?: string };
+  | {
+      type: "image";
+      src: string;
+      alt: string;
+      caption?: string;
+      label?: string;
+    }
+  | {
+      type: "video";
+      src: string;
+      poster: string;
+      alt: string;
+      caption?: string;
+      label?: string;
+    };
 
 /** Someone else's video on YouTube: its thumbnail (`src`, saved locally) stands in for it in
  *  the story and on the monitor, and the closer look plays it. */
@@ -23,7 +36,8 @@ export type YouTubeMedia = {
  * A picture in a case study (or on its monitor): a still or clip, a YouTube video, or (until
  * the footage exists) a test card naming what will go there.
  */
-export type ScreenItem = ProjectMedia | YouTubeMedia | { type: "card"; title: string; note: string };
+export type ScreenItem =
+  ProjectMedia | YouTubeMedia | { type: "card"; title: string; note: string };
 
 /** One part of a case study: its text, then its pictures, large. */
 export interface CaseSection {
@@ -125,7 +139,8 @@ export const projects: Project[] = [
     context: "Spotmies",
     summary:
       "A fan site for the Telugu film Rao Bahadur, where people who'd seen it could pick their favourite characters and post and debate theories, without making an account. Built alone in under a week, with an admin panel the film team ran themselves.",
-    blurb: "A fan site where people who'd seen the Telugu film could pick their favourite characters and debate theories.",
+    blurb:
+      "A fan site where people who'd seen the Telugu film could pick their favourite characters and debate theories.",
     highlights: [
       "No sign-up: a nickname and a generated face, asked for only on your first like or post",
       "Likes, replies and trending theories that update live",
@@ -135,27 +150,80 @@ export const projects: Project[] = [
     stack: ["Next.js", "GSAP", "Vercel"],
     link: { href: "https://raobahadur.in", label: "raobahadur.in" },
     media: [
-      { type: "image", src: "/work/raobahadur/hero.jpg", alt: "Rao Bahadur home page" },
-      { type: "image", src: "/work/raobahadur/characters.jpg", alt: "Picking favourite characters, with like counts" },
-      { type: "image", src: "/work/raobahadur/theories.jpg", alt: "The fan theories board" },
+      {
+        type: "image",
+        src: "/work/raobahadur/hero.jpg",
+        alt: "Rao Bahadur home page",
+      },
+      {
+        type: "image",
+        src: "/work/raobahadur/characters.jpg",
+        alt: "Picking favourite characters, with like counts",
+      },
+      {
+        type: "image",
+        src: "/work/raobahadur/theories.jpg",
+        alt: "The fan theories board",
+      },
     ],
     caseStudy: {
       timeframe: "July 2026",
       client: { logo: "/logos/rao-bahadur-logo.webp", name: "Rao Bahadur" },
-      headline: "Getting a slow-burn film talked about, with nothing in the way of joining in",
+      headline:
+        "Getting a slow-burn film talked about, with nothing in the way of joining in",
       brief: [
-        { label: "Role", value: "Solo, end to end", note: "Design, frontend, backend, admin" },
-        { label: "Product", value: "Fan site + admin panel", note: "For the Telugu film Rao Bahadur" },
-        { label: "Window", value: "5–6 days", note: "Live for the July 2026 release" },
-        { label: "Fans", value: "271 theories", note: "And 144 comments and replies" },
-        { label: "Reach", value: "4 official posts", note: "36,000+ views on X, the director replying" },
-        { label: "Takeaway", value: "Remove every hurdle", note: "A nickname was enough to join in" },
+        {
+          label: "Role",
+          value: "Solo, end to end",
+          note: "Design, frontend, backend, admin",
+        },
+        {
+          label: "Product",
+          value: "Fan site + admin panel",
+          note: "For the Telugu film Rao Bahadur",
+        },
+        {
+          label: "Window",
+          value: "5–6 days",
+          note: "Live for the July 2026 release",
+        },
+        {
+          label: "Fans",
+          value: "271 theories",
+          note: "And 144 comments and replies",
+        },
+        {
+          label: "Reach",
+          value: "4 official posts",
+          note: "36,000+ views on X, the director replying",
+        },
+        {
+          label: "Takeaway",
+          value: "Remove every hurdle",
+          note: "A nickname was enough to join in",
+        },
       ],
       reel: [
-        { type: "image", src: "/work/raobahadur/hero.jpg", alt: "Rao Bahadur home page" },
-        { type: "image", src: "/work/raobahadur/characters.jpg", alt: "Picking favourite characters" },
-        { type: "image", src: "/work/raobahadur/theories.jpg", alt: "The fan theories board" },
-        { type: "image", src: "/work/raobahadur/easter-egg.jpg", alt: "The insect easter egg" },
+        {
+          type: "image",
+          src: "/work/raobahadur/hero.jpg",
+          alt: "Rao Bahadur home page",
+        },
+        {
+          type: "image",
+          src: "/work/raobahadur/characters.jpg",
+          alt: "Picking favourite characters",
+        },
+        {
+          type: "image",
+          src: "/work/raobahadur/theories.jpg",
+          alt: "The fan theories board",
+        },
+        {
+          type: "image",
+          src: "/work/raobahadur/easter-egg.jpg",
+          alt: "The insect easter egg",
+        },
       ],
       sections: [
         {
@@ -168,7 +236,13 @@ export const projects: Project[] = [
             "The first draft took two to three days and covered about 90% of the site. The client's changes, like the admin panel, took it to five or six.",
           ],
           figures: [
-            { type: "image", src: "/work/raobahadur/hero.jpg", alt: "Rao Bahadur home page", caption: "The home page: root for the film, or see the buzz around it." },
+            {
+              type: "image",
+              src: "/work/raobahadur/hero.jpg",
+              alt: "Rao Bahadur home page",
+              caption:
+                "The home page: root for the film, or see the buzz around it.",
+            },
           ],
         },
         {
@@ -181,8 +255,18 @@ export const projects: Project[] = [
           ],
           layout: "pair",
           figures: [
-            { type: "image", src: "/work/raobahadur/identify-modal.jpg", alt: "Identify yourself: an empty avatar and a nickname field", caption: "Asked for only on your first like, reply or post." },
-            { type: "image", src: "/work/raobahadur/identify-avatar-modal.jpg", alt: "The avatar's face appears as the name is typed", caption: "The face is drawn from the name as you type it." },
+            {
+              type: "image",
+              src: "/work/raobahadur/identify-modal.jpg",
+              alt: "Identify yourself: an empty avatar and a nickname field",
+              caption: "Asked for only on your first like, reply or post.",
+            },
+            {
+              type: "image",
+              src: "/work/raobahadur/identify-avatar-modal.jpg",
+              alt: "The avatar's face appears as the name is typed",
+              caption: "The face is drawn from the name as you type it.",
+            },
           ],
         },
         {
@@ -194,8 +278,19 @@ export const projects: Project[] = [
           ],
           layout: "pair",
           figures: [
-            { type: "image", src: "/work/raobahadur/watched.jpg", alt: "Have you watched Rao Bahadur? Two cards: yes, or not yet", caption: "One question before any spoilers." },
-            { type: "image", src: "/work/raobahadur/characters.jpg", alt: "Five character cards, each with a like count", caption: "Favourite characters, with like counts that update live." },
+            {
+              type: "image",
+              src: "/work/raobahadur/watched.jpg",
+              alt: "Have you watched Rao Bahadur? Two cards: yes, or not yet",
+              caption: "One question before any spoilers.",
+            },
+            {
+              type: "image",
+              src: "/work/raobahadur/characters.jpg",
+              alt: "Five character cards, each with a like count",
+              caption:
+                "Favourite characters, with like counts that update live.",
+            },
           ],
         },
         {
@@ -206,7 +301,12 @@ export const projects: Project[] = [
             "The site is about the details the director hid in the film, so I hid one in the site. Search the theories for “the insect”, in English or in Telugu, and confetti falls while a card explains what the insect stands for in the film.",
           ],
           figures: [
-            { type: "image", src: "/work/raobahadur/easter-egg.jpg", alt: "Easter egg: the Insect of Doubt card over falling confetti", caption: "Found by searching “the insect”." },
+            {
+              type: "image",
+              src: "/work/raobahadur/easter-egg.jpg",
+              alt: "Easter egg: the Insect of Doubt card over falling confetti",
+              caption: "Found by searching “the insect”.",
+            },
           ],
         },
         {
@@ -219,12 +319,46 @@ export const projects: Project[] = [
           ],
           layout: "grid",
           figures: [
-            { type: "image", src: "/work/raobahadur/theories.jpg", alt: "The fan theories board, with tabs for trending, new and hidden details", caption: "Theories to read, like, reply to, save and share." },
-            { type: "image", src: "/work/raobahadur/theory-trending.jpg", alt: "A theory trending through clicks and through replies", caption: "Tags show whether a theory is trending through clicks, likes or replies." },
-            { type: "image", src: "/work/raobahadur/hero-debate.jpg", alt: "The home page with its Live debate banner", caption: "An open debate with the film team, announced on the home page." },
-            { type: "image", src: "/work/raobahadur/debate-form.jpg", alt: "Open debate sign-up form", caption: "The debate sign-up: the only place that asks for real details, so the team could pick people and contact them." },
-            { type: "image", src: "/work/raobahadur/admin-theories.jpg", alt: "Admin dashboard listing theories, comments and replies", caption: "The admin panel: users, theories, the debate and the buzz page." },
-            { type: "image", src: "/work/raobahadur/my-theories.jpg", alt: "My theories and saved theories", caption: "Your own theories, and the ones you saved." },
+            {
+              type: "image",
+              src: "/work/raobahadur/theories.jpg",
+              alt: "The fan theories board, with tabs for trending, new and hidden details",
+              caption: "Theories to read, like, reply to, save and share.",
+            },
+            {
+              type: "image",
+              src: "/work/raobahadur/theory-trending.jpg",
+              alt: "A theory trending through clicks and through replies",
+              caption:
+                "Tags show whether a theory is trending through clicks, likes or replies.",
+            },
+            {
+              type: "image",
+              src: "/work/raobahadur/hero-debate.jpg",
+              alt: "The home page with its Live debate banner",
+              caption:
+                "An open debate with the film team, announced on the home page.",
+            },
+            {
+              type: "image",
+              src: "/work/raobahadur/debate-form.jpg",
+              alt: "Open debate sign-up form",
+              caption:
+                "The debate sign-up: the only place that asks for real details, so the team could pick people and contact them.",
+            },
+            {
+              type: "image",
+              src: "/work/raobahadur/admin-theories.jpg",
+              alt: "Admin dashboard listing theories, comments and replies",
+              caption:
+                "The admin panel: users, theories, the debate and the buzz page.",
+            },
+            {
+              type: "image",
+              src: "/work/raobahadur/my-theories.jpg",
+              alt: "My theories and saved theories",
+              caption: "Your own theories, and the ones you saved.",
+            },
           ],
         },
         {
@@ -235,7 +369,13 @@ export const projects: Project[] = [
             "I was still new to building at this scale. The hardest part was keeping pages quick while theories, replies, videos and images piled up, and making likes and counts update live without a refresh. I also reworked the animations several times, until each one explained something instead of getting in the way.",
           ],
           figures: [
-            { type: "image", src: "/work/raobahadur/theory-hidden-detail.jpg", alt: "A theory page with its discussion and like count", caption: "A theory page. Likes and replies arrive without a refresh." },
+            {
+              type: "image",
+              src: "/work/raobahadur/theory-hidden-detail.jpg",
+              alt: "A theory page with its discussion and like count",
+              caption:
+                "A theory page. Likes and replies arrive without a refresh.",
+            },
           ],
         },
         {
@@ -251,14 +391,42 @@ export const projects: Project[] = [
           layout: "row",
           // Paired side by side, so they fill the monitor's 4:3 screen.
           screen: [
-            { type: "image", src: "/work/raobahadur/posts-jul-7.jpg", alt: "Two posts about the site from @RaoBahadurMovie on July 7" },
-            { type: "image", src: "/work/raobahadur/posts-jul-8-16.jpg", alt: "Posts about the site from July 8 and July 16" },
+            {
+              type: "image",
+              src: "/work/raobahadur/posts-jul-7.jpg",
+              alt: "Two posts about the site from @RaoBahadurMovie on July 7",
+            },
+            {
+              type: "image",
+              src: "/work/raobahadur/posts-jul-8-16.jpg",
+              alt: "Posts about the site from July 8 and July 16",
+            },
           ],
           figures: [
-            { type: "image", src: "/work/raobahadur/post-1.jpg", alt: "@RaoBahadurMovie: Loved #RaoBahadur? Visit raobahadur.in. Root for it. Root for good cinema.", caption: "July 7 · 13,985 views" },
-            { type: "image", src: "/work/raobahadur/post-2.jpg", alt: "@RaoBahadurMovie: Think you've decoded #RaoBahadur? Share the easter eggs you found; @mahaisnotanoun will reply to the best ones.", caption: "July 7 · 7,450 views" },
-            { type: "image", src: "/work/raobahadur/post-3.jpg", alt: "@RaoBahadurMovie: We're going through all of them and are quite amazed by them, with a fan's theory from the site", caption: "July 8 · 4,834 views" },
-            { type: "image", src: "/work/raobahadur/post-4.jpg", alt: "@RaoBahadurMovie: Loved it or have mixed feelings? Join the #RaoBahadur Debate at raobahadur.in/debate", caption: "July 16 · 9,892 views" },
+            {
+              type: "image",
+              src: "/work/raobahadur/post-1.jpg",
+              alt: "@RaoBahadurMovie: Loved #RaoBahadur? Visit raobahadur.in. Root for it. Root for good cinema.",
+              caption: "July 7 · 13,985 views",
+            },
+            {
+              type: "image",
+              src: "/work/raobahadur/post-2.jpg",
+              alt: "@RaoBahadurMovie: Think you've decoded #RaoBahadur? Share the easter eggs you found; @mahaisnotanoun will reply to the best ones.",
+              caption: "July 7 · 7,450 views",
+            },
+            {
+              type: "image",
+              src: "/work/raobahadur/post-3.jpg",
+              alt: "@RaoBahadurMovie: We're going through all of them and are quite amazed by them, with a fan's theory from the site",
+              caption: "July 8 · 4,834 views",
+            },
+            {
+              type: "image",
+              src: "/work/raobahadur/post-4.jpg",
+              alt: "@RaoBahadurMovie: Loved it or have mixed feelings? Join the #RaoBahadur Debate at raobahadur.in/debate",
+              caption: "July 16 · 9,892 views",
+            },
           ],
         },
         {
@@ -283,7 +451,8 @@ export const projects: Project[] = [
     context: "Spotmies",
     summary:
       "The creator app for MutinyX, an influencer marketing network: designed in Figma and built in React Native twice, six months apart, plus the Next.js landing pages for its rebrand. My first big project at Spotmies.",
-    blurb: "The creator app for an influencer marketing network, designed and built twice, and its website.",
+    blurb:
+      "The creator app for an influencer marketing network, designed and built twice, and its website.",
     highlights: [
       "Designed the first version, about 35 screens, in three days, then built its frontend in React Native",
       "Redesigned it after the rebrand, around a new flow for submitting each deliverable",
@@ -292,26 +461,85 @@ export const projects: Project[] = [
     stack: ["Figma", "React Native", "Next.js", "HTML/CSS/JS"],
     link: { href: "https://www.mutinyx.in", label: "mutinyx.in" },
     media: [
-      { type: "video", src: "/work/mutiny/boards/v2-home.mp4", poster: "/work/mutiny/boards/v2-home.jpg", alt: "MutinyX version 2 home screen" },
-      { type: "image", src: "/work/mutiny/boards/v2-screens.jpg", alt: "MutinyX version 2 screens" },
-      { type: "image", src: "/work/mutiny/boards/v1-start.jpg", alt: "Mutiny Talent version 1 screens" },
+      {
+        type: "video",
+        src: "/work/mutiny/boards/v2-home.mp4",
+        poster: "/work/mutiny/boards/v2-home.jpg",
+        alt: "MutinyX version 2 home screen",
+      },
+      {
+        type: "image",
+        src: "/work/mutiny/boards/v2-screens.jpg",
+        alt: "MutinyX version 2 screens",
+      },
+      {
+        type: "image",
+        src: "/work/mutiny/boards/v1-start.jpg",
+        alt: "Mutiny Talent version 1 screens",
+      },
     ],
     caseStudy: {
       timeframe: "Feb–Sep 2026",
       client: { logo: "/work/mutiny/logo-dark.svg", name: "MutinyX" },
-      headline: "Designing a creator app twice, and rebuilding it around the work that comes after yes",
+      headline:
+        "Designing a creator app twice, and rebuilding it around the work that comes after yes",
       brief: [
-        { label: "Role", value: "Design + frontend", note: "The creator app, twice, and the website" },
-        { label: "Product", value: "MutinyX", note: "Brands, creators and agencies in one network", logo: "/work/mutiny/logo-dark.svg", href: "https://www.mutinyx.in" },
-        { label: "Version 1", value: "3 days of design", note: "Feb 2026, then a React Native draft" },
-        { label: "Version 2", value: "5 days of design", note: "Aug 2026, its frontend built in Sep" },
-        { label: "Website", value: "Next.js", note: "Landing pages for the June rebrand" },
-        { label: "Status", value: "In production", note: "Frontend approved, backend under way" },
+        {
+          label: "Role",
+          value: "Design + frontend",
+          note: "The creator app, twice, and the website",
+        },
+        {
+          label: "Product",
+          value: "MutinyX",
+          note: "Brands, creators and agencies in one network",
+          logo: "/work/mutiny/logo-dark.svg",
+          href: "https://www.mutinyx.in",
+        },
+        {
+          label: "Version 1",
+          value: "3 days of design",
+          note: "Feb 2026, then a React Native draft",
+        },
+        {
+          label: "Version 2",
+          value: "5 days of design",
+          note: "Aug 2026, its frontend built in Sep",
+        },
+        {
+          label: "Website",
+          value: "Next.js",
+          note: "Landing pages for the June rebrand",
+        },
+        {
+          label: "Status",
+          value: "In production",
+          note: "Frontend approved, backend under way",
+        },
       ],
       reel: [
-        { type: "video", src: "/work/mutiny/boards/v2-home.mp4", poster: "/work/mutiny/boards/v2-home.jpg", alt: "Version 2's home screen, its carousel turning", caption: "", label: "Home" },
-        { type: "image", src: "/work/mutiny/boards/v1-start.jpg", alt: "Version 1: the landing, home and campaigns screens", caption: "", label: "Version 1" },
-        { type: "image", src: "/work/mutiny/boards/v2-screens.jpg", alt: "Version 2: explore, the submissions dashboard and the profile", caption: "", label: "Version 2" },
+        {
+          type: "video",
+          src: "/work/mutiny/boards/v2-home.mp4",
+          poster: "/work/mutiny/boards/v2-home.jpg",
+          alt: "Version 2's home screen, its carousel turning",
+          caption: "",
+          label: "Home",
+        },
+        {
+          type: "image",
+          src: "/work/mutiny/boards/v1-start.jpg",
+          alt: "Version 1: the landing, home and campaigns screens",
+          caption: "",
+          label: "Version 1",
+        },
+        {
+          type: "image",
+          src: "/work/mutiny/boards/v2-screens.jpg",
+          alt: "Version 2: explore, the submissions dashboard and the profile",
+          caption: "",
+          label: "Version 2",
+        },
       ],
       sections: [
         {
@@ -335,9 +563,28 @@ export const projects: Project[] = [
           ],
           layout: "carousel",
           figures: [
-            { type: "image", src: "/work/mutiny/boards/v1-start.jpg", alt: "Version 1: the landing screen, home and the campaigns list", caption: "The landing, home, and the campaigns to choose from.", label: "Getting started" },
-            { type: "image", src: "/work/mutiny/boards/v1-campaign.jpg", alt: "Version 1: a campaign's details, the price slider and the campaign's progress", caption: "A campaign's details, the price slider, and its progress.", label: "A campaign" },
-            { type: "image", src: "/work/mutiny/boards/v1-after.jpg", alt: "Version 1: the wallet, an invoice and the creator's profile", caption: "The wallet, an invoice, and the creator's profile.", label: "After the work" },
+            {
+              type: "image",
+              src: "/work/mutiny/boards/v1-start.jpg",
+              alt: "Version 1: the landing screen, home and the campaigns list",
+              caption: "The landing, home, and the campaigns to choose from.",
+              label: "Getting started",
+            },
+            {
+              type: "image",
+              src: "/work/mutiny/boards/v1-campaign.jpg",
+              alt: "Version 1: a campaign's details, the price slider and the campaign's progress",
+              caption:
+                "A campaign's details, the price slider, and its progress.",
+              label: "A campaign",
+            },
+            {
+              type: "image",
+              src: "/work/mutiny/boards/v1-after.jpg",
+              alt: "Version 1: the wallet, an invoice and the creator's profile",
+              caption: "The wallet, an invoice, and the creator's profile.",
+              label: "After the work",
+            },
           ],
         },
         {
@@ -350,8 +597,23 @@ export const projects: Project[] = [
           ],
           layout: "carousel",
           figures: [
-            { type: "video", src: "/work/mutiny/site-home.mp4", poster: "/work/mutiny/site-home.jpg", alt: "Scrolling through the MutinyX home page: the hero, the three sides of the network, the globe, the FAQ and the closing banner", caption: "The home page, for the whole network.", label: "Home" },
-            { type: "video", src: "/work/mutiny/site-creators.mp4", poster: "/work/mutiny/site-creators.jpg", alt: "Scrolling through MutinyX for Creators: phones fanning out of the hero, the app's screens, the seven features joined by a path, the FAQ and the closing banner", caption: "For creators: the app's features, one after another along a path.", label: "Creators" },
+            {
+              type: "video",
+              src: "/work/mutiny/site-home.mp4",
+              poster: "/work/mutiny/site-home.jpg",
+              alt: "Scrolling through the MutinyX home page: the hero, the three sides of the network, the globe, the FAQ and the closing banner",
+              caption: "The home page, for the whole network.",
+              label: "Home",
+            },
+            {
+              type: "video",
+              src: "/work/mutiny/site-creators.mp4",
+              poster: "/work/mutiny/site-creators.jpg",
+              alt: "Scrolling through MutinyX for Creators: phones fanning out of the hero, the app's screens, the seven features joined by a path, the FAQ and the closing banner",
+              caption:
+                "For creators: the app's features, one after another along a path.",
+              label: "Creators",
+            },
           ],
         },
         {
@@ -364,7 +626,13 @@ export const projects: Project[] = [
             "I built it in HTML, CSS and JavaScript, with motion blur and haptics, and embedded it in the React Native app.",
           ],
           figures: [
-            { type: "video", src: "/work/mutiny/boards/openings.mp4", poster: "/work/mutiny/boards/openings.jpg", alt: "The two openings side by side: version 1's cluster of creators' faces on yellow, and version 2's Find campaigns, brands, collaborations and you, as posters fly past", caption: "Version 1's opening, left, and version 2's, right." },
+            {
+              type: "video",
+              src: "/work/mutiny/boards/openings.mp4",
+              poster: "/work/mutiny/boards/openings.jpg",
+              alt: "The two openings side by side: version 1's cluster of creators' faces on yellow, and version 2's Find campaigns, brands, collaborations and you, as posters fly past",
+              caption: "Version 1's opening, left, and version 2's, right.",
+            },
           ],
         },
         {
@@ -376,9 +644,30 @@ export const projects: Project[] = [
           ],
           layout: "carousel",
           figures: [
-            { type: "video", src: "/work/mutiny/boards/v2-home.mp4", poster: "/work/mutiny/boards/v2-home.jpg", alt: "Version 2's home screen: earnings at the top, then a carousel of campaigns turning", caption: "The home screen's carousel, prototyped in Figma.", label: "Home" },
-            { type: "video", src: "/work/mutiny/boards/v2-campaign.mp4", poster: "/work/mutiny/boards/v2-campaign.jpg", alt: "A version 2 campaign screen scrolling, its header folding away", caption: "A campaign screen as it scrolls, prototyped in Figma.", label: "Campaign" },
-            { type: "image", src: "/work/mutiny/boards/v2-screens.jpg", alt: "Version 2: explore with its filters, the submissions dashboard and the profile", caption: "Explore with its filters, the submissions dashboard, and the profile.", label: "Screens" },
+            {
+              type: "video",
+              src: "/work/mutiny/boards/v2-home.mp4",
+              poster: "/work/mutiny/boards/v2-home.jpg",
+              alt: "Version 2's home screen: earnings at the top, then a carousel of campaigns turning",
+              caption: "The home screen's carousel, prototyped in Figma.",
+              label: "Home",
+            },
+            {
+              type: "video",
+              src: "/work/mutiny/boards/v2-campaign.mp4",
+              poster: "/work/mutiny/boards/v2-campaign.jpg",
+              alt: "A version 2 campaign screen scrolling, its header folding away",
+              caption: "A campaign screen as it scrolls, prototyped in Figma.",
+              label: "Campaign",
+            },
+            {
+              type: "image",
+              src: "/work/mutiny/boards/v2-screens.jpg",
+              alt: "Version 2: explore with its filters, the submissions dashboard and the profile",
+              caption:
+                "Explore with its filters, the submissions dashboard, and the profile.",
+              label: "Screens",
+            },
           ],
         },
         {
@@ -389,11 +678,29 @@ export const projects: Project[] = [
             "In version 1, a campaign was one pipeline. When a brand asked for several deliverables, creators couldn't tell where to submit each one, or how. The client raised it, and it's the problem I most wanted to solve.",
             "In version 2, every deliverable a campaign needs sits in a row of tabs at the top of its submissions screen, and each has its own steps: a reel goes from script to work to proof of work, while a story or feed post goes from post to proof. Each step is reviewed and shows where it stands. I pitched the flow to the client, then designed and built it once they approved.",
           ],
-          lead: { type: "video", src: "/work/mutiny/boards/v2-submit-flow.mp4", poster: "/work/mutiny/boards/v2-submit-flow.jpg", alt: "The version 2 submission flow: a reel's script uploaded and approved, then its work, then the proof of work", caption: "The whole flow, from script to proof of work, prototyped in Figma." },
+          lead: {
+            type: "video",
+            src: "/work/mutiny/boards/v2-submit-flow.mp4",
+            poster: "/work/mutiny/boards/v2-submit-flow.jpg",
+            alt: "The version 2 submission flow: a reel's script uploaded and approved, then its work, then the proof of work",
+            caption:
+              "The whole flow, from script to proof of work, prototyped in Figma.",
+          },
           layout: "pair",
           figures: [
-            { type: "image", src: "/work/mutiny/boards/v1-submit.jpg", alt: "Version 1: a campaign's single progress timeline, the upload screen and the submitted message", caption: "Version 1: one pipeline per campaign." },
-            { type: "image", src: "/work/mutiny/boards/v2-submit.jpg", alt: "Version 2: deliverable tabs for two reels, with script upload, then work upload, then proof of work", caption: "Version 2: a tab per deliverable, each step reviewed in turn." },
+            {
+              type: "image",
+              src: "/work/mutiny/boards/v1-submit.jpg",
+              alt: "Version 1: a campaign's single progress timeline, the upload screen and the submitted message",
+              caption: "Version 1: one pipeline per campaign.",
+            },
+            {
+              type: "image",
+              src: "/work/mutiny/boards/v2-submit.jpg",
+              alt: "Version 2: deliverable tabs for two reels, with script upload, then work upload, then proof of work",
+              caption:
+                "Version 2: a tab per deliverable, each step reviewed in turn.",
+            },
           ],
         },
         {
@@ -406,8 +713,22 @@ export const projects: Project[] = [
           ],
           layout: "pair",
           figures: [
-            { type: "image", src: "/work/mutiny/boards/v1-quote.jpg", alt: "Version 1: the price slider at $500, $490 and $550, each with its chance of acceptance", caption: "Version 1: the slider, and how each price changes your chances.", label: "Version 1" },
-            { type: "image", src: "/work/mutiny/boards/v2-quote.jpg", alt: "Version 2: a quote of ₹5000, marked above the brand's budget, and the same quote marked within it", caption: "Version 2: your own quote, above the brand's budget or within it.", label: "Version 2" },
+            {
+              type: "image",
+              src: "/work/mutiny/boards/v1-quote.jpg",
+              alt: "Version 1: the price slider at $500, $490 and $550, each with its chance of acceptance",
+              caption:
+                "Version 1: the slider, and how each price changes your chances.",
+              label: "Version 1",
+            },
+            {
+              type: "image",
+              src: "/work/mutiny/boards/v2-quote.jpg",
+              alt: "Version 2: a quote of ₹5000, marked above the brand's budget, and the same quote marked within it",
+              caption:
+                "Version 2: your own quote, above the brand's budget or within it.",
+              label: "Version 2",
+            },
           ],
         },
         {
@@ -419,8 +740,20 @@ export const projects: Project[] = [
           ],
           layout: "pair",
           figures: [
-            { type: "image", src: "/work/mutiny/boards/v1-signin.jpg", alt: "Version 1 sign-up: name, email and phone, the OTP keypad, then the entered OTP", caption: "Version 1: name, email and phone, then an OTP.", label: "Version 1" },
-            { type: "image", src: "/work/mutiny/boards/v2-signin.jpg", alt: "Version 2 sign-in: a phone number, then the OTP boxes, then the entered OTP", caption: "Version 2: a phone number, then an OTP.", label: "Version 2" },
+            {
+              type: "image",
+              src: "/work/mutiny/boards/v1-signin.jpg",
+              alt: "Version 1 sign-up: name, email and phone, the OTP keypad, then the entered OTP",
+              caption: "Version 1: name, email and phone, then an OTP.",
+              label: "Version 1",
+            },
+            {
+              type: "image",
+              src: "/work/mutiny/boards/v2-signin.jpg",
+              alt: "Version 2 sign-in: a phone number, then the OTP boxes, then the entered OTP",
+              caption: "Version 2: a phone number, then an OTP.",
+              label: "Version 2",
+            },
           ],
         },
         {
@@ -446,7 +779,8 @@ export const projects: Project[] = [
     context: "Spotmies",
     summary:
       "A redesign of Spotmies' own website, the landing page and the inner pages, from a stock-photo template to a dark, modern studio site. Researched, designed and built by me in Next.js, right after Amero X.",
-    blurb: "The studio's own website, redesigned from a stock-photo template into a dark, modern site.",
+    blurb:
+      "The studio's own website, redesigned from a stock-photo template into a dark, modern site.",
     highlights: [
       "Replaced the old template site with a new design, researched across many references",
       "Designed and built the landing and inner pages in Next.js, with three.js on the landing page",
@@ -454,23 +788,67 @@ export const projects: Project[] = [
     stack: ["Figma", "Next.js", "three.js", "Vercel"],
     link: { href: "https://www.spotmies.com", label: "spotmies.com" },
     media: [
-      { type: "video", src: "/work/spotmies/hero.mp4", poster: "/work/spotmies/hero.jpg", alt: "The Spotmies landing page" },
-      { type: "image", src: "/work/spotmies/old-hero.jpg", alt: "The old Spotmies website" },
+      {
+        type: "video",
+        src: "/work/spotmies/hero.mp4",
+        poster: "/work/spotmies/hero.jpg",
+        alt: "The Spotmies landing page",
+      },
+      {
+        type: "image",
+        src: "/work/spotmies/old-hero.jpg",
+        alt: "The old Spotmies website",
+      },
     ],
     caseStudy: {
       timeframe: "Jan–Feb 2026",
-      headline: "Redesigning the company I'd just joined, from a template to its own look",
+      headline:
+        "Redesigning the company I'd just joined, from a template to its own look",
       brief: [
-        { label: "Role", value: "Solo, end to end", note: "Research, design and build" },
-        { label: "Product", value: "spotmies.com", note: "Landing page and inner pages", href: "https://www.spotmies.com" },
-        { label: "Window", value: "Done by mid-Feb 2026", note: "Straight after Amero X" },
-        { label: "Stack", value: "Next.js", note: "three.js on the landing page, on Vercel" },
-        { label: "Before", value: "A stock template", note: "Light, photo-led, like many agency sites" },
-        { label: "Order", value: "My second project", note: "Of my first three at Spotmies" },
+        {
+          label: "Role",
+          value: "Solo, end to end",
+          note: "Research, design and build",
+        },
+        {
+          label: "Product",
+          value: "spotmies.com",
+          note: "Landing page and inner pages",
+          href: "https://www.spotmies.com",
+        },
+        {
+          label: "Window",
+          value: "Done by mid-Feb 2026",
+          note: "Straight after Amero X",
+        },
+        {
+          label: "Stack",
+          value: "Next.js",
+          note: "three.js on the landing page, on Vercel",
+        },
+        {
+          label: "Before",
+          value: "A stock template",
+          note: "Light, photo-led, like many agency sites",
+        },
+        {
+          label: "Order",
+          value: "My second project",
+          note: "Of my first three at Spotmies",
+        },
       ],
       reel: [
-        { type: "video", src: "/work/spotmies/hero.mp4", poster: "/work/spotmies/hero.jpg", alt: "The new Spotmies landing page" },
-        { type: "image", src: "/work/spotmies/old-hero.jpg", alt: "The old Spotmies website" },
+        {
+          type: "video",
+          src: "/work/spotmies/hero.mp4",
+          poster: "/work/spotmies/hero.jpg",
+          alt: "The new Spotmies landing page",
+        },
+        {
+          type: "image",
+          src: "/work/spotmies/old-hero.jpg",
+          alt: "The old Spotmies website",
+        },
       ],
       sections: [
         {
@@ -484,11 +862,25 @@ export const projects: Project[] = [
           ],
           layout: "pair",
           figures: [
-            { type: "image", src: "/work/spotmies/old-hero.jpg", alt: "The old Spotmies home page: a stock photo of a woman with a tablet, and Innovative solutions to stay ahead of the competition", caption: "Before: the template I found when I joined." },
-            { type: "image", src: "/work/spotmies/new-hero.jpg", alt: "The new Spotmies home page: The future of development is human + AI, over a dark field of stars", caption: "After: “The future of development is human + AI”." },
+            {
+              type: "image",
+              src: "/work/spotmies/old-hero.jpg",
+              alt: "The old Spotmies home page: a stock photo of a woman with a tablet, and Innovative solutions to stay ahead of the competition",
+              caption: "Before: the template I found when I joined.",
+            },
+            {
+              type: "image",
+              src: "/work/spotmies/new-hero.jpg",
+              alt: "The new Spotmies home page: The future of development is human + AI, over a dark field of stars",
+              caption: "After: “The future of development is human + AI”.",
+            },
           ],
           screen: [
-            { type: "image", src: "/work/spotmies/old-hero.jpg", alt: "Before" },
+            {
+              type: "image",
+              src: "/work/spotmies/old-hero.jpg",
+              alt: "Before",
+            },
             { type: "image", src: "/work/spotmies/new-hero.jpg", alt: "After" },
           ],
         },
@@ -500,7 +892,13 @@ export const projects: Project[] = [
           paragraphs: [
             "I spent a lot of the time before designing anything going through studio and product sites, looking for how the best of them show what they do instead of saying it. The new site leads with the work: what Spotmies builds, the products it's built, and how it thinks about product and brand together.",
           ],
-          lead: { type: "video", src: "/work/spotmies/hero.mp4", poster: "/work/spotmies/hero.jpg", alt: "The Spotmies landing page opening: the hero over moving stars, then the services", caption: "The opening, and the services under it." },
+          lead: {
+            type: "video",
+            src: "/work/spotmies/hero.mp4",
+            poster: "/work/spotmies/hero.jpg",
+            alt: "The Spotmies landing page opening: the hero over moving stars, then the services",
+            caption: "The opening, and the services under it.",
+          },
         },
         {
           id: "site",
@@ -511,20 +909,45 @@ export const projects: Project[] = [
           ],
           layout: "carousel",
           figures: [
-            { type: "video", src: "/work/spotmies/approach.mp4", poster: "/work/spotmies/approach.jpg", alt: "Client logos, then a map of where product and brand meet", caption: "Clients, and where product and brand meet.", label: "Approach" },
-            { type: "video", src: "/work/spotmies/work.mp4", poster: "/work/spotmies/work.jpg", alt: "A featured case study for Readiy.io, then the grid of featured work", caption: "Featured work, opening into a full case study.", label: "Work" },
-            { type: "video", src: "/work/spotmies/closing.mp4", poster: "/work/spotmies/closing.jpg", alt: "The designs gallery, testimonials, questions, the contact form and footer", caption: "Designs, what clients say, questions and contact.", label: "Closing" },
+            {
+              type: "video",
+              src: "/work/spotmies/approach.mp4",
+              poster: "/work/spotmies/approach.jpg",
+              alt: "Client logos, then a map of where product and brand meet",
+              caption: "Clients, and where product and brand meet.",
+              label: "Approach",
+            },
+            {
+              type: "video",
+              src: "/work/spotmies/work.mp4",
+              poster: "/work/spotmies/work.jpg",
+              alt: "A featured case study for Readiy.io, then the grid of featured work",
+              caption: "Featured work, opening into a full case study.",
+              label: "Work",
+            },
+            {
+              type: "video",
+              src: "/work/spotmies/closing.mp4",
+              poster: "/work/spotmies/closing.jpg",
+              alt: "The designs gallery, testimonials, questions, the contact form and footer",
+              caption: "Designs, what clients say, questions and contact.",
+              label: "Closing",
+            },
           ],
         },
         {
           id: "before",
           label: "Before",
           heading: "What it replaced",
-          paragraphs: [
-            "For comparison, the old site from top to bottom.",
-          ],
+          paragraphs: ["For comparison, the old site from top to bottom."],
           figures: [
-            { type: "video", src: "/work/spotmies/old-site.mp4", poster: "/work/spotmies/old-site.jpg", alt: "Scrolling through the old Spotmies website", caption: "The old site." },
+            {
+              type: "video",
+              src: "/work/spotmies/old-site.mp4",
+              poster: "/work/spotmies/old-site.jpg",
+              alt: "Scrolling through the old Spotmies website",
+              caption: "The old site.",
+            },
           ],
         },
       ],
@@ -541,7 +964,8 @@ export const projects: Project[] = [
     context: "Spotmies",
     summary:
       "My first project at Spotmies: refining Amero X, a crypto trading platform whose designs felt cheap, into a black-and-gold product that feels premium and trustworthy. I redesigned it in Figma, then built the landing page to match.",
-    blurb: "My first project: refining a crypto trading platform into a black-and-gold product that feels premium.",
+    blurb:
+      "My first project: refining a crypto trading platform into a black-and-gold product that feels premium.",
     highlights: [
       "Refined the platform's designs in Figma: trading, swap, P2P, wallet and more",
       "Built the landing page from the approved design, animations and all",
@@ -549,25 +973,73 @@ export const projects: Project[] = [
     stack: ["Figma", "Frontend"],
     link: { href: "https://amerox.io", label: "amerox.io" },
     media: [
-      { type: "video", src: "/work/amerox/site.mp4", poster: "/work/amerox/site.jpg", alt: "The Amero X landing page" },
-      { type: "image", src: "/work/amerox/board-trading.jpg", alt: "Amero X trading screens" },
+      {
+        type: "video",
+        src: "/work/amerox/site.mp4",
+        poster: "/work/amerox/site.jpg",
+        alt: "The Amero X landing page",
+      },
+      {
+        type: "image",
+        src: "/work/amerox/board-trading.jpg",
+        alt: "Amero X trading screens",
+      },
     ],
     caseStudy: {
       timeframe: "Dec 2025 – Jan 2026",
       client: { logo: "/logos/amerox-cropped.png", name: "Amero X" },
       headline: "Making gold on black feel trustworthy, not cheap",
       brief: [
-        { label: "Role", value: "Design + landing page", note: "Refined in Figma, then built" },
-        { label: "Product", value: "Amero X", note: "Crypto trading, swaps and P2P", logo: "/logos/amerox-cropped.png", href: "https://amerox.io" },
-        { label: "Window", value: "Dec 2025 – Jan 2026", note: "About six weeks" },
-        { label: "Screens", value: "21 in Figma", note: "Trading, swap, P2P, wallet, proposals" },
-        { label: "Challenge", value: "Gold without cheap", note: "Premium, modern and trustworthy" },
-        { label: "Order", value: "My first project", note: "Straight after joining Spotmies" },
+        {
+          label: "Role",
+          value: "Design + landing page",
+          note: "Refined in Figma, then built",
+        },
+        {
+          label: "Product",
+          value: "Amero X",
+          note: "Crypto trading, swaps and P2P",
+          logo: "/logos/amerox-cropped.png",
+          href: "https://amerox.io",
+        },
+        {
+          label: "Window",
+          value: "Dec 2025 – Jan 2026",
+          note: "About six weeks",
+        },
+        {
+          label: "Screens",
+          value: "21 in Figma",
+          note: "Trading, swap, P2P, wallet, proposals",
+        },
+        {
+          label: "Challenge",
+          value: "Gold without cheap",
+          note: "Premium, modern and trustworthy",
+        },
+        {
+          label: "Order",
+          value: "My first project",
+          note: "Straight after joining Spotmies",
+        },
       ],
       reel: [
-        { type: "video", src: "/work/amerox/site.mp4", poster: "/work/amerox/site.jpg", alt: "The Amero X landing page" },
-        { type: "image", src: "/work/amerox/board-trading.jpg", alt: "Dashboard, spot trading, futures and copy trading" },
-        { type: "image", src: "/work/amerox/board-money.jpg", alt: "Swap, wallet, liquidity staking and orders" },
+        {
+          type: "video",
+          src: "/work/amerox/site.mp4",
+          poster: "/work/amerox/site.jpg",
+          alt: "The Amero X landing page",
+        },
+        {
+          type: "image",
+          src: "/work/amerox/board-trading.jpg",
+          alt: "Dashboard, spot trading, futures and copy trading",
+        },
+        {
+          type: "image",
+          src: "/work/amerox/board-money.jpg",
+          alt: "Swap, wallet, liquidity staking and orders",
+        },
       ],
       sections: [
         {
@@ -590,10 +1062,35 @@ export const projects: Project[] = [
           ],
           layout: "carousel",
           figures: [
-            { type: "image", src: "/work/amerox/board-trading.jpg", alt: "Amero X dashboard, spot trading, futures trading and copy trading screens", caption: "Dashboard, spot trading, futures and copy trading.", label: "Trading" },
-            { type: "image", src: "/work/amerox/board-money.jpg", alt: "Amero X swap, wallet, liquidity pool staking and orders screens", caption: "Swap, wallet, liquidity staking and orders.", label: "Money" },
-            { type: "image", src: "/work/amerox/board-p2p.jpg", alt: "Amero X P2P trading, a purchase proposal, incoming proposals and a chat with the buyer", caption: "P2P deals: offers, proposals and a chat with the buyer.", label: "P2P" },
-            { type: "image", src: "/work/amerox/login.jpg", alt: "Amero X login page with a gold coin and wallet", caption: "Signing in.", label: "Login" },
+            {
+              type: "image",
+              src: "/work/amerox/board-trading.jpg",
+              alt: "Amero X dashboard, spot trading, futures trading and copy trading screens",
+              caption: "Dashboard, spot trading, futures and copy trading.",
+              label: "Trading",
+            },
+            {
+              type: "image",
+              src: "/work/amerox/board-money.jpg",
+              alt: "Amero X swap, wallet, liquidity pool staking and orders screens",
+              caption: "Swap, wallet, liquidity staking and orders.",
+              label: "Money",
+            },
+            {
+              type: "image",
+              src: "/work/amerox/board-p2p.jpg",
+              alt: "Amero X P2P trading, a purchase proposal, incoming proposals and a chat with the buyer",
+              caption:
+                "P2P deals: offers, proposals and a chat with the buyer.",
+              label: "P2P",
+            },
+            {
+              type: "image",
+              src: "/work/amerox/login.jpg",
+              alt: "Amero X login page with a gold coin and wallet",
+              caption: "Signing in.",
+              label: "Login",
+            },
           ],
         },
         {
@@ -604,9 +1101,21 @@ export const projects: Project[] = [
           paragraphs: [
             "Once the client approved the landing page in Figma, I built it myself, matching the design exactly: the fonts, the effects and every animation. A gold coin spins in to open the page, gold circuits trace the background, the feature cards fan out as a stack, and the footer spells AMERO X in lit dots.",
           ],
-          lead: { type: "video", src: "/work/amerox/site.mp4", poster: "/work/amerox/site.jpg", alt: "The built Amero X landing page: the coin intro, Swap Instantly. Own Your Crypto., the trading tools, the card stack, stats and the dot-matrix footer", caption: "The landing page as I built it." },
+          lead: {
+            type: "video",
+            src: "/work/amerox/site.mp4",
+            poster: "/work/amerox/site.jpg",
+            alt: "The built Amero X landing page: the coin intro, Swap Instantly. Own Your Crypto., the trading tools, the card stack, stats and the dot-matrix footer",
+            caption: "The landing page as I built it.",
+          },
           figures: [
-            { type: "video", src: "/work/amerox/figma.mp4", poster: "/work/amerox/figma.jpg", alt: "The approved Amero X landing page design, scrolled in Figma", caption: "The approved design, in Figma." },
+            {
+              type: "video",
+              src: "/work/amerox/figma.mp4",
+              poster: "/work/amerox/figma.jpg",
+              alt: "The approved Amero X landing page design, scrolled in Figma",
+              caption: "The approved design, in Figma.",
+            },
           ],
         },
         {
@@ -632,7 +1141,8 @@ export const projects: Project[] = [
     context: "Spotmies",
     summary:
       "A Roblox world for the Telugu film Peddi, made with Dworak in Roblox Studio to promote its release: a fairground, mountains, caves and rivers to explore, with references to the film all through it.",
-    blurb: "A Roblox world for the Telugu film Peddi, full of references to the film, made with Dworak.",
+    blurb:
+      "A Roblox world for the Telugu film Peddi, full of references to the film, made with Dworak.",
     highlights: [
       "Built the virtual world around the game's core mechanics",
       "Filled it with references to the film, for fans to find",
@@ -644,14 +1154,27 @@ export const projects: Project[] = [
       label: "Peddi on Roblox",
     },
     media: [
-      { type: "image", src: "/work/peddi/cover.jpg", alt: "Peddi on Roblox: the hero with a cricket bat before a lit ferris wheel" },
-      { type: "image", src: "/work/peddi/cricket.jpg", alt: "The cricket pitch beside the fairground at sunset" },
-      { type: "image", src: "/work/peddi/view.jpg", alt: "Looking out over the world from a mountain" },
+      {
+        type: "image",
+        src: "/work/peddi/cover.jpg",
+        alt: "Peddi on Roblox: the hero with a cricket bat before a lit ferris wheel",
+      },
+      {
+        type: "image",
+        src: "/work/peddi/cricket.jpg",
+        alt: "The cricket pitch beside the fairground at sunset",
+      },
+      {
+        type: "image",
+        src: "/work/peddi/view.jpg",
+        alt: "Looking out over the world from a mountain",
+      },
     ],
     caseStudy: {
       timeframe: "June 2026",
       client: { logo: "/logos/peddi-mark.webp", name: "Peddi" },
-      headline: "A film's world you can walk around in, with the film hidden all through it",
+      headline:
+        "A film's world you can walk around in, with the film hidden all through it",
       brief: [
         {
           label: "Team",
@@ -659,21 +1182,64 @@ export const projects: Project[] = [
           note: "Me and Dworak, in Roblox Studio",
           people: [
             { name: "Me", photo: "/work/peddi/avatar-thakur.jpg" },
-            { name: "Dworak", photo: "/work/peddi/avatar-dworak.jpg", href: "https://www.instagram.com/dwrkk.k/" },
+            {
+              name: "Dworak",
+              photo: "/work/peddi/avatar-dworak.jpg",
+              href: "https://www.instagram.com/dwrkk.k/",
+            },
           ],
         },
-        { label: "Product", value: "Peddi on Roblox", note: "A world to explore, for the Telugu film Peddi", logo: "/logos/peddi-mark.webp", href: "https://www.roblox.com/share?code=df349887342b94458e3f07628b53f639&type=ExperienceDetails&stamp=1790520545384" },
-        { label: "Launch", value: "June 5, 2026", note: "Announced by the film's own X account" },
-        { label: "World", value: "Full of references", note: "Places and things from the film, to find" },
-        { label: "Reach", value: "49.5K views", note: "On the launch post, with 3.3K likes" },
-        { label: "Reviews", value: "On YouTube", note: "Telugu creators played it on their channels", href: "https://www.youtube.com/results?search_query=Peddi+roblox" },
+        {
+          label: "Product",
+          value: "Peddi on Roblox",
+          note: "A world to explore, for the Telugu film Peddi",
+          logo: "/logos/peddi-mark.webp",
+          href: "https://www.roblox.com/share?code=df349887342b94458e3f07628b53f639&type=ExperienceDetails&stamp=1790520545384",
+        },
+        {
+          label: "Launch",
+          value: "June 5, 2026",
+          note: "Announced by the film's own X account",
+        },
+        {
+          label: "World",
+          value: "Full of references",
+          note: "Places and things from the film, to find",
+        },
+        {
+          label: "Reach",
+          value: "49.5K views",
+          note: "On the launch post, with 3.3K likes",
+        },
+        {
+          label: "Reviews",
+          value: "On YouTube",
+          note: "Telugu creators played it on their channels",
+          href: "https://www.youtube.com/results?search_query=Peddi+roblox",
+        },
       ],
       reel: [
         { type: "image", src: "/work/peddi/cover.jpg", alt: "Peddi on Roblox" },
-        { type: "image", src: "/work/peddi/fair.jpg", alt: "The fairground at sunset" },
-        { type: "image", src: "/work/peddi/night-pitch.jpg", alt: "The cricket pitch at night, by lantern light" },
-        { type: "image", src: "/work/peddi/view.jpg", alt: "The world from a mountain top" },
-        { type: "image", src: "/work/peddi/cave-inside.jpg", alt: "Inside a torch-lit cave" },
+        {
+          type: "image",
+          src: "/work/peddi/fair.jpg",
+          alt: "The fairground at sunset",
+        },
+        {
+          type: "image",
+          src: "/work/peddi/night-pitch.jpg",
+          alt: "The cricket pitch at night, by lantern light",
+        },
+        {
+          type: "image",
+          src: "/work/peddi/view.jpg",
+          alt: "The world from a mountain top",
+        },
+        {
+          type: "image",
+          src: "/work/peddi/cave-inside.jpg",
+          alt: "Inside a torch-lit cave",
+        },
       ],
       sections: [
         {
@@ -685,7 +1251,12 @@ export const projects: Project[] = [
             "Peddi is a Telugu film, and like Rao Bahadur, it came to Spotmies as a promotion: something fans could spend time in before and around the release. This one was a game. Dworak and I built it in Roblox Studio, as a world to explore with the film all through it.",
           ],
           figures: [
-            { type: "image", src: "/work/peddi/cover.jpg", alt: "Peddi on Roblox: the film's hero as a Roblox character, holding a cricket bat before a lit ferris wheel", caption: "Peddi on Roblox." },
+            {
+              type: "image",
+              src: "/work/peddi/cover.jpg",
+              alt: "Peddi on Roblox: the film's hero as a Roblox character, holding a cricket bat before a lit ferris wheel",
+              caption: "Peddi on Roblox.",
+            },
           ],
         },
         {
@@ -698,8 +1269,19 @@ export const projects: Project[] = [
           ],
           layout: "pair",
           figures: [
-            { type: "image", src: "/work/peddi/cricket.jpg", alt: "A player walking up to the pitch, a Play Cricket! sign over it, the fair behind", caption: "A pitch beside the fair, and a game of cricket to play." },
-            { type: "image", src: "/work/peddi/night-pitch.jpg", alt: "The pitch at night, a player holding a glowing lantern", caption: "The same ground at night, by lantern light." },
+            {
+              type: "image",
+              src: "/work/peddi/cricket.jpg",
+              alt: "A player walking up to the pitch, a Play Cricket! sign over it, the fair behind",
+              caption:
+                "A pitch beside the fair, and a game of cricket to play.",
+            },
+            {
+              type: "image",
+              src: "/work/peddi/night-pitch.jpg",
+              alt: "The pitch at night, a player holding a glowing lantern",
+              caption: "The same ground at night, by lantern light.",
+            },
           ],
         },
         {
@@ -711,12 +1293,42 @@ export const projects: Project[] = [
           ],
           layout: "grid",
           figures: [
-            { type: "image", src: "/work/peddi/overlook.jpg", alt: "A player on a rock looking over the fair, the hills and the town", caption: "The fair, the hills and the town from a rock." },
-            { type: "image", src: "/work/peddi/river.jpg", alt: "A player swimming in a sunlit river between hills", caption: "Rivers to swim." },
-            { type: "image", src: "/work/peddi/underwater.jpg", alt: "Looking up at a swimmer from under the water, rocks below", caption: "And to dive under." },
-            { type: "image", src: "/work/peddi/cabin.jpg", alt: "Inside a log cabin with a stone fireplace, bunk beds and a rocking chair", caption: "A log cabin to step inside." },
-            { type: "image", src: "/work/peddi/trees.jpg", alt: "Giant tree trunks on a grassy field, a railway and houses behind", caption: "Giant trees along the railway." },
-            { type: "image", src: "/work/peddi/cave.jpg", alt: "A torch-lit cave mouth in a dark hillside", caption: "Caves, lit by torches." },
+            {
+              type: "image",
+              src: "/work/peddi/overlook.jpg",
+              alt: "A player on a rock looking over the fair, the hills and the town",
+              caption: "The fair, the hills and the town from a rock.",
+            },
+            {
+              type: "image",
+              src: "/work/peddi/river.jpg",
+              alt: "A player swimming in a sunlit river between hills",
+              caption: "Rivers to swim.",
+            },
+            {
+              type: "image",
+              src: "/work/peddi/underwater.jpg",
+              alt: "Looking up at a swimmer from under the water, rocks below",
+              caption: "And to dive under.",
+            },
+            {
+              type: "image",
+              src: "/work/peddi/cabin.jpg",
+              alt: "Inside a log cabin with a stone fireplace, bunk beds and a rocking chair",
+              caption: "A log cabin to step inside.",
+            },
+            {
+              type: "image",
+              src: "/work/peddi/trees.jpg",
+              alt: "Giant tree trunks on a grassy field, a railway and houses behind",
+              caption: "Giant trees along the railway.",
+            },
+            {
+              type: "image",
+              src: "/work/peddi/cave.jpg",
+              alt: "A torch-lit cave mouth in a dark hillside",
+              caption: "Caves, lit by torches.",
+            },
           ],
         },
         {
@@ -728,10 +1340,30 @@ export const projects: Project[] = [
           ],
           layout: "grid",
           figures: [
-            { type: "image", src: "/work/peddi/piano-town.jpg", alt: "A player at a grand piano on a hill, the town and ferris wheel below", caption: "A piano on the hill above town." },
-            { type: "image", src: "/work/peddi/summit.jpg", alt: "A player climbing a snowy peak towards a chest at the top", caption: "A chest at the summit." },
-            { type: "image", src: "/work/peddi/view.jpg", alt: "A player on a mountain top, the world spread out below", caption: "And the view from up there." },
-            { type: "image", src: "/work/peddi/fireflies.jpg", alt: "A player with a lantern in the grass at dusk, fireflies around", caption: "A lantern, and fireflies, after dark." },
+            {
+              type: "image",
+              src: "/work/peddi/piano-town.jpg",
+              alt: "A player at a grand piano on a hill, the town and ferris wheel below",
+              caption: "A piano on the hill above town.",
+            },
+            {
+              type: "image",
+              src: "/work/peddi/summit.jpg",
+              alt: "A player climbing a snowy peak towards a chest at the top",
+              caption: "A chest at the summit.",
+            },
+            {
+              type: "image",
+              src: "/work/peddi/view.jpg",
+              alt: "A player on a mountain top, the world spread out below",
+              caption: "And the view from up there.",
+            },
+            {
+              type: "image",
+              src: "/work/peddi/fireflies.jpg",
+              alt: "A player with a lantern in the grass at dusk, fireflies around",
+              caption: "A lantern, and fireflies, after dark.",
+            },
           ],
         },
         {
@@ -744,8 +1376,18 @@ export const projects: Project[] = [
           ],
           layout: "pair",
           figures: [
-            { type: "image", src: "/work/peddi/studio.jpg", alt: "Over the shoulder: working on the world in Roblox Studio on a laptop, palm trees and a fence on screen", caption: "The world in Roblox Studio." },
-            { type: "image", src: "/work/peddi/team.jpg", alt: "Dworak and me at our desks at Spotmies, working on Peddi", caption: "Dworak and me, on launch day." },
+            {
+              type: "image",
+              src: "/work/peddi/studio.jpg",
+              alt: "Over the shoulder: working on the world in Roblox Studio on a laptop, palm trees and a fence on screen",
+              caption: "The world in Roblox Studio.",
+            },
+            {
+              type: "image",
+              src: "/work/peddi/team.jpg",
+              alt: "Dworak and me at our desks at Spotmies, working on Peddi",
+              caption: "Dworak and me, on launch day.",
+            },
           ],
         },
         {
@@ -759,10 +1401,19 @@ export const projects: Project[] = [
           layout: "pair",
           // Framed on black, so it fills the monitor's 4:3 screen.
           screen: [
-            { type: "image", src: "/work/peddi/x-post-screen.jpg", alt: "@PeddiMovieOffl: Enter the world of #PEDDI now on Roblox" },
+            {
+              type: "image",
+              src: "/work/peddi/x-post-screen.jpg",
+              alt: "@PeddiMovieOffl: Enter the world of #PEDDI now on Roblox",
+            },
           ],
           figures: [
-            { type: "image", src: "/work/peddi/x-post.jpg", alt: "@PeddiMovieOffl: Enter the world of #PEDDI now on Roblox. Experience it now, with the Peddi on Roblox key art", caption: "June 5 · 49.5K views" },
+            {
+              type: "image",
+              src: "/work/peddi/x-post.jpg",
+              alt: "@PeddiMovieOffl: Enter the world of #PEDDI now on Roblox. Experience it now, with the Peddi on Roblox key art",
+              caption: "June 5 · 49.5K views",
+            },
           ],
         },
         {
@@ -774,8 +1425,20 @@ export const projects: Project[] = [
           ],
           layout: "pair",
           figures: [
-            { type: "youtube", id: "kCuq6TKrxCQ", src: "/work/peddi/yt-sudhapusa.jpg", alt: "Sudhapusa: PEDDI | ROBLOX GAMEPLAY", caption: "Sudhapusa plays Peddi on Roblox." },
-            { type: "youtube", id: "4Py5Y00FsAk", src: "/work/peddi/yt-aura.jpg", alt: "Aura Entertainer: PEDDI on Roblox", caption: "Aura Entertainer plays Peddi on Roblox." },
+            {
+              type: "youtube",
+              id: "kCuq6TKrxCQ",
+              src: "/work/peddi/yt-sudhapusa.jpg",
+              alt: "Sudhapusa: PEDDI | ROBLOX GAMEPLAY",
+              caption: "Sudhapusa plays Peddi on Roblox.",
+            },
+            {
+              type: "youtube",
+              id: "4Py5Y00FsAk",
+              src: "/work/peddi/yt-aura.jpg",
+              alt: "Aura Entertainer: PEDDI on Roblox",
+              caption: "Aura Entertainer plays Peddi on Roblox.",
+            },
           ],
         },
       ],
@@ -792,7 +1455,8 @@ export const projects: Project[] = [
     context: "Spotmies",
     summary:
       "The app and website for TMN, Today Media Network, and Satara Today, its Marathi sister in Satara: one minimal design that holds English and Marathi alike, with articles readers can react to, vote on and write themselves. Designed in Figma, and built by the Spotmies development team.",
-    blurb: "One minimal news app and website for TMN and Satara Today, in English and in Marathi.",
+    blurb:
+      "One minimal news app and website for TMN and Satara Today, in English and in Marathi.",
     highlights: [
       "One design for both brands, in English and in Marathi",
       "Articles with reactions, instant polls and comments",
@@ -801,28 +1465,82 @@ export const projects: Project[] = [
     stack: ["Figma", "Prototyping", "Micro-interactions"],
     // Add the link once the website launches on its own domain.
     media: [
-      { type: "video", src: "/work/tmn-satara/site-tmn.mp4", poster: "/work/tmn-satara/site-tmn.jpg", alt: "The TMN News website" },
-      { type: "video", src: "/work/tmn-satara/app-article.mp4", poster: "/work/tmn-satara/app-article.jpg", alt: "The TMN and Satara Today apps side by side" },
+      {
+        type: "video",
+        src: "/work/tmn-satara/site-tmn.mp4",
+        poster: "/work/tmn-satara/site-tmn.jpg",
+        alt: "The TMN News website",
+      },
+      {
+        type: "video",
+        src: "/work/tmn-satara/app-article.mp4",
+        poster: "/work/tmn-satara/app-article.jpg",
+        alt: "The TMN and Satara Today apps side by side",
+      },
     ],
     caseStudy: {
       timeframe: "May 2026",
       client: [
         { logo: "/logos/tmn-mark.webp", name: "TMN, Today Media Network" },
-        { logo: "/logos/satara-today-mark.webp", name: "Satara Today", height: 48 },
+        {
+          logo: "/logos/satara-today-mark.webp",
+          name: "Satara Today",
+          height: 48,
+        },
       ],
       headline: "One news app in two languages, where readers can talk back",
       brief: [
-        { label: "Role", value: "UI/UX design", note: "The app and website, in Figma" },
-        { label: "Product", value: "TMN News", note: "Today Media Network, in English", logo: "/logos/tmn-mark.webp" },
-        { label: "Languages", value: "English + Marathi", note: "The same design for TMN and Satara Today" },
-        { label: "Platforms", value: "App + website", note: "Phones and desktop" },
-        { label: "App", value: "In production", note: "Being built by the Spotmies dev team" },
-        { label: "Website", value: "Launching soon", note: "Built by the Spotmies dev team" },
+        {
+          label: "Role",
+          value: "UI/UX design",
+          note: "The app and website, in Figma",
+        },
+        {
+          label: "Product",
+          value: "TMN News",
+          note: "Today Media Network, in English",
+          logo: "/logos/tmn-mark.webp",
+        },
+        {
+          label: "Languages",
+          value: "English + Marathi",
+          note: "The same design for TMN and Satara Today",
+        },
+        {
+          label: "Platforms",
+          value: "App + website",
+          note: "Phones and desktop",
+        },
+        {
+          label: "App",
+          value: "In production",
+          note: "Being built by the Spotmies dev team",
+        },
+        {
+          label: "Website",
+          value: "Launching soon",
+          note: "Built by the Spotmies dev team",
+        },
       ],
       reel: [
-        { type: "video", src: "/work/tmn-satara/site-tmn.mp4", poster: "/work/tmn-satara/site-tmn.jpg", alt: "The TMN News website" },
-        { type: "video", src: "/work/tmn-satara/app-article.mp4", poster: "/work/tmn-satara/app-article.jpg", alt: "An article in the TMN and Satara Today apps" },
-        { type: "video", src: "/work/tmn-satara/site-satara.mp4", poster: "/work/tmn-satara/site-satara.jpg", alt: "The Satara Today website, in Marathi" },
+        {
+          type: "video",
+          src: "/work/tmn-satara/site-tmn.mp4",
+          poster: "/work/tmn-satara/site-tmn.jpg",
+          alt: "The TMN News website",
+        },
+        {
+          type: "video",
+          src: "/work/tmn-satara/app-article.mp4",
+          poster: "/work/tmn-satara/app-article.jpg",
+          alt: "An article in the TMN and Satara Today apps",
+        },
+        {
+          type: "video",
+          src: "/work/tmn-satara/site-satara.mp4",
+          poster: "/work/tmn-satara/site-satara.jpg",
+          alt: "The Satara Today website, in Marathi",
+        },
       ],
       sections: [
         {
@@ -845,8 +1563,22 @@ export const projects: Project[] = [
           ],
           layout: "carousel",
           figures: [
-            { type: "video", src: "/work/tmn-satara/site-tmn.mp4", poster: "/work/tmn-satara/site-tmn.jpg", alt: "Scrolling through the TMN News website in Figma: the briefing, an article, the profile and writing a new article", caption: "The TMN News website, in English.", label: "TMN" },
-            { type: "video", src: "/work/tmn-satara/site-satara.mp4", poster: "/work/tmn-satara/site-satara.jpg", alt: "Scrolling through the Satara Today website in Figma, in Marathi", caption: "The Satara Today website, in Marathi.", label: "Satara Today" },
+            {
+              type: "video",
+              src: "/work/tmn-satara/site-tmn.mp4",
+              poster: "/work/tmn-satara/site-tmn.jpg",
+              alt: "Scrolling through the TMN News website in Figma: the briefing, an article, the profile and writing a new article",
+              caption: "The TMN News website, in English.",
+              label: "TMN",
+            },
+            {
+              type: "video",
+              src: "/work/tmn-satara/site-satara.mp4",
+              poster: "/work/tmn-satara/site-satara.jpg",
+              alt: "Scrolling through the Satara Today website in Figma, in Marathi",
+              caption: "The Satara Today website, in Marathi.",
+              label: "Satara Today",
+            },
           ],
         },
         {
@@ -857,7 +1589,14 @@ export const projects: Project[] = [
             "Marathi headlines run longer and sit taller than English ones, so every card, headline and tab had to hold both. Side by side, the two apps share one layout; only the words and the masthead change.",
           ],
           figures: [
-            { type: "video", src: "/work/tmn-satara/app-tour.mp4", poster: "/work/tmn-satara/app-tour.jpg", alt: "The TMN app in English beside the Satara Today app in Marathi: the home feed, search, people, the profile and the dark theme", caption: "The TMN app, left, and the Satara Today app, right, prototyped in Figma." },
+            {
+              type: "video",
+              src: "/work/tmn-satara/app-tour.mp4",
+              poster: "/work/tmn-satara/app-tour.jpg",
+              alt: "The TMN app in English beside the Satara Today app in Marathi: the home feed, search, people, the profile and the dark theme",
+              caption:
+                "The TMN app, left, and the Satara Today app, right, prototyped in Figma.",
+            },
           ],
         },
         {
@@ -868,7 +1607,14 @@ export const projects: Project[] = [
             "An article carries more than the story: a pull quote, a quick reaction (lit, woke, cap, ded or vibe), an instant poll that shows its results, and comments that open from the bottom, with a box for your hot take.",
           ],
           figures: [
-            { type: "video", src: "/work/tmn-satara/app-article.mp4", poster: "/work/tmn-satara/app-article.jpg", alt: "Opening an article in both apps: the story, a pull quote, reactions, an instant poll and the comments", caption: "An article in both apps, from the feed to the comments." },
+            {
+              type: "video",
+              src: "/work/tmn-satara/app-article.mp4",
+              poster: "/work/tmn-satara/app-article.jpg",
+              alt: "Opening an article in both apps: the story, a pull quote, reactions, an instant poll and the comments",
+              caption:
+                "An article in both apps, from the feed to the comments.",
+            },
           ],
         },
         {
@@ -879,7 +1625,13 @@ export const projects: Project[] = [
             "Anyone can write. A new article takes a title, tags, the text with its formatting, and images or video, then publishes from the top. Your articles sit on your profile, with your followers, badges like News Hound and Comment Guru, and settings like the dark theme and offline mode.",
           ],
           figures: [
-            { type: "video", src: "/work/tmn-satara/app-write.mp4", poster: "/work/tmn-satara/app-write.jpg", alt: "Writing a new article in both apps: title, tags, the text and images, then your articles", caption: "Writing and publishing an article." },
+            {
+              type: "video",
+              src: "/work/tmn-satara/app-write.mp4",
+              poster: "/work/tmn-satara/app-write.jpg",
+              alt: "Writing a new article in both apps: title, tags, the text and images, then your articles",
+              caption: "Writing and publishing an article.",
+            },
           ],
         },
         {
@@ -905,17 +1657,35 @@ export const projects: Project[] = [
     context: "Project",
     summary:
       "A working simulation of how a swarm of underwater drones could keep its links safe from future quantum computers, and notice when one of its drones is captured. Phones stand in for the drones; a live 3D dashboard shows the swarm.",
-    blurb: "A simulation of an underwater drone swarm that stays safe from quantum attacks and spots a captured drone.",
+    blurb:
+      "A simulation of an underwater drone swarm that stays safe from quantum attacks and spots a captured drone.",
     highlights: [
       "Phones stream real motion data as drone nodes; shaking one plays a physical capture",
       "Quantum key bits, encrypted fleet averages and an AI agent that isolates hostile nodes",
       "An attacker console for breaking the system on purpose, live",
     ],
-    stack: ["Three.js", "Node.js", "Socket.IO", "Python", "Flask", "Qiskit", "TenSEAL", "Stable Baselines3"],
+    stack: [
+      "Three.js",
+      "Node.js",
+      "Socket.IO",
+      "Python",
+      "Flask",
+      "Qiskit",
+      "TenSEAL",
+      "Stable Baselines3",
+    ],
     // Placeholder media for the hover preview: swap for real screenshots and clips.
     media: [
-      { type: "image", src: "/work/samudragupt/architecture.jpg", alt: "SamudraGupt-Q system architecture" },
-      { type: "image", src: "/work/samudragupt-1.jpg", alt: "SamudraGupt-Q screenshot 1" },
+      {
+        type: "image",
+        src: "/work/samudragupt/architecture.jpg",
+        alt: "SamudraGupt-Q system architecture",
+      },
+      {
+        type: "image",
+        src: "/work/samudragupt-1.jpg",
+        alt: "SamudraGupt-Q screenshot 1",
+      },
     ],
     caseStudy: {
       timeframe: "Final-year B.Tech project, 2025–26",
@@ -930,8 +1700,16 @@ export const projects: Project[] = [
           ],
           layout: "pair",
           figures: [
-            { type: "card", title: "Command dashboard", note: "Recording coming soon" },
-            { type: "image", src: "/work/samudragupt/architecture.jpg", alt: "System architecture: phones as drone nodes, a cloud aggregator, the command centre and the quantum layer" },
+            {
+              type: "card",
+              title: "Command dashboard",
+              note: "Recording coming soon",
+            },
+            {
+              type: "image",
+              src: "/work/samudragupt/architecture.jpg",
+              alt: "System architecture: phones as drone nodes, a cloud aggregator, the command centre and the quantum layer",
+            },
           ],
         },
         {
@@ -947,7 +1725,13 @@ export const projects: Project[] = [
             "Notice a captured drone from how it moves, not only from its keys",
             "Let the fleet share numbers without one server seeing every drone's data",
           ],
-          figures: [{ type: "card", title: "Store now, decrypt later", note: "Illustration coming soon" }],
+          figures: [
+            {
+              type: "card",
+              title: "Store now, decrypt later",
+              note: "Illustration coming soon",
+            },
+          ],
         },
         {
           id: "how",
@@ -964,8 +1748,16 @@ export const projects: Project[] = [
           ],
           layout: "pair",
           figures: [
-            { type: "image", src: "/work/samudragupt/architecture.jpg", alt: "System architecture diagram" },
-            { type: "image", src: "/work/samudragupt/sequence.jpg", alt: "Sequence diagram: key exchange, encrypted telemetry and the AI agent's decision" },
+            {
+              type: "image",
+              src: "/work/samudragupt/architecture.jpg",
+              alt: "System architecture diagram",
+            },
+            {
+              type: "image",
+              src: "/work/samudragupt/sequence.jpg",
+              alt: "Sequence diagram: key exchange, encrypted telemetry and the AI agent's decision",
+            },
           ],
         },
         {
@@ -979,8 +1771,16 @@ export const projects: Project[] = [
           ],
           layout: "pair",
           figures: [
-            { type: "image", src: "/work/samudragupt/threat-flow.jpg", alt: "Flowchart of the threat response, from the quantum check to Protocol Omega" },
-            { type: "card", title: "Drone and attacker consoles", note: "Recording coming soon" },
+            {
+              type: "image",
+              src: "/work/samudragupt/threat-flow.jpg",
+              alt: "Flowchart of the threat response, from the quantum check to Protocol Omega",
+            },
+            {
+              type: "card",
+              title: "Drone and attacker consoles",
+              note: "Recording coming soon",
+            },
           ],
         },
         {
@@ -999,8 +1799,16 @@ export const projects: Project[] = [
           ],
           layout: "pair",
           figures: [
-            { type: "card", title: "Kinetic strike → Protocol Omega", note: "Recording coming soon" },
-            { type: "card", title: "Rogue node detected", note: "Recording coming soon" },
+            {
+              type: "card",
+              title: "Kinetic strike → Protocol Omega",
+              note: "Recording coming soon",
+            },
+            {
+              type: "card",
+              title: "Rogue node detected",
+              note: "Recording coming soon",
+            },
           ],
         },
         {
@@ -1016,7 +1824,9 @@ export const projects: Project[] = [
             "Get Dilithium running, and filter outliers without decrypting",
             "Train and evaluate the agent on recorded phone sessions with labelled attacks",
           ],
-          figures: [{ type: "card", title: "Next steps", note: "Diagram coming soon" }],
+          figures: [
+            { type: "card", title: "Next steps", note: "Diagram coming soon" },
+          ],
         },
       ],
     },
@@ -1032,7 +1842,8 @@ export const projects: Project[] = [
     context: "Project",
     summary:
       "Two experiments in using the web without touching anything: Gesture Shop, a store you browse and fill your cart in with your hand, and Aura, a music visualizer you play, skip and restyle with gestures. Both track your hand through the webcam with MediaPipe, in the browser.",
-    blurb: "A shop and a music player you use with your hand, tracked through the webcam in the browser.",
+    blurb:
+      "A shop and a music player you use with your hand, tracked through the webcam in the browser.",
     highlights: [
       "Pinch to select, close your hand to grab a product and drop it in the cart",
       "Play, skip and switch Aura's visual themes with your hand",
@@ -1042,24 +1853,71 @@ export const projects: Project[] = [
     link: { href: "https://gesture-shop.vercel.app/", label: "Gesture Shop" },
     alsoLink: { href: "https://aura-player-vert.vercel.app/", label: "Aura" },
     media: [
-      { type: "video", src: "/work/guesture-shop/shop.mp4", poster: "/work/guesture-shop/shop.jpg", alt: "Gesture Shop: browsing and adding products to the cart by hand" },
-      { type: "video", src: "/work/guesture-aura/aura.mp4", poster: "/work/guesture-aura/aura.jpg", alt: "Aura: changing the visuals by hand as a music video plays" },
+      {
+        type: "video",
+        src: "/work/guesture-shop/shop.mp4",
+        poster: "/work/guesture-shop/shop.jpg",
+        alt: "Gesture Shop: browsing and adding products to the cart by hand",
+      },
+      {
+        type: "video",
+        src: "/work/guesture-aura/aura.mp4",
+        poster: "/work/guesture-aura/aura.jpg",
+        alt: "Aura: changing the visuals by hand as a music video plays",
+      },
     ],
     caseStudy: {
       // Confirm: when each was made.
       timeframe: "Hand-tracking experiments",
-      headline: "Putting the mouse down: a shop and a music player you use with your hand",
+      headline:
+        "Putting the mouse down: a shop and a music player you use with your hand",
       brief: [
-        { label: "Role", value: "Solo, end to end", note: "Design and code, both projects" },
-        { label: "Gesture Shop", value: "gesture-shop.vercel.app", note: "Pinch to select, grab to add to the cart", href: "https://gesture-shop.vercel.app/" },
-        { label: "Aura", value: "aura-player-vert.vercel.app", note: "A music visualizer you play by hand", href: "https://aura-player-vert.vercel.app/" },
-        { label: "Tracking", value: "MediaPipe", note: "Hand landmarks from the webcam, in the browser" },
-        { label: "Input", value: "Hand or mouse", note: "Both switch back to a mouse when you want one" },
-        { label: "Order", value: "Gesture Shop first", note: "My first experiment with MediaPipe" },
+        {
+          label: "Role",
+          value: "Solo, end to end",
+          note: "Design and code, both projects",
+        },
+        {
+          label: "Gesture Shop",
+          value: "gesture-shop.vercel.app",
+          note: "Pinch to select, grab to add to the cart",
+          href: "https://gesture-shop.vercel.app/",
+        },
+        {
+          label: "Aura",
+          value: "aura-player-vert.vercel.app",
+          note: "A music visualizer you play by hand",
+          href: "https://aura-player-vert.vercel.app/",
+        },
+        {
+          label: "Tracking",
+          value: "MediaPipe",
+          note: "Hand landmarks from the webcam, in the browser",
+        },
+        {
+          label: "Input",
+          value: "Hand or mouse",
+          note: "Both switch back to a mouse when you want one",
+        },
+        {
+          label: "Order",
+          value: "Gesture Shop first",
+          note: "My first experiment with MediaPipe",
+        },
       ],
       reel: [
-        { type: "video", src: "/work/guesture-shop/shop.mp4", poster: "/work/guesture-shop/shop.jpg", alt: "Gesture Shop, used by hand" },
-        { type: "video", src: "/work/guesture-aura/aura.mp4", poster: "/work/guesture-aura/aura.jpg", alt: "Aura, played by hand" },
+        {
+          type: "video",
+          src: "/work/guesture-shop/shop.mp4",
+          poster: "/work/guesture-shop/shop.jpg",
+          alt: "Gesture Shop, used by hand",
+        },
+        {
+          type: "video",
+          src: "/work/guesture-aura/aura.mp4",
+          poster: "/work/guesture-aura/aura.jpg",
+          alt: "Aura, played by hand",
+        },
       ],
       sections: [
         {
@@ -1081,7 +1939,13 @@ export const projects: Project[] = [
           ],
           layout: "pair",
           figures: [
-            { type: "video", src: "/work/guesture-shop/shop.mp4", poster: "/work/guesture-shop/shop.jpg", alt: "Using Gesture Shop by hand in front of a laptop: pointing at products, grabbing them and dropping them in the cart", caption: "Browsing and filling the cart, hands off the laptop." },
+            {
+              type: "video",
+              src: "/work/guesture-shop/shop.mp4",
+              poster: "/work/guesture-shop/shop.jpg",
+              alt: "Using Gesture Shop by hand in front of a laptop: pointing at products, grabbing them and dropping them in the cart",
+              caption: "Browsing and filling the cart, hands off the laptop.",
+            },
           ],
         },
         {
@@ -1103,7 +1967,13 @@ export const projects: Project[] = [
           ],
           layout: "pair",
           figures: [
-            { type: "video", src: "/work/guesture-aura/aura.mp4", poster: "/work/guesture-aura/aura.jpg", alt: "Aura on a laptop: the landing page, then music videos framed by shifting kaleidoscope visuals as a hand changes them", caption: "Changing Aura's themes by hand as the music plays." },
+            {
+              type: "video",
+              src: "/work/guesture-aura/aura.mp4",
+              poster: "/work/guesture-aura/aura.jpg",
+              alt: "Aura on a laptop: the landing page, then music videos framed by shifting kaleidoscope visuals as a hand changes them",
+              caption: "Changing Aura's themes by hand as the music plays.",
+            },
           ],
         },
         {
@@ -1128,7 +1998,8 @@ export const projects: Project[] = [
     context: "Project",
     summary:
       "The design for Nova, a UPI payments app, made in 48 hours as a challenge to myself: wireframes, a design system drawn from iOS 26's glass, then signing in, cards that arrive from your phone number, a home screen with your balance and quick sends, and paying by QR with a swipe. About fifty screens in Figma, prototyped end to end with Smart Animate so each screen morphs into the next.",
-    blurb: "A UPI payments app designed in 48 hours: wireframes, a design system and fifty screens that morph.",
+    blurb:
+      "A UPI payments app designed in 48 hours: wireframes, a design system and fifty screens that morph.",
     highlights: [
       "Cards fetched from your phone number, added with a pull",
       "Scan a UPI QR, pick a card and swipe to pay",
@@ -1137,29 +2008,87 @@ export const projects: Project[] = [
     ],
     stack: ["Figma", "Smart Animate", "Design system", "Prototyping"],
     media: [
-      { type: "image", src: "/work/nova-upi/boards/mockup-card.jpg", alt: "Nova's opening screen on an iPhone, held beside a card" },
-      { type: "video", src: "/work/nova-upi/boards/flow-home.mp4", poster: "/work/nova-upi/boards/flow-home.jpg", alt: "Nova's home screen, prototyped in Figma" },
-      { type: "image", src: "/work/nova-upi/boards/home.jpg", alt: "Nova: home, quick send and stats" },
-      { type: "image", src: "/work/nova-upi/boards/pay.jpg", alt: "Nova: scanning a QR, swiping to pay, and the payment done" },
+      {
+        type: "image",
+        src: "/work/nova-upi/boards/mockup-card.jpg",
+        alt: "Nova's opening screen on an iPhone, held beside a card",
+      },
+      {
+        type: "video",
+        src: "/work/nova-upi/boards/flow-home.mp4",
+        poster: "/work/nova-upi/boards/flow-home.jpg",
+        alt: "Nova's home screen, prototyped in Figma",
+      },
+      {
+        type: "image",
+        src: "/work/nova-upi/boards/home.jpg",
+        alt: "Nova: home, quick send and stats",
+      },
+      {
+        type: "image",
+        src: "/work/nova-upi/boards/pay.jpg",
+        alt: "Nova: scanning a QR, swiping to pay, and the payment done",
+      },
     ],
     caseStudy: {
       // Confirm: when it was made.
       timeframe: "48-hour challenge",
       headline: "Your money, upgraded: a UPI app designed in 48 hours",
       brief: [
-        { label: "Role", value: "Solo design", note: "Every screen and its system, in Figma" },
+        {
+          label: "Role",
+          value: "Solo design",
+          note: "Every screen and its system, in Figma",
+        },
         { label: "Product", value: "Nova", note: "A UPI payments app" },
-        { label: "Window", value: "48 hours", note: "A challenge I set myself" },
-        { label: "Screens", value: "About 50", note: "And the design system behind them" },
-        { label: "Motion", value: "Smart Animate", note: "Every screen morphs into the next" },
-        { label: "Prototype", value: "End to end", note: "From the first launch to a finished payment" },
+        {
+          label: "Window",
+          value: "48 hours",
+          note: "A challenge I set myself",
+        },
+        {
+          label: "Screens",
+          value: "About 50",
+          note: "And the design system behind them",
+        },
+        {
+          label: "Motion",
+          value: "Smart Animate",
+          note: "Every screen morphs into the next",
+        },
+        {
+          label: "Prototype",
+          value: "End to end",
+          note: "From the first launch to a finished payment",
+        },
       ],
       reel: [
-        { type: "image", src: "/work/nova-upi/boards/mockup-card.jpg", alt: "Nova on an iPhone, beside a card" },
-        { type: "video", src: "/work/nova-upi/boards/flow-home.mp4", poster: "/work/nova-upi/boards/flow-home.jpg", alt: "Nova's home screen" },
-        { type: "image", src: "/work/nova-upi/boards/signin.jpg", alt: "Signing in" },
-        { type: "image", src: "/work/nova-upi/boards/cards.jpg", alt: "Adding cards" },
-        { type: "image", src: "/work/nova-upi/boards/pay.jpg", alt: "Paying by QR" },
+        {
+          type: "image",
+          src: "/work/nova-upi/boards/mockup-card.jpg",
+          alt: "Nova on an iPhone, beside a card",
+        },
+        {
+          type: "video",
+          src: "/work/nova-upi/boards/flow-home.mp4",
+          poster: "/work/nova-upi/boards/flow-home.jpg",
+          alt: "Nova's home screen",
+        },
+        {
+          type: "image",
+          src: "/work/nova-upi/boards/signin.jpg",
+          alt: "Signing in",
+        },
+        {
+          type: "image",
+          src: "/work/nova-upi/boards/cards.jpg",
+          alt: "Adding cards",
+        },
+        {
+          type: "image",
+          src: "/work/nova-upi/boards/pay.jpg",
+          alt: "Paying by QR",
+        },
       ],
       sections: [
         {
@@ -1181,7 +2110,12 @@ export const projects: Project[] = [
             "The very last step, entering your UPI PIN, belongs to UPI itself, so the design hands over to it there instead of redrawing it.",
           ],
           figures: [
-            { type: "image", src: "/work/nova-upi/boards/wireframes.jpg", alt: "Low-fidelity wireframes with the user flow: landing page, home, paying by QR or by quick send, swipe to pay, and the payment done", caption: "The wireframes, and the two ways to pay." },
+            {
+              type: "image",
+              src: "/work/nova-upi/boards/wireframes.jpg",
+              alt: "Low-fidelity wireframes with the user flow: landing page, home, paying by QR or by quick send, swipe to pay, and the payment done",
+              caption: "The wireframes, and the two ways to pay.",
+            },
           ],
         },
         {
@@ -1192,7 +2126,12 @@ export const projects: Project[] = [
             "The look starts from iOS 26 and its glass: a blue gradient background with soft blobs of colour, and frosted panels floating over it, in white, a light blue and a deep blue. The type is SF Pro Display, Plus Jakarta Sans and Product Sans, and the app icon is a pinwheel of blue petals, which opens the screens too.",
           ],
           figures: [
-            { type: "image", src: "/work/nova-upi/boards/system.jpg", alt: "Nova's design system: the blue gradient and its three colours, glassmorphism inspired by iOS 26, the app icon, and the fonts SF Pro Display, Plus Jakarta Sans and Product Sans", caption: "Colours, glass, the icon and the type." },
+            {
+              type: "image",
+              src: "/work/nova-upi/boards/system.jpg",
+              alt: "Nova's design system: the blue gradient and its three colours, glassmorphism inspired by iOS 26, the app icon, and the fonts SF Pro Display, Plus Jakarta Sans and Product Sans",
+              caption: "Colours, glass, the icon and the type.",
+            },
           ],
         },
         {
@@ -1205,8 +2144,22 @@ export const projects: Project[] = [
           ],
           layout: "carousel",
           figures: [
-            { type: "video", src: "/work/nova-upi/boards/flow-start.mp4", poster: "/work/nova-upi/boards/flow-start.jpg", alt: "The prototype from the first screen: signing in with Google, then the phone number and OTP", caption: "From opening the app to adding your number, prototyped in Figma.", label: "Flow" },
-            { type: "image", src: "/work/nova-upi/boards/signin.jpg", alt: "The opening screen, signing in with Apple and Face ID, and the OTP", caption: "The opening, signing in with Apple, and the OTP.", label: "Screens" },
+            {
+              type: "video",
+              src: "/work/nova-upi/boards/flow-start.mp4",
+              poster: "/work/nova-upi/boards/flow-start.jpg",
+              alt: "The prototype from the first screen: signing in with Google, then the phone number and OTP",
+              caption:
+                "From opening the app to adding your number, prototyped in Figma.",
+              label: "Flow",
+            },
+            {
+              type: "image",
+              src: "/work/nova-upi/boards/signin.jpg",
+              alt: "The opening screen, signing in with Apple and Face ID, and the OTP",
+              caption: "The opening, signing in with Apple, and the OTP.",
+              label: "Screens",
+            },
           ],
         },
         {
@@ -1218,8 +2171,23 @@ export const projects: Project[] = [
           ],
           layout: "carousel",
           figures: [
-            { type: "video", src: "/work/nova-upi/boards/flow-cards.mp4", poster: "/work/nova-upi/boards/flow-cards.jpg", alt: "Adding cards in the prototype: connecting a bank account, the fetched cards pulled in one by one, then a new card typed and flipped for the CVV", caption: "Pulling in the fetched cards, then adding a new one, prototyped.", label: "Flow" },
-            { type: "image", src: "/work/nova-upi/boards/cards.jpg", alt: "A card fetched from the phone number, a new card's number typed onto it, and the card flipped for the CVV", caption: "A fetched card to pull in, and a new one typed onto the card, front and back.", label: "Screens" },
+            {
+              type: "video",
+              src: "/work/nova-upi/boards/flow-cards.mp4",
+              poster: "/work/nova-upi/boards/flow-cards.jpg",
+              alt: "Adding cards in the prototype: connecting a bank account, the fetched cards pulled in one by one, then a new card typed and flipped for the CVV",
+              caption:
+                "Pulling in the fetched cards, then adding a new one, prototyped.",
+              label: "Flow",
+            },
+            {
+              type: "image",
+              src: "/work/nova-upi/boards/cards.jpg",
+              alt: "A card fetched from the phone number, a new card's number typed onto it, and the card flipped for the CVV",
+              caption:
+                "A fetched card to pull in, and a new one typed onto the card, front and back.",
+              label: "Screens",
+            },
           ],
         },
         {
@@ -1231,8 +2199,21 @@ export const projects: Project[] = [
           ],
           layout: "carousel",
           figures: [
-            { type: "video", src: "/work/nova-upi/boards/flow-home.mp4", poster: "/work/nova-upi/boards/flow-home.jpg", alt: "The home screen in the prototype: the cards, quick send, transactions and stats", caption: "Home, quick send, transactions and stats, prototyped.", label: "Flow" },
-            { type: "image", src: "/work/nova-upi/boards/home.jpg", alt: "Home, the full quick send list, and stats", caption: "Home, everyone to quick send to, and stats.", label: "Screens" },
+            {
+              type: "video",
+              src: "/work/nova-upi/boards/flow-home.mp4",
+              poster: "/work/nova-upi/boards/flow-home.jpg",
+              alt: "The home screen in the prototype: the cards, quick send, transactions and stats",
+              caption: "Home, quick send, transactions and stats, prototyped.",
+              label: "Flow",
+            },
+            {
+              type: "image",
+              src: "/work/nova-upi/boards/home.jpg",
+              alt: "Home, the full quick send list, and stats",
+              caption: "Home, everyone to quick send to, and stats.",
+              label: "Screens",
+            },
           ],
         },
         {
@@ -1244,8 +2225,21 @@ export const projects: Project[] = [
           ],
           layout: "carousel",
           figures: [
-            { type: "video", src: "/work/nova-upi/boards/flow-pay.mp4", poster: "/work/nova-upi/boards/flow-pay.jpg", alt: "Paying in the prototype: scanning a BHIM UPI QR code, the amount, choosing a card, swiping to pay and the success screen", caption: "A payment from the QR code to the tick, prototyped.", label: "Flow" },
-            { type: "image", src: "/work/nova-upi/boards/pay.jpg", alt: "Scanning a QR code, choosing a card and swiping to pay, then Payment of ₹100 successful", caption: "Scan, pick a card and swipe, then the payment done.", label: "Screens" },
+            {
+              type: "video",
+              src: "/work/nova-upi/boards/flow-pay.mp4",
+              poster: "/work/nova-upi/boards/flow-pay.jpg",
+              alt: "Paying in the prototype: scanning a BHIM UPI QR code, the amount, choosing a card, swiping to pay and the success screen",
+              caption: "A payment from the QR code to the tick, prototyped.",
+              label: "Flow",
+            },
+            {
+              type: "image",
+              src: "/work/nova-upi/boards/pay.jpg",
+              alt: "Scanning a QR code, choosing a card and swiping to pay, then Payment of ₹100 successful",
+              caption: "Scan, pick a card and swipe, then the payment done.",
+              label: "Screens",
+            },
           ],
         },
         {
@@ -1258,8 +2252,22 @@ export const projects: Project[] = [
           ],
           layout: "carousel",
           figures: [
-            { type: "video", src: "/work/nova-upi/boards/flow-cards.mp4", poster: "/work/nova-upi/boards/flow-cards.jpg", alt: "Cards sliding in as they're pulled, then a new card flipping over for its CVV", caption: "Cards slide in as you pull them, and flip for the CVV.", label: "Cards" },
-            { type: "video", src: "/work/nova-upi/boards/flow-pay.mp4", poster: "/work/nova-upi/boards/flow-pay.jpg", alt: "The balance and cards carrying through from scanning a QR code to the payment done", caption: "The balance and cards carry through a payment.", label: "Paying" },
+            {
+              type: "video",
+              src: "/work/nova-upi/boards/flow-cards.mp4",
+              poster: "/work/nova-upi/boards/flow-cards.jpg",
+              alt: "Cards sliding in as they're pulled, then a new card flipping over for its CVV",
+              caption: "Cards slide in as you pull them, and flip for the CVV.",
+              label: "Cards",
+            },
+            {
+              type: "video",
+              src: "/work/nova-upi/boards/flow-pay.mp4",
+              poster: "/work/nova-upi/boards/flow-pay.jpg",
+              alt: "The balance and cards carrying through from scanning a QR code to the payment done",
+              caption: "The balance and cards carry through a payment.",
+              label: "Paying",
+            },
           ],
         },
         {
@@ -1272,9 +2280,27 @@ export const projects: Project[] = [
           ],
           layout: "carousel",
           figures: [
-            { type: "image", src: "/work/nova-upi/boards/mockup-card.jpg", alt: "Nova's opening screen on an iPhone, held beside a Visa card", caption: "The opening, beside a card. Mockups from Mockuuups.", label: "Card" },
-            { type: "image", src: "/work/nova-upi/boards/mockup-desk.jpg", alt: "Nova's home screen on an iPhone lying on a desk beside a mouse and earphones", caption: "Home, on the desk. Mockups from Mockuuups.", label: "Desk" },
-            { type: "image", src: "/work/nova-upi/boards/mockup-hand.jpg", alt: "Nova's opening screen on an iPhone held over a laptop", caption: "The opening, over a laptop. Mockups from Mockuuups.", label: "Hand" },
+            {
+              type: "image",
+              src: "/work/nova-upi/boards/mockup-card.jpg",
+              alt: "Nova's opening screen on an iPhone, held beside a Visa card",
+              caption: "The opening, beside a card. Mockups from Mockuuups.",
+              label: "Card",
+            },
+            {
+              type: "image",
+              src: "/work/nova-upi/boards/mockup-desk.jpg",
+              alt: "Nova's home screen on an iPhone lying on a desk beside a mouse and earphones",
+              caption: "Home, on the desk. Mockups from Mockuuups.",
+              label: "Desk",
+            },
+            {
+              type: "image",
+              src: "/work/nova-upi/boards/mockup-hand.jpg",
+              alt: "Nova's opening screen on an iPhone held over a laptop",
+              caption: "The opening, over a laptop. Mockups from Mockuuups.",
+              label: "Hand",
+            },
           ],
         },
       ],
@@ -1291,14 +2317,18 @@ export const projects: Project[] = [
     context: "Project",
     summary:
       "FitPro, a fitness dashboard with a trainer that watches you through your webcam: it measures the angle of your elbow with MediaPipe and counts your bicep curls as you do them. Designed and built alone in April 2025, with Flask streaming the tracked video to the page.",
-    blurb: "A fitness dashboard whose camera watches your arm and counts your bicep curls as you go.",
+    blurb:
+      "A fitness dashboard whose camera watches your arm and counts your bicep curls as you go.",
     highlights: [
       "Counts a curl from your elbow's angle: a rep is the arm straightening past 160°, then bending under 30°",
       "Flask streams the camera feed to the dashboard live, with your skeleton, the angle and the count drawn on it",
       "Around it, a pastel dashboard: a workout calendar and charts for calories, training and sleep, still on sample data",
     ],
     stack: ["Python", "Flask", "OpenCV", "MediaPipe", "Chart.js"],
-    link: { href: "https://github.com/thakursameershetty/personal-gym-trainer", label: "GitHub" },
+    link: {
+      href: "https://github.com/thakursameershetty/personal-gym-trainer",
+      label: "GitHub",
+    },
     media: [
       {
         type: "image",
@@ -1360,7 +2390,9 @@ export function caseChannels(project: Project): CaseChannel[] {
   const channels: CaseChannel[] = [
     {
       label: "Reel",
-      screen: reel?.length ? reel : [{ type: "card", title: project.title, note: "Screens coming soon" }],
+      screen: reel?.length
+        ? reel
+        : [{ type: "card", title: project.title, note: "Screens coming soon" }],
       part: null,
     },
   ];
@@ -1372,3 +2404,22 @@ export function caseChannels(project: Project): CaseChannel[] {
   });
   return channels;
 }
+
+// Minutes to read a case study: its words at an easy 200 a minute (captions included).
+export const readingMinutes = (project: Project) => {
+  const study = project.caseStudy;
+  if (!study) return 0;
+  const text = [
+    project.summary,
+    study.headline ?? "",
+    ...study.sections.flatMap((section) => [
+      section.heading,
+      ...section.paragraphs,
+      ...(section.points ?? []),
+      ...sectionPictures(section).map((figure) =>
+        figure.type === "card" ? "" : (figure.caption ?? ""),
+      ),
+    ]),
+  ].join(" ");
+  return Math.max(1, Math.round(text.split(/\s+/).length / 200));
+};

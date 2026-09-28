@@ -512,14 +512,31 @@
   color: var(--ink-muted);
 }
 
+/* The "Case study" key, with the read time under it. */
 .entryAction {
   display: flex;
-  justify-content: flex-end;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
+}
+
+.entryTime {
+  font-family: var(--font-hero), monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--ink-muted);
 }
 
 .entryLink {
   display: inline-flex;
-  gap: 6px;
+  align-items: center;
+  gap: 8px;
+  border: 0;
+  font: inherit;
+  cursor: pointer;
   max-width: 100%;
   padding: 8px 12px;
   border-radius: 6px;
@@ -573,7 +590,7 @@
 }
 
 /* Phones: the list is an index to scan. Each row is just the disk, the title and what it
-   is, with a small ↗ key for a live link; the summary, role and stack are in the project's
+   is, with a small ↗ key and the read time; the summary, role and stack are in the project's
    window (with its screenshots), which a tap anywhere on the row opens. */
 @media (max-width: 560px) {
   .entry {
@@ -588,6 +605,8 @@
     filter: drop-shadow(0 6px 10px rgba(0, 0, 0, 0.45));
   }
 
+  /* The name and kind, with a narrow column on the right: the key (its arrow only) and the
+     read time shortened to "3 min", so the names keep most of the row. */
   .entryCopy {
     grid-template-columns: minmax(0, 1fr) auto;
     gap: 12px;
@@ -600,6 +619,10 @@
 
   .entrySummary,
   .entrySide {
+    display: none;
+  }
+
+  .entryTimeRest {
     display: none;
   }
 
@@ -633,11 +656,13 @@
   .entryAction {
     position: relative;
     z-index: 1;
+    align-items: center;
+    gap: 8px;
   }
 
   .entryLink {
-    width: 40px;
-    height: 40px;
+    width: 36px;
+    height: 36px;
     justify-content: center;
     align-items: center;
     padding: 0;

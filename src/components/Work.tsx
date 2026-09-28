@@ -20,7 +20,12 @@ import { SplitFlapText } from "./SplitFlapText";
 import type { DiskBoxScene, ScreenRect } from "./diskBox3d";
 import { onTilt } from "./deviceTilt";
 import { ProjectView } from "./ProjectView";
-import { disciplines, projects, type Project } from "./projects";
+import {
+  disciplines,
+  projects,
+  readingMinutes,
+  type Project,
+} from "./projects";
 import { useInView } from "./useInView";
 import { ArrowIcon } from "./icons/ArrowIcon";
 import styles from "./Work.module.css";
@@ -748,6 +753,7 @@ function EntryCopy({
   onOpen: () => void;
 }) {
   const { playCue } = useIntro();
+  const minutes = readingMinutes(project);
 
   return (
     <>
@@ -790,19 +796,33 @@ function EntryCopy({
         </p>
       </div>
 
+      {/* The way into the project's story: "Case study", with how long it takes to read
+          under it (the same count as on the case study itself). A project without one
+          opens its overview. The live sites are linked from inside each case study. */}
       <div className={styles.entryAction}>
-        {project.link && (
-          <a
-            href={project.link.href}
-            target="_blank"
-            rel="noreferrer noopener"
-            className={styles.entryLink}
-            onMouseEnter={() => playCue("tap")}
-            aria-label={`Visit ${project.link.label} (opens in a new tab)`}
-          >
-            <span className={styles.entryLinkLabel}>{project.link.label}</span>
-            <ArrowIcon direction="up-right" size={14} />
-          </a>
+        <button
+          type="button"
+          className={styles.entryLink}
+          onMouseEnter={() => playCue("tap")}
+          onClick={() => {
+            playCue("insert");
+            onOpen();
+          }}
+          aria-label={
+            minutes > 0
+              ? `${project.title}: open the case study, a ${minutes} minute read`
+              : `${project.title}: open the details`
+          }
+        >
+          <span className={styles.entryLinkLabel}>
+            {minutes > 0 ? "Case study" : "Details"}
+          </span>
+          <ArrowIcon direction="up-right" size={14} />
+        </button>
+        {minutes > 0 && (
+          <span aria-hidden="true" className={styles.entryTime}>
+            {minutes} min<span className={styles.entryTimeRest}> read</span>
+          </span>
         )}
       </div>
     </>

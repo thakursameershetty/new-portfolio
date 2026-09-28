@@ -32,6 +32,7 @@ import {
   diskNumber,
   sectionPictures,
   diskOrder,
+  readingMinutes,
   type Project,
   type ScreenItem,
 } from "./projects";
@@ -59,25 +60,6 @@ const caseHints: GestureHint[] = [
 
 // A part counts as the one being read once its top passes this far down the screen.
 const readingLine = 0.38;
-
-// Minutes to read a case study: its words at an easy 200 a minute (captions included).
-const readingMinutes = (project: Project) => {
-  const study = project.caseStudy;
-  if (!study) return 0;
-  const text = [
-    project.summary,
-    study.headline ?? "",
-    ...study.sections.flatMap((section) => [
-      section.heading,
-      ...section.paragraphs,
-      ...(section.points ?? []),
-      ...sectionPictures(section).map((figure) =>
-        figure.type === "card" ? "" : (figure.caption ?? ""),
-      ),
-    ]),
-  ].join(" ");
-  return Math.max(1, Math.round(text.split(/\s+/).length / 200));
-};
 
 /** What's being looked at closely: what's on the monitor, or a picture in the story. */
 type Closer = { from: "set" | "story"; channel: number; item: number };
@@ -491,10 +473,9 @@ export function ProjectView({
                     // pushing the title down.
                     style={
                       client.height
-                        ? {
-                            height: client.height,
-                            margin: `${(34 - client.height) / 2}px 0`,
-                          }
+                        ? ({
+                            "--logo-h": `${client.height}px`,
+                          } as CSSProperties)
                         : undefined
                     }
                   />
