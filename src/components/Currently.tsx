@@ -101,8 +101,8 @@ export function Currently() {
                   className={clsx(
                     styles.entry,
                     scrubbed &&
-                      !scrubbed.includes(entry.title) &&
-                      styles.entryDim,
+                    !scrubbed.includes(entry.title) &&
+                    styles.entryDim,
                   )}
                   onPointerEnter={
                     entry.timeline ? () => setFocus(entry.title) : undefined
