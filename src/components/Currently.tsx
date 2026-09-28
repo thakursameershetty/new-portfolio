@@ -8,6 +8,7 @@ import { AboutTimeline, itemsAt } from "./AboutTimeline";
 import { record, timelineItems } from "./record";
 import { useIntro } from "./SiteIntro";
 import { useInView } from "./useInView";
+import { ArrowIcon } from "./icons/ArrowIcon";
 import { DocumentIcon } from "./icons/DocumentIcon";
 import { ProfileCardIcon } from "./icons/ProfileCardIcon";
 import type { AnimatedIconHandle } from "./icons/types";
@@ -100,8 +101,8 @@ export function Currently() {
                   className={clsx(
                     styles.entry,
                     scrubbed &&
-                    !scrubbed.includes(entry.title) &&
-                    styles.entryDim,
+                      !scrubbed.includes(entry.title) &&
+                      styles.entryDim,
                   )}
                   onPointerEnter={
                     entry.timeline ? () => setFocus(entry.title) : undefined
@@ -181,22 +182,7 @@ function MoreLink() {
     >
       <ProfileCardIcon ref={iconRef} size={20} className={styles.keyIcon} />
       <span>More about me</span>
-      <svg
-        aria-hidden="true"
-        className={styles.keyArrow}
-        width="16"
-        height="16"
-        viewBox="0 0 24 24"
-        fill="none"
-      >
-        <path
-          d="M5 12h14M13 6l6 6-6 6"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      </svg>
+      <ArrowIcon size={16} animated={false} className={styles.keyArrow} />
     </Link>
   );
 }
@@ -222,22 +208,12 @@ function ResumeKey() {
       <DocumentIcon ref={iconRef} size={20} className={styles.keyIcon} />
       <span>Résumé</span>
       <span className={styles.keyMeta}>PDF</span>
-      <svg
-        aria-hidden="true"
+      <ArrowIcon
+        direction="up-right"
+        size={16}
+        animated={false}
         className={styles.keyArrow}
-        width="16"
-        height="16"
-        viewBox="0 0 24 24"
-        fill="none"
-      >
-        <path
-          d="M7 17 17 7M8 7h9v9"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      </svg>
+      />
       <span className={styles.srOnly}> (opens in a new tab)</span>
     </a>
   );

@@ -174,13 +174,11 @@
     0 4px 10px rgba(0, 0, 0, 0.45);
 }
 
-.key.keyRed .keyArrow {
-  opacity: 0.8;
-}
+
 
 /* Its arrow points on, not out, so it slides straight ahead. */
 .key.keyRed:hover .keyArrow {
-  transform: translateX(3px);
+  translate: 3px 0;
 }
 
 .key {
@@ -234,16 +232,19 @@
   opacity: 0.5;
 }
 
+/* Both keys' arrows: the same icon, size and strength, and never squeezed by a long label.
+   Hover nudges them with `translate`, which adds to the icon's own rotation. */
 .keyArrow {
-  opacity: 0.6;
+  flex: none;
+  opacity: 0.75;
   transition:
-    transform 200ms ease,
+    translate 200ms ease,
     opacity 200ms ease;
 }
 
 .key:hover .keyArrow {
   opacity: 1;
-  transform: translate(2px, -2px);
+  translate: 2px -2px;
 }
 
 .srOnly {
@@ -337,8 +338,27 @@
 
 /* Phones: the heading sits above its entries, and each date moves under its title. */
 @media (max-width: 600px) {
-  .key {
+  /* The Résumé and About keys side by side, sharing the width: tighter, without their
+     leading icons or the PDF tag, so both fit on one line. */
+  .actions {
+    flex-wrap: nowrap;
+    gap: 12px;
     margin-top: 36px;
+  }
+
+  .actions .key {
+    flex: 1 1 0;
+    min-width: 0;
+    justify-content: center;
+    gap: 8px;
+    padding: 14px 12px;
+    font-size: 15px;
+    white-space: nowrap;
+  }
+
+  .actions .keyIcon,
+  .actions .keyMeta {
+    display: none;
   }
 
   .group {
