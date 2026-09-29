@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import clsx from "clsx";
 import { useReducedMotion } from "framer-motion";
 import { onTilt } from "../deviceTilt";
@@ -25,10 +25,19 @@ function reach(distance: number) {
   return widths;
 }
 
+// Where poster `i` sits from the one in focus, going round: the list is a loop, so the last
+// poster sits just left of the first. Each is placed on whichever side is nearer (an even
+// count puts the one straight across on the right).
+function offsetOf(i: number, active: number, length: number) {
+  const ahead = (((i - active) % length) + length) % length;
+  return ahead > length / 2 ? ahead - length : ahead;
+}
+
 /**
  * "Watching": films and series as posters on a turntable. The one in focus stands tall in
  * the middle, lit red from behind (the site's red); the rest fall back to either side.
- * Arrows, arrow keys, a swipe, or a click on a side poster turn it. The posters carry a
+ * Arrows, arrow keys, a swipe, or a click on a side poster turn it, round and round:
+ * the last poster sits just left of the first. The posters carry a
  * faint set of scanlines, a nod to the CRT on the home page. Two keys switch between the
  * films and the series. It plays on its own from the first poster, one every few seconds
  * with a line filling under the counter, and holds still while it's being handled (hovered,
@@ -45,22 +54,36 @@ const kinds = [
 const dwell = 4000;
 
 export function Watching() {
+  const stageRef = useRef<HTMLDivElement>(null);
+  const reduced = useReducedMotion();
   const [kind, setKind] = useState<Film["kind"]>("film");
   const list = films.filter((film) => film.kind === kind);
-  const [active, setActive] = useState(0);
+  // The poster in focus, and the one before it (to tell which posters wrapped round).
+  const [[active, previous], setTurn] = useState([0, 0]);
+  const setActive = (next: number) => setTurn(([current]) => [next, current]);
   const drag = useRef<{ x: number; moved: boolean } | null>(null);
   const { playCue } = useIntro();
   // A turn by hand clicks like a detent (the arrow keys add their own press instead);
-  // turns the slideshow makes itself stay silent.
+  // turns the slideshow makes itself stay silent. It goes round: past the last is the first.
   const go = (to: number, tick = true) => {
-    const next = Math.min(Math.max(to, 0), list.length - 1);
+    const next = ((to % list.length) + list.length) % list.length;
     if (next === active) return;
     if (tick) playCue("detent");
     setActive(next);
   };
 
-  const stageRef = useRef<HTMLDivElement>(null);
-  const reduced = useReducedMotion();
+  // A poster that wrapped round from one end to the other would slide right across the
+  // stage behind the rest; instead it's put straight in its new place (no transition, see
+  // .wrapped) and fades in there.
+  const reelRef = useRef<HTMLUListElement>(null);
+  useLayoutEffect(() => {
+    if (reduced) return;
+    for (const card of reelRef.current?.querySelectorAll<HTMLElement>(
+      "[data-wrapped]",
+    ) ?? [])
+      card.animate([{ opacity: 0 }], { duration: 420, easing: "ease-out" });
+  }, [active, reduced]);
+
   const [hovered, setHovered] = useState(false);
   const [focused, setFocused] = useState(false);
   const [dragging, setDragging] = useState(false);
@@ -100,11 +123,11 @@ export function Watching() {
   }, [reduced, onScreen]);
 
   // Each poster gets a full turn; handling the carousel restarts the count, and after the
-  // last it goes back to the first.
+  // last it goes round to the first.
   useEffect(() => {
     if (!running) return;
     const timer = window.setTimeout(
-      () => setActive((a) => (a + 1) % list.length),
+      () => setTurn(([a]) => [(a + 1) % list.length, a]),
       dwell,
     );
     return () => window.clearTimeout(timer);
@@ -173,7 +196,7 @@ export function Watching() {
               onClick={() => {
                 if (option.kind === kind) return;
                 setKind(option.kind);
-                setActive(0);
+                setTurn([0, 0]);
               }}
             >
               {option.label}
@@ -186,7 +209,7 @@ export function Watching() {
       </div>
 
       {/* Keyed by kind, so switching deals the other set in fresh. */}
-      <ul key={kind} className={styles.reel}>
+      <ul key={kind} ref={reelRef} className={styles.reel}>
         {/* Ambient light: a blurred copy of each poster sits behind the focused spot, lit
             only for the poster in focus, so turning cross-fades one poster's light into the
             next. Without a poster, its glow colour stands in. */}
@@ -203,11 +226,19 @@ export function Watching() {
           />
         ))}
         {list.map((film, i) => {
-          const offset = i - active;
+          const offset = offsetOf(i, active, list.length);
+          const wrapped =
+            Math.abs(offset - offsetOf(i, previous, list.length)) >
+            list.length / 2;
           return (
             <li
               key={film.title}
-              className={clsx(styles.card, offset === 0 && styles.cardActive)}
+              className={clsx(
+                styles.card,
+                offset === 0 && styles.cardActive,
+                wrapped && styles.wrapped,
+              )}
+              data-wrapped={wrapped || undefined}
               style={
                 {
                   "--side": Math.sign(offset),
@@ -294,7 +325,6 @@ export function Watching() {
           className={clsx(key.key, key.square)}
           data-feel="remoteKey"
           onClick={() => go(active - 1, false)}
-          disabled={active === 0}
           aria-label="Previous"
         >
           <svg
@@ -336,7 +366,6 @@ export function Watching() {
           className={clsx(key.key, key.square)}
           data-feel="remoteKey"
           onClick={() => go(active + 1, false)}
-          disabled={active === list.length - 1}
           aria-label="Next"
         >
           <svg

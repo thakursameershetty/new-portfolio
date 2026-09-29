@@ -103,6 +103,12 @@
   transition-duration: 120ms;
 }
 
+/* A poster wrapping round from one end to the other: put straight in place, then faded in
+   (Watching.tsx), rather than sliding across behind the rest. */
+.wrapped {
+  transition: none;
+}
+
 /* While the mouse tilts it, the tilt follows closely; letting go, it settles back slowly. */
 .tilting {
   transition:
