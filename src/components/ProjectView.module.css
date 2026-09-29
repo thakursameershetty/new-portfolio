@@ -32,7 +32,10 @@
   gap: 14px;
   max-width: 100%;
   height: 46px;
-  margin-top: calc(12px + env(safe-area-inset-top));
+  /* Not clear of the safe area: the site doesn't draw under the status bar (no
+     viewport-fit=cover), yet some apps' built-in browsers report its height anyway, which
+     left a wide gap above the pill there. */
+  margin-top: 12px;
   padding: 0 5px 0 12px;
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 10px;

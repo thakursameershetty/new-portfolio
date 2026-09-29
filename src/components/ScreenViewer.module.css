@@ -8,7 +8,9 @@
   display: grid;
   grid-template-rows: auto 1fr auto;
   gap: 14px;
-  padding: max(16px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right))
+  /* Top: not the safe area, which some apps' built-in browsers report though the page
+     doesn't draw under the status bar. */
+  padding: 16px max(16px, env(safe-area-inset-right))
     max(16px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
   background: #0b0d0c;
   color: #f5f1ea;

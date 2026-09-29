@@ -814,45 +814,64 @@
   background: rgba(0, 0, 0, 0.55);
 }
 
-/* The paper label, with faint ruled lines. */
+/* The paper label, with faint ruled lines. Everything on it is measured in --u, a
+   hundredth of the disk's width. On a small disk its type is only a few pixels tall, and
+   browsers with a minimum font size (the apps' built-in browsers, from Instagram to Bing)
+   blow each line up to that minimum and burst the label. So where it can, the label is laid
+   out on a 400px disk, where its smallest type is over 13px, and shrunk to fit this one:
+   the same picture, with nothing small enough to be enlarged. */
 .labelPaper {
+  --u: 1cqw;
+  /* The ruled lines stay a pixel thick, however far the label is shrunk. */
+  --line: 1px;
   position: absolute;
   top: 42%;
-  right: 9%;
-  bottom: 0;
   left: 9%;
+  width: calc(82 * var(--u));
+  height: calc(58 * var(--u));
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  border-radius: 2cqw 2cqw 0 0;
+  border-radius: calc(2 * var(--u)) calc(2 * var(--u)) 0 0;
   background:
     repeating-linear-gradient(
       180deg,
-      transparent 0 calc(8cqw - 1px),
-      rgba(40, 60, 120, 0.12) calc(8cqw - 1px) 8cqw
+      transparent 0 calc(8 * var(--u) - var(--line)),
+      rgba(40, 60, 120, 0.12) calc(8 * var(--u) - var(--line)) calc(8 * var(--u))
     ),
     #f4f0e6;
   color: #1a1a1a;
   text-align: left;
 }
 
+/* The disk's width over 400px, as a plain number (atan2 of two lengths, then tan). */
+@supports (scale: tan(atan2(1px, 1px))) {
+  .labelPaper {
+    --k: tan(atan2(100cqw, 400px));
+    --u: 4px;
+    --line: calc(1px / var(--k));
+    transform-origin: 0 0;
+    scale: var(--k);
+  }
+}
+
 .labelBand {
   display: flex;
   justify-content: space-between;
-  padding: 2.4cqw 5cqw;
+  padding: calc(2.4 * var(--u)) calc(5 * var(--u));
   background: var(--disk);
   color: var(--disk-ink);
   font-family: var(--font-hero), monospace;
-  font-size: 3.6cqw;
+  font-size: calc(3.6 * var(--u));
   font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
 }
 
 .labelTitle {
-  padding: 4cqw 5cqw 0;
+  padding: calc(4 * var(--u)) calc(5 * var(--u)) 0;
   font-family: var(--font-hero), monospace;
-  font-size: 7.2cqw;
+  font-size: calc(7.2 * var(--u));
   font-weight: 700;
   line-height: 1;
   letter-spacing: -0.04em;
@@ -860,17 +879,17 @@
 }
 
 .labelKind {
-  padding: 2cqw 5cqw 0;
+  padding: calc(2 * var(--u)) calc(5 * var(--u)) 0;
   font-family: var(--font-sans), sans-serif;
-  font-size: 4.6cqw;
+  font-size: calc(4.6 * var(--u));
   line-height: 1.3;
 }
 
 .labelRole {
   margin-top: auto;
-  padding: 0 5cqw 4cqw;
+  padding: 0 calc(5 * var(--u)) calc(4 * var(--u));
   font-family: var(--font-display), sans-serif;
-  font-size: 3.4cqw;
+  font-size: calc(3.4 * var(--u));
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: rgba(26, 26, 26, 0.6);

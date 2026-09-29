@@ -30,6 +30,10 @@ html {
   /* No blue box flashed over whatever's tapped (Android Chrome's default): every control
      here has its own press state instead, like the keycaps sinking. */
   -webkit-tap-highlight-color: transparent;
+  /* Type at the sizes set here: no enlarging it by the browser's own rules (Android's font
+     boosting, and some apps' built-in browsers). */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
 }
 
 /* Nav links glide to their sections. */
