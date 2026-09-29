@@ -85,25 +85,20 @@
 
 /* ---- The way here, from elsewhere ---- */
 
-.prototypesLink {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
+/* A cream keycap (the site's primary key), smaller than a control, in the label type.
+   (Tag and class, to outrank the keycap's own size whichever stylesheet loads last.) */
+a.prototypesLink {
+  height: 36px;
+  padding: 0 14px;
   font-family: var(--font-hero), monospace;
   font-size: 12px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--ink);
-  text-decoration: none;
 }
 
-.prototypesLink:active {
-  opacity: 0.6;
-}
-
-.prototypesLink:focus-visible {
-  outline: 2px solid var(--ink);
-  outline-offset: 4px;
+/* Lavender would be lost on the cream face; the arrow takes the key's ink. */
+.prototypesLink .arrow {
+  color: inherit;
 }
 
 /* The arrow nudges on from a wrapper, since the icon keeps its own transform. */

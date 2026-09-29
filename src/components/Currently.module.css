@@ -291,6 +291,24 @@
   vertical-align: 0.2em;
 }
 
+/* Practice's key, like its line on the timeline: a wave that settles straight. */
+.swatchSettling {
+  width: 22px;
+  height: 6px;
+  border-radius: 0;
+  vertical-align: 0.1em;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='22' height='6'%3E%3Cpath d='M0 3q2-3 4 0t4 0q1.5-1.5 3 0t3 0h8' fill='none' stroke='%23000' stroke-width='1.4'/%3E%3C/svg%3E")
+    0 0 / 22px 6px no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='22' height='6'%3E%3Cpath d='M0 3q2-3 4 0t4 0q1.5-1.5 3 0t3 0h8' fill='none' stroke='%23000' stroke-width='1.4'/%3E%3C/svg%3E")
+    0 0 / 22px 6px no-repeat;
+}
+
+/* How long it's run, set after the heading in its colour. */
+.groupYears {
+  margin-left: 10px;
+  color: var(--tone-practice);
+}
+
 .entries {
   display: flex;
   flex-direction: column;
@@ -340,7 +358,7 @@
 .entryAction {
   grid-column: 1;
   justify-self: start;
-  margin-top: 6px;
+  margin-top: 10px;
 }
 
 /* Phones: the heading sits above its entries, and each date moves under its title. */

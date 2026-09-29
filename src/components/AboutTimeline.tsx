@@ -30,6 +30,13 @@ const currentMonth = () => {
 };
 const noSubscription = () => () => {};
 
+/** This month, on the ruler's count: the build's month until the browser knows better. */
+export const useMonthNow = () =>
+  useSyncExternalStore(noSubscription, currentMonth, () => builtAt);
+
+// A settling wave calms over this many months before it runs straight.
+const settleMonths = 2;
+
 // Single-month entries in a lane this many months apart or closer share a label.
 const labelReach = 6;
 // Room after "now", so its end of the ruler doesn't sit on the edge.
@@ -74,8 +81,29 @@ export interface TimelineItem {
   logo?: "figma";
   /** Practice rather than a role: drawn as a thin wavy line, held back. */
   wavy?: boolean;
+  /**
+   * The month a wavy line settles into a straight one: learning up to it, fluent from it
+   * (the practice goes on, so it isn't an end).
+   */
+  settles?: number;
   /** Its label links to a page (the Figma practice). */
   href?: string;
+}
+
+/**
+ * A wavy line that settles: the full wave while learning, a smaller one over its last months
+ * as it calms, then straight once it's second nature. `learning` and `length` are in months.
+ */
+function SettlingWave({ learning, length }: { learning: number; length: number }) {
+  const calm = Math.min(settleMonths, learning);
+  const share = (months: number) => `${(Math.max(months, 0) / length) * 100}%`;
+  return (
+    <>
+      <span className={styles.waveLearning} style={{ width: share(learning - calm) }} />
+      <span className={styles.waveCalming} style={{ width: share(calm) }} />
+      <span className={styles.waveSteady} />
+    </>
+  );
 }
 
 /** Ids of the items running during month `m`. */
@@ -105,7 +133,7 @@ export function AboutTimeline({
   onScrub: (month: number | null, now: number) => void;
 }) {
   const { playCue } = useIntro();
-  const now = useSyncExternalStore(noSubscription, currentMonth, () => builtAt);
+  const now = useMonthNow();
   const span = now + 1 + tailMonths;
   const rulerRef = useRef<HTMLDivElement>(null);
   const [scrub, setScrub] = useState<number | null>(null);
@@ -332,6 +360,7 @@ export function AboutTimeline({
                     item.to === item.from && styles.point,
                     item.to === "now" && styles.ongoing,
                     item.wavy && styles.wavy,
+                    item.wavy && item.settles !== undefined && styles.settling,
                     lit?.includes(item.id) && styles.lit,
                   )}
                   style={
@@ -344,7 +373,14 @@ export function AboutTimeline({
                       width: `${((endOf(item) + 1 - item.from) / span) * 100}%`,
                     } as React.CSSProperties
                   }
-                />
+                >
+                  {item.wavy && item.settles !== undefined && (
+                    <SettlingWave
+                      learning={item.settles - item.from}
+                      length={endOf(item) + 1 - item.from}
+                    />
+                  )}
+                </div>
               ))}
             {labels
               .filter((label) => label.lane === lane)
@@ -371,9 +407,13 @@ export function AboutTimeline({
                     {...(href && {
                       tabIndex: -1,
                       "aria-hidden": true,
-                      "data-feel": "land",
-                      onPointerDown: (event: React.PointerEvent) =>
-                        event.stopPropagation(),
+                      // Its sounds are its own: the press stops here (so it doesn't scrub),
+                      // before any page-wide data-feel listener could hear it.
+                      onMouseEnter: () => playCue("tap"),
+                      onPointerDown: (event: React.PointerEvent) => {
+                        event.stopPropagation();
+                        playCue("land");
+                      },
                     })}
                     className={clsx(
                       styles.barLabel,

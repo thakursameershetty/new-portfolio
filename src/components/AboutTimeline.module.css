@@ -80,6 +80,46 @@
   opacity: 1;
 }
 
+/* A wave that settles (the Figma lane: learning, then fluent): the bar only holds its three
+   stretches, each drawn in the colour under a mask of its own. */
+.settling {
+  display: flex;
+  align-items: center;
+  background: none;
+  -webkit-mask: none;
+  mask: none;
+}
+
+.waveLearning,
+.waveCalming,
+.waveSteady {
+  flex: none;
+  height: 100%;
+  background: var(--fill);
+}
+
+.waveLearning {
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='6'%3E%3Cpath d='M0 3q3-3 6 0t6 0' fill='none' stroke='%23000' stroke-width='1.4'/%3E%3C/svg%3E")
+    0 50% / 12px 6px repeat-x;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='6'%3E%3Cpath d='M0 3q3-3 6 0t6 0' fill='none' stroke='%23000' stroke-width='1.4'/%3E%3C/svg%3E")
+    0 50% / 12px 6px repeat-x;
+}
+
+/* The same wave at half the swing, as it calms. */
+.waveCalming {
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='6'%3E%3Cpath d='M0 3q3-1.5 6 0t6 0' fill='none' stroke='%23000' stroke-width='1.4'/%3E%3C/svg%3E")
+    0 50% / 12px 6px repeat-x;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='6'%3E%3Cpath d='M0 3q3-1.5 6 0t6 0' fill='none' stroke='%23000' stroke-width='1.4'/%3E%3C/svg%3E")
+    0 50% / 12px 6px repeat-x;
+}
+
+/* Straight from here on: a thin line, the wave's weight, so it still can't pass for a job's
+   bar. */
+.waveSteady {
+  flex: 1;
+  height: 1.5px;
+}
+
 .hasLit .bar:not(.lit) {
   opacity: 0.2;
 }

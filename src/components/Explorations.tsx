@@ -5,6 +5,8 @@ import Link from "next/link";
 import clsx from "clsx";
 import { useReducedMotion } from "framer-motion";
 import { ArrowIcon } from "./icons/ArrowIcon";
+import { useIntro } from "./SiteIntro";
+import key from "./about/Keycap.module.css";
 import styles from "./Explorations.module.css";
 
 // Figma prototypes from teaching myself to design, recorded and cut down in
@@ -110,11 +112,15 @@ function Shot({
  * page's milestones): mono capitals and the lavender arrow of the Figma practice line.
  */
 export function PrototypesLink({ className }: { className?: string }) {
+  // Its own sounds, like the Résumé key's: data-feel only sounds inside PageSound (/about),
+  // and this key sits on the home page too.
+  const { playCue } = useIntro();
   return (
     <Link
       href="/practice"
-      className={clsx(styles.prototypesLink, className)}
-      data-feel="land"
+      className={clsx(key.key, key.cream, styles.prototypesLink, className)}
+      onMouseEnter={() => playCue("tap")}
+      onPointerDown={() => playCue("land")}
     >
       See the prototypes
       <PracticeArrow size={14} />

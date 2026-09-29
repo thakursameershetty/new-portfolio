@@ -27,6 +27,8 @@ export const record: {
   heading: string;
   tone?: TimelineItem["tone"];
   compact?: boolean;
+  /** Show by its heading how many years its first entry has run (Figma: 5+ yrs). */
+  years?: boolean;
   entries: Entry[];
 }[] = [
     {
@@ -93,6 +95,7 @@ export const record: {
     {
       heading: "Practice",
       tone: "practice",
+      years: true,
       entries: [
         {
           title: "Figma, self-taught",
@@ -105,6 +108,8 @@ export const record: {
             from: monthOf(2021, 6),
             to: "now",
             wavy: true,
+            // Learning until then; fluent (and still practising) after.
+            settles: monthOf(2022, 2),
             logo: "figma",
             href: "/practice",
           },

@@ -4,7 +4,7 @@ import { useRef, useState } from "react";
 import Image from "next/image";
 import clsx from "clsx";
 import Link from "next/link";
-import { AboutTimeline, itemsAt } from "./AboutTimeline";
+import { AboutTimeline, itemsAt, useMonthNow } from "./AboutTimeline";
 import { PrototypesLink } from "./Explorations";
 import { record, timelineItems } from "./record";
 import { useIntro } from "./SiteIntro";
@@ -14,6 +14,21 @@ import { DocumentIcon } from "./icons/DocumentIcon";
 import { ProfileCardIcon } from "./icons/ProfileCardIcon";
 import type { AnimatedIconHandle } from "./icons/types";
 import styles from "./Currently.module.css";
+
+/** How long something's run, in whole years, counted to this month so it never goes stale. */
+function YearsSince({ from }: { from?: number }) {
+  const now = useMonthNow();
+  if (from === undefined) return null;
+  const months = now + 1 - from;
+  const years = Math.floor(months / 12);
+  if (years < 1) return null;
+  return (
+    <span className={styles.groupYears}>
+      {years}
+      {months % 12 ? "+" : ""} {years === 1 && months % 12 === 0 ? "yr" : "yrs"}
+    </span>
+  );
+}
 
 /** First section below the hero: who Thakur is, the work right now, and the record behind it. */
 export function Currently() {
@@ -83,7 +98,10 @@ export function Currently() {
               {group.tone && (
                 <span
                   aria-hidden="true"
-                  className={styles.swatch}
+                  className={clsx(
+                    styles.swatch,
+                    group.tone === "practice" && styles.swatchSettling,
+                  )}
                   style={
                     {
                       "--tone": `var(--tone-${group.tone}-fill, var(--tone-${group.tone}))`,
@@ -92,6 +110,7 @@ export function Currently() {
                 />
               )}
               {group.heading}
+              {group.years && <YearsSince from={group.entries[0].timeline?.from} />}
             </h3>
             <ul
               className={clsx(styles.entries, group.compact && styles.compact)}
