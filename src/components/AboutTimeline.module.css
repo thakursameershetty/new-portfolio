@@ -61,6 +61,25 @@
   opacity: 1;
 }
 
+/* Practice, not a role (the Figma lane): a thin wave in place of a bar, held back even
+   while ongoing, so it can't pass for a job. The wave is a mask over the bar's colour. */
+.wavy {
+  bottom: -1px;
+  height: 6px;
+  border-radius: 0;
+  background: var(--fill);
+  opacity: 0.75;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='6'%3E%3Cpath d='M0 3q3-3 6 0t6 0' fill='none' stroke='%23000' stroke-width='1.4'/%3E%3C/svg%3E")
+    0 50% / 12px 6px repeat-x;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='6'%3E%3Cpath d='M0 3q3-3 6 0t6 0' fill='none' stroke='%23000' stroke-width='1.4'/%3E%3C/svg%3E")
+    0 50% / 12px 6px repeat-x;
+}
+
+.wavy.lit {
+  height: 6px;
+  opacity: 1;
+}
+
 .hasLit .bar:not(.lit) {
   opacity: 0.2;
 }
@@ -109,6 +128,46 @@
 .labelOngoing,
 .labelLit {
   opacity: 1;
+}
+
+/* A label that links on (FIGMA PRACTICE →): a pointer, a tint behind it on hover, and a hit area taller
+   than its 10px type. */
+.labelOpens {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin: 0;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  line-height: 1;
+  /* In the ink: its logo (and its line) carry the colour, which is too dark to read at
+     10px on black. */
+  color: var(--ink);
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    opacity 200ms ease,
+    background-color 150ms ease;
+}
+
+.labelOpens::before {
+  content: "";
+  position: absolute;
+  inset: -8px -4px;
+}
+
+.labelOpens.labelOngoing {
+  opacity: 0.8;
+}
+
+.labelOpens:hover {
+  opacity: 1;
+  background: color-mix(in srgb, var(--tone) 16%, transparent);
+}
+
+.labelOpens:active {
+  transform: translateY(1px);
 }
 
 .hasLit .barLabel:not(.labelLit) {

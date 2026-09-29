@@ -459,10 +459,30 @@
 }
 
 .entryKind {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 10px;
   margin-top: 6px;
   font-family: var(--font-display), sans-serif;
   font-size: 14px;
   color: var(--ink-muted);
+}
+
+/* Its stage (0 → 1, Redesign, Concept), as a small tag after the kind, like the case
+   study's tool chips; on phones too, where the side column is hidden. */
+.entryStage {
+  padding: 2px 6px;
+  border: 1px solid rgba(245, 241, 234, 0.3);
+  border-radius: 4px;
+  font-family: var(--font-hero), monospace;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.3;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--ink);
 }
 
 /* Two lines at most, so every row keeps the same rhythm; each project's blurb is written to

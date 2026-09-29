@@ -1,9 +1,10 @@
 import Link from "next/link";
+import { PrototypesLink } from "../Explorations";
 import styles from "./Milestones.module.css";
 
 // The longer timeline on the About page, newest first. Only what the case studies and the
 // résumé say; `project` links a milestone to its case study at /work/[id].
-type Tone = "work" | "study" | "event" | "project";
+type Tone = "work" | "study" | "event" | "project" | "practice";
 
 interface Milestone {
   when: string;
@@ -11,6 +12,8 @@ interface Milestone {
   title: string;
   detail: string;
   project?: string;
+  /** Links to the Figma prototypes in place of a case study. */
+  prototypes?: boolean;
 }
 
 const milestones: Milestone[] = [
@@ -53,6 +56,14 @@ const milestones: Milestone[] = [
     detail:
       "Designed a news app and website that work in English and Marathi alike.",
     project: "tmn",
+  },
+  {
+    when: "Apr 2026",
+    tone: "project",
+    title: "The Newspaper",
+    detail:
+      "A news app I designed on my own as a draft, in light and dark. Parts of it went into TMN · Satara Today the next month.",
+    project: "the-newspaper",
   },
   {
     when: "Mar 2026",
@@ -124,6 +135,14 @@ const milestones: Milestone[] = [
     title: "Diploma, Electrical & Electronics",
     detail: "Government Polytechnic Visakhapatnam, 2020 to 2023, with 80%.",
   },
+  {
+    when: "Jun 2021",
+    title: "Started designing in Figma",
+    tone: "practice",
+    detail:
+      "Self-taught, trying out small interactions and ideas as prototypes. I haven't stopped since.",
+    prototypes: true,
+  },
 ];
 
 /** Month by month, newest first: what shipped, what was learned, and where to read more. */
@@ -135,7 +154,10 @@ export function Milestones() {
           key={`${milestone.when}-${milestone.title}`}
           className={styles.item}
           style={
-            { "--tone": `var(--tone-${milestone.tone})` } as React.CSSProperties
+            {
+              "--tone": `var(--tone-${milestone.tone})`,
+              "--fill": `var(--tone-${milestone.tone}-fill, var(--tone-${milestone.tone}))`,
+            } as React.CSSProperties
           }
         >
           <span className={styles.when}>{milestone.when}</span>
@@ -166,6 +188,9 @@ export function Milestones() {
                   />
                 </svg>
               </Link>
+            )}
+            {milestone.prototypes && (
+              <PrototypesLink className={styles.prototypes} />
             )}
           </div>
         </li>

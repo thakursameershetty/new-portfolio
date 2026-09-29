@@ -24,6 +24,7 @@ import {
   disciplines,
   projects,
   readingMinutes,
+  stageOf,
   type Project,
 } from "./projects";
 import { useInView } from "./useInView";
@@ -754,6 +755,7 @@ function EntryCopy({
 }) {
   const { playCue } = useIntro();
   const minutes = readingMinutes(project);
+  const stage = stageOf(project);
 
   return (
     <>
@@ -773,7 +775,10 @@ function EntryCopy({
             {project.title}
           </button>
         </h4>
-        <p className={styles.entryKind}>{project.kind}</p>
+        <p className={styles.entryKind}>
+          {project.kind}
+          {stage && <span className={styles.entryStage}>{stage}</span>}
+        </p>
         <p className={styles.entrySummary}>{project.blurb}</p>
       </div>
 

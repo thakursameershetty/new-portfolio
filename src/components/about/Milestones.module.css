@@ -46,7 +46,7 @@
   height: 11px;
   margin-top: 5px;
   border-radius: 50%;
-  background: var(--tone);
+  background: var(--fill, var(--tone));
   box-shadow: 0 0 0 4px var(--ground);
 }
 
@@ -76,6 +76,10 @@
   text-transform: uppercase;
   color: var(--ink);
   text-decoration: none;
+}
+
+.prototypes {
+  margin-top: 10px;
 }
 
 .link svg {

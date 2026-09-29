@@ -5,6 +5,7 @@ import Image from "next/image";
 import clsx from "clsx";
 import Link from "next/link";
 import { AboutTimeline, itemsAt } from "./AboutTimeline";
+import { PrototypesLink } from "./Explorations";
 import { record, timelineItems } from "./record";
 import { useIntro } from "./SiteIntro";
 import { useInView } from "./useInView";
@@ -85,7 +86,7 @@ export function Currently() {
                   className={styles.swatch}
                   style={
                     {
-                      "--tone": `var(--tone-${group.tone})`,
+                      "--tone": `var(--tone-${group.tone}-fill, var(--tone-${group.tone}))`,
                     } as React.CSSProperties
                   }
                 />
@@ -117,6 +118,9 @@ export function Currently() {
                   )}
                   {entry.detail && (
                     <span className={styles.entryDetail}>{entry.detail}</span>
+                  )}
+                  {entry.timeline?.href && (
+                    <PrototypesLink className={styles.entryAction} />
                   )}
                 </li>
               ))}

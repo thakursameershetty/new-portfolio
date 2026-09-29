@@ -12,6 +12,10 @@
   --tone-event: #f0c44c;
   /* Personal projects, on the About page's longer timeline. */
   --tone-project: #7bd8c4;
+  /* Figma practice: a soft lavender, from Figma's purple but quieter, and unlike the other
+     kinds of entry. (A kind can also set `--tone-*-fill`, which wins over `--tone-*` where it
+     fills a shape: a timeline line, a swatch, a dot.) */
+  --tone-practice: #b4a4f5;
 }
 
 @media (prefers-color-scheme: dark) {

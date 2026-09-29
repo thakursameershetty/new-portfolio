@@ -125,8 +125,22 @@ export interface Project {
     reel?: ScreenItem[];
     sections: CaseSection[];
   };
+  /** Its stage, for a project without a case study brief to read it from. */
+  stage?: string;
   disk: string;
   ink: string;
+}
+
+/**
+ * A project's stage in a word, for its row in the Work list: its brief's Stage cell, cut to
+ * "0 → 1", "Redesign" or "Concept" (the note and the rest stay on the case study).
+ */
+export function stageOf(project: Project) {
+  const value =
+    project.caseStudy?.brief?.find((fact) => fact.label === "Stage")?.value ??
+    project.stage;
+  if (!value) return undefined;
+  return value.startsWith("0 → 1") ? "0 → 1" : value.split(",")[0].trim();
 }
 
 export const projects: Project[] = [
@@ -183,9 +197,9 @@ export const projects: Project[] = [
           note: "For the Telugu film Rao Bahadur",
         },
         {
-          label: "Window",
-          value: "5–6 days",
-          note: "Live for the July 2026 release",
+          label: "Stage",
+          value: "0 → 1, shipped",
+          note: "Live in 5–6 days, for the July 2026 release",
         },
         {
           label: "Fans",
@@ -497,6 +511,11 @@ export const projects: Project[] = [
           href: "https://www.mutinyx.in",
         },
         {
+          label: "Stage",
+          value: "0 → 1, then v2",
+          note: "In production: frontend approved, backend under way",
+        },
+        {
           label: "Version 1",
           value: "3 days of design",
           note: "Feb 2026, then a React Native draft",
@@ -510,11 +529,6 @@ export const projects: Project[] = [
           label: "Website",
           value: "Next.js",
           note: "Landing pages for the June rebrand",
-        },
-        {
-          label: "Status",
-          value: "In production",
-          note: "Frontend approved, backend under way",
         },
       ],
       reel: [
@@ -817,6 +831,11 @@ export const projects: Project[] = [
           href: "https://www.spotmies.com",
         },
         {
+          label: "Stage",
+          value: "Redesign",
+          note: "Replacing a stock, photo-led template",
+        },
+        {
           label: "Window",
           value: "Done by mid-Feb 2026",
           note: "Straight after Amero X",
@@ -825,11 +844,6 @@ export const projects: Project[] = [
           label: "Stack",
           value: "Next.js",
           note: "three.js on the landing page, on Vercel",
-        },
-        {
-          label: "Before",
-          value: "A stock template",
-          note: "Light, photo-led, like many agency sites",
         },
         {
           label: "Order",
@@ -1003,6 +1017,11 @@ export const projects: Project[] = [
           href: "https://amerox.io",
         },
         {
+          label: "Stage",
+          value: "Redesign",
+          note: "My first project at Spotmies: refining existing designs",
+        },
+        {
           label: "Window",
           value: "Dec 2025 – Jan 2026",
           note: "About six weeks",
@@ -1016,11 +1035,6 @@ export const projects: Project[] = [
           label: "Challenge",
           value: "Gold without cheap",
           note: "Premium, modern and trustworthy",
-        },
-        {
-          label: "Order",
-          value: "My first project",
-          note: "Straight after joining Spotmies",
         },
       ],
       reel: [
@@ -1197,9 +1211,9 @@ export const projects: Project[] = [
           href: "https://www.roblox.com/share?code=df349887342b94458e3f07628b53f639&type=ExperienceDetails&stamp=1790520545384",
         },
         {
-          label: "Launch",
-          value: "June 5, 2026",
-          note: "Announced by the film's own X account",
+          label: "Stage",
+          value: "0 → 1, launched",
+          note: "Live June 5, 2026, announced by the film's X account",
         },
         {
           label: "World",
@@ -1502,14 +1516,14 @@ export const projects: Project[] = [
           logo: "/logos/tmn-mark.webp",
         },
         {
+          label: "Stage",
+          value: "0 → 1 design",
+          note: "App + website, for phones and desktop",
+        },
+        {
           label: "Languages",
           value: "English + Marathi",
           note: "The same design for TMN and Satara Today",
-        },
-        {
-          label: "Platforms",
-          value: "App + website",
-          note: "Phones and desktop",
         },
         {
           label: "App",
@@ -1550,7 +1564,7 @@ export const projects: Project[] = [
           heading: "One design, two newsrooms",
           paragraphs: [
             "TMN, Today Media Network, is an English news platform, and Satara Today, the voice of Satara, brings the same kind of news to readers there in Marathi. I designed both, the app and the website, in Figma: one design that had to work as well in Marathi as in English, kept minimal so the news leads.",
-            "The development team at Spotmies is building both, and I worked with them on how the interactions should be built.",
+            "Parts of it came from The Newspaper, a news app I'd designed on my own the month before. The development team at Spotmies is building both, and I worked with them on how the interactions should be built.",
           ],
         },
         {
@@ -1647,6 +1661,230 @@ export const projects: Project[] = [
     },
     disk: "#d64541",
     ink: "#fff8f3",
+  },
+  {
+    id: "the-newspaper",
+    disciplines: ["design"],
+    title: "The Newspaper",
+    kind: "Online news app",
+    role: "Solo: design",
+    context: "Project",
+    summary:
+      "The Newspaper, an online news app I designed on my own in Figma as a draft: the day's front page with breaking news and top stories, articles to read, the print papers to explore by date, a profile where readers publish their own posts, and every screen in light and dark. Parts of it went into the design of TMN · Satara Today the month after.",
+    blurb:
+      "A news app I drafted on my own, in light and dark; parts of it went into TMN · Satara Today.",
+    highlights: [
+      "A front page with the date, the city, breaking news and top stories",
+      "The print papers to explore, and a calendar for another day's",
+      "Readers publish their own posts, with an image or video",
+      "Every screen in light and dark",
+    ],
+    stack: ["Figma", "Prototyping", "Light + dark themes"],
+    media: [
+      {
+        type: "video",
+        src: "/work/the-newspaper/boards/flow-read.mp4",
+        poster: "/work/the-newspaper/boards/flow-read.jpg",
+        alt: "The Newspaper's home feed and an article, prototyped in Figma",
+      },
+      {
+        type: "image",
+        src: "/work/the-newspaper/boards/feed.jpg",
+        alt: "The Newspaper: the home feed, an article and search",
+      },
+      {
+        type: "image",
+        src: "/work/the-newspaper/boards/dark.jpg",
+        alt: "The Newspaper in the dark theme",
+      },
+    ],
+    caseStudy: {
+      timeframe: "April 2026",
+      headline:
+        "A newspaper for your phone, drafted on my own, that fed a real one",
+      brief: [
+        {
+          label: "Role",
+          value: "Solo design",
+          note: "Every screen, in Figma",
+        },
+        {
+          label: "Product",
+          value: "The Newspaper",
+          note: "An online news app",
+        },
+        {
+          label: "Stage",
+          value: "Concept",
+          note: "Designed and prototyped, not built",
+        },
+        {
+          label: "Screens",
+          value: "10, twice",
+          note: "Each one in light and dark",
+        },
+        {
+          label: "Designed",
+          value: "April 2026",
+          note: "On my own, as a draft",
+        },
+        {
+          label: "Led to",
+          value: "TMN · Satara Today",
+          note: "Parts of it went into that design",
+        },
+      ],
+      reel: [
+        {
+          type: "video",
+          src: "/work/the-newspaper/boards/flow-read.mp4",
+          poster: "/work/the-newspaper/boards/flow-read.jpg",
+          alt: "The home feed and an article",
+        },
+        {
+          type: "image",
+          src: "/work/the-newspaper/boards/feed.jpg",
+          alt: "The home feed, an article and search",
+        },
+        {
+          type: "image",
+          src: "/work/the-newspaper/boards/papers.jpg",
+          alt: "The print papers, the calendar and saved stories",
+        },
+        {
+          type: "image",
+          src: "/work/the-newspaper/boards/you.jpg",
+          alt: "The profile, your interests and your posts",
+        },
+        {
+          type: "image",
+          src: "/work/the-newspaper/boards/dark.jpg",
+          alt: "The dark theme",
+        },
+      ],
+      sections: [
+        {
+          id: "brief",
+          act: "The brief",
+          label: "Brief",
+          heading: "A newspaper, as an app",
+          paragraphs: [
+            "The Newspaper is an online news app I designed on my own in April 2026, as a draft: ten screens in Figma, each in light and dark, prototyped so it could be tapped through. It started as mine alone, and it didn't stay that way: parts of it went into the design of TMN · Satara Today the month after.",
+          ],
+        },
+        {
+          id: "front-page",
+          act: "The design",
+          label: "Front page",
+          heading: "The front page, on a phone",
+          paragraphs: [
+            "It opens like a paper: the masthead in a red serif, then the date and the city under it, Visakhapatnam here. Breaking news runs as a carousel of photos under the fold line, with the top stories listed below, each with its source, how long ago it went up and who wrote it.",
+            "An article keeps the paper's feel too: a large photo, a serif headline in the masthead's red, and the text set in full. Search starts from what's trending: topics to tap, and the hashtags people are following.",
+          ],
+          layout: "carousel",
+          figures: [
+            {
+              type: "video",
+              src: "/work/the-newspaper/boards/flow-read.mp4",
+              poster: "/work/the-newspaper/boards/flow-read.jpg",
+              alt: "The prototype from the home feed: the breaking news carousel, the top stories, then reading articles",
+              caption:
+                "From the front page into the articles, prototyped in Figma.",
+              label: "Flow",
+            },
+            {
+              type: "image",
+              src: "/work/the-newspaper/boards/feed.jpg",
+              alt: "The home feed with breaking news and top stories, an article, and search with trending topics and hashtags",
+              caption: "The front page, an article, and search.",
+              label: "Screens",
+            },
+          ],
+        },
+        {
+          id: "papers",
+          label: "The papers",
+          heading: "The print papers, too",
+          paragraphs: [
+            "Beside the app's own stories sit the papers people already read, like The Hindu, The Times of India and Hindustan Times, to explore as their front pages. A calendar lets you go back to another day's, and stories you save wait for you in one list.",
+          ],
+          layout: "carousel",
+          figures: [
+            {
+              type: "video",
+              src: "/work/the-newspaper/boards/flow-papers.mp4",
+              poster: "/work/the-newspaper/boards/flow-papers.jpg",
+              alt: "The prototype: search, the newspapers you could explore, and the calendar",
+              caption: "Search, the papers and the calendar, prototyped.",
+              label: "Flow",
+            },
+            {
+              type: "image",
+              src: "/work/the-newspaper/boards/papers.jpg",
+              alt: "Newspapers you could explore, the calendar open over them, and your saved stories",
+              caption:
+                "The papers to explore, the calendar, and your saved stories.",
+              label: "Screens",
+            },
+          ],
+        },
+        {
+          id: "publish",
+          label: "Publishing",
+          heading: "Readers publish too",
+          paragraphs: [
+            "Your profile keeps count of what you've saved, what you've published and who you follow, and holds your settings: your interests, your posts, the dark theme and feedback. Your interests are topics you add or take away, from India and Visakhapatnam to technology and sport.",
+            "A new post takes an image or video, a headline and up to 500 characters, then publishes from the bottom of the screen.",
+          ],
+          layout: "carousel",
+          figures: [
+            {
+              type: "video",
+              src: "/work/the-newspaper/boards/flow-you.mp4",
+              poster: "/work/the-newspaper/boards/flow-you.jpg",
+              alt: "The prototype: the profile with its counts, saved stories and settings",
+              caption: "The profile and your saved stories, prototyped.",
+              label: "Flow",
+            },
+            {
+              type: "image",
+              src: "/work/the-newspaper/boards/you.jpg",
+              alt: "The profile, managing your interests, and your published posts",
+              caption: "The profile, your interests, and your posts.",
+              label: "Screens",
+            },
+          ],
+        },
+        {
+          id: "dark",
+          label: "Dark",
+          heading: "Light and dark",
+          paragraphs: [
+            "Every screen has a dark twin. The paper goes black, the text goes light, and the masthead keeps its red, so it still reads as the same paper at night.",
+          ],
+          figures: [
+            {
+              type: "image",
+              src: "/work/the-newspaper/boards/dark.jpg",
+              alt: "The home feed, the newspapers to explore and a new post, in the dark theme",
+              caption:
+                "The front page, the papers and a new post, in the dark.",
+            },
+          ],
+        },
+        {
+          id: "outcome",
+          act: "What happened",
+          label: "Outcome",
+          heading: "Into TMN · Satara Today",
+          paragraphs: [
+            "The Newspaper was never built. The next month I designed the app and website for TMN and Satara Today at Spotmies, and parts of this draft went into that design, which the Spotmies development team is now building.",
+          ],
+        },
+      ],
+    },
+    disk: "#ebe3d1",
+    ink: "#b3261e",
   },
   {
     id: "samudragupt",
@@ -1830,6 +2068,8 @@ export const projects: Project[] = [
         },
       ],
     },
+    // Built from nothing; no brief yet to say so.
+    stage: "0 → 1",
     disk: "#23395b",
     ink: "#f5f1ea",
   },
@@ -1890,14 +2130,14 @@ export const projects: Project[] = [
           href: "https://aura-player-vert.vercel.app/",
         },
         {
+          label: "Stage",
+          value: "0 → 1, personal",
+          note: "Both built and live on Vercel",
+        },
+        {
           label: "Tracking",
           value: "MediaPipe",
           note: "Hand landmarks from the webcam, in the browser",
-        },
-        {
-          label: "Input",
-          value: "Hand or mouse",
-          note: "Both switch back to a mouse when you want one",
         },
         {
           label: "Order",
@@ -2042,6 +2282,11 @@ export const projects: Project[] = [
         },
         { label: "Product", value: "Nova", note: "A UPI payments app" },
         {
+          label: "Stage",
+          value: "Concept",
+          note: "Designed and prototyped end to end, not built",
+        },
+        {
           label: "Window",
           value: "48 hours",
           note: "A challenge I set myself",
@@ -2055,11 +2300,6 @@ export const projects: Project[] = [
           label: "Motion",
           value: "Smart Animate",
           note: "Every screen morphs into the next",
-        },
-        {
-          label: "Prototype",
-          value: "End to end",
-          note: "From the first launch to a finished payment",
         },
       ],
       reel: [
@@ -2337,6 +2577,8 @@ export const projects: Project[] = [
         caption: "The dashboard, with the tracked camera feed counting reps.",
       },
     ],
+    // Built from nothing; no brief yet to say so.
+    stage: "0 → 1",
     disk: "#ef7d3c",
     ink: "#1a1a1a",
   },

@@ -166,6 +166,20 @@ labels (wipe) behind it via `--sweep`/`--progress` CSS variables; it lands red o
 small bounce. Once per visit; skipped for reduced motion (headless Chrome reports reduced
 motion, so emulate `no-preference` to test it); touching the ruler mid-sweep finishes it.
 
+**Figma practice (`/practice`, `Explorations.tsx`):** the Practice group in `record.ts`
+(Figma, self-taught, Jun 2021 – now, tone `practice`) draws a thin wavy line on both rulers
+(`wavy`) in a soft lavender (`--tone-practice`; a gradient of Figma's colours was tried and
+rejected as too loud, cyan as too bright), with the Figma logo before its cream label: the
+owner found a solid bar labelled "Figma" read like a job at Figma. Its `href` makes the ruler
+label a link (FIGMA PRACTICE →, which stops the press from scrubbing; `aria-hidden` since
+the ruler is `role="img"`, so "See the prototypes" in the home list and the Jun 2021
+milestone on /about carry the same link). `/practice` wears the About page's frame (it
+imports `about/page.module.css`: band, keys, statement, footer) around one raised panel of
+all 14 prototypes from `public/work/figma/`, in same-shaped 4:3 frames, numbered, each
+looping only while on screen. It started as a pop-up and was made a page to match the
+other sections. Keep the copy modest: self-taught practice, not client work. Raw recordings
+are in `~/Desktop/Sample/figma-recordings-2026-09-29` (outside the repo).
+
 ### Work — `src/components/Work.tsx`, `diskBox3d.ts`, `CrtPreview.tsx`, `projects.ts`
 **Discipline tags:** each row shows DESIGN · DEV · 3D from `disciplines` in `projects.ts`. A
 "View by" lens filter (with disks shut away in the boxes, empty boxes docking beside the switch,
@@ -176,13 +190,13 @@ that job.
 How it evolved (so nothing rejected comes back): featured rows → two boxes; 2-column
 disk+details grid → single-column rows; tap-to-open box → opens on arrival.
 
-**Data (`projects.ts`):** 9 projects from the résumé only (no invented years/stacks). Fields:
+**Data (`projects.ts`):** 10 projects from the résumé (and The Newspaper, from the owner) only (no invented years/stacks). Fields:
 title, kind, role, `context` (`"Spotmies"` | `"Project"`), summary, highlights, stack, optional
 `link`, `media` (images/videos for the monitor and window), disk colours (`disk`, `ink`).
 Shelves are split by `context`: **Spotmies · Client work** (Rao Bahadur, Mutiny Talent,
-Spotmies · Amerox, Peddi, TMN · Satara Today) and **Personal · Hobby & academic** (SamudraGupt-Q
+Spotmies · Amerox, Peddi, TMN · Satara Today) and **Personal · Hobby & academic** (The Newspaper, SamudraGupt-Q
 — the final-year project —, Gesture Shop · Aura, Nova UPI, AI Gym Trainer). Disks are numbered
-01–09 straight through both.
+01–10 straight through both.
 
 **Two disk boxes side by side** (stacked ≤720px), each a `DiskBox`:
 - **3D box (`diskBox3d.ts`, plain three.js):** smoky clear plastic tray (transparent
@@ -240,8 +254,10 @@ edge). Screen: scanlines, vignette, glass reflection, a static burst on every ch
 the project's `media` (clip to its end, stills 1.8s each). Sounds: `crtOn`, `channel`, and the
 hum while visible. Hidden on `(hover: none)`.
 
-**Media:** real for every project except AI Gym Trainer (still `demo-friday.mp4` and
-`gym-1/2.jpg` placeholders) and parts of SamudraGupt-Q (test cards, `samudragupt-1.jpg`).
+**Media:** real for every project except parts of SamudraGupt-Q (test cards,
+`samudragupt-1.jpg`). AI Gym Trainer's old placeholders (`demo-friday.*`, `gym-1/2.jpg`) and
+the unused `stickers/cat.png` went to the Trash on 2026-09-29
+(`portfolio-unused-assets-2026-09-29`).
 SamudraGupt-Q has no link until there's a real one. `public/` holds only what the code uses:
 raw originals (screen recordings, Figma exports, uncropped photos) were moved out on
 2026-09-27 (to the owner's Trash, `portfolio-unused-assets-2026-09-27`); keep new originals
@@ -291,7 +307,7 @@ outside `public/`, which ships with the site.
 
 ## Open items / next steps
 
-1. **Real media:** AI Gym Trainer's placeholders and SamudraGupt-Q's test cards, once the
+1. **Real media:** SamudraGupt-Q's test cards, once the
    owner supplies them.
 2. **Case studies (in progress):** one per project, written up in `projects.ts`
    (`caseStudy`). Peddi (the Roblox world, made with Dworak) is written from the owner's
@@ -306,6 +322,13 @@ outside `public/`, which ships with the site.
    in production with the Spotmies dev team, who also built the website (unlinked until it launches on its own domain; its Vercel preview isn't shared). Designed
    May 2026. Credits read Spotmies × TMN | Satara Today: `client` takes a list, split by a rule,
    and a squarer mark can set its own `height`.
+   The Newspaper (personal, solo design only, April 2026; parts of it were reused in TMN ·
+   Satara Today, which its case study, TMN's brief and an Apr 2026 milestone say) is written
+   from the owner's 20 Figma exports (10 screens × light/dark) and an 84s recording: four
+   1600×1200 boards (feed, papers, you, dark) and the recording cut into three 1200×900
+   single-phone clips (read 0–30s, papers 30–64s, you 64–84s; its black surround keyed onto
+   Figma grey). Originals in `~/Desktop/Sample/the-newspaper-originals-2026-09-29`. The
+   calendar is read as "another day's papers"; confirm with the owner.
    Gesture Shop · Aura is written from the owner's phone videos (`public/work/guesture-shop/`,
    `guesture-aura/`, square, shown as a centred pair of one); Gesture Shop leads, with Aura as a
    second link (`alsoLink`). A clearer Gesture Shop video is coming. Nova UPI is written from its
@@ -336,7 +359,11 @@ outside `public/`, which ships with the site.
    under the title, and inside the top bar. The card opens by itself on wide screens with a
    mouse until the set is used, and only on request elsewhere. Shape per
    project: brief → 2–3 key decisions (the bulk) → everything else as a grid of screens →
-   the hard part → outcome → reflection. Say plainly the work was solo. Don't quote numbers
+   the hard part → outcome → reflection. Say plainly the work was solo. Every brief has a
+   **Stage** cell third (top row; Gesture's after its two projects): "0 → 1, …" only where the
+   product didn't exist before, "Redesign" (Spotmies site, Amero X) or "Concept" (The
+   Newspaper, Nova) otherwise, since interviewers probe 0→1 claims; it replaced a weaker
+   cell, its note carrying anything that cell said. Don't quote numbers
    the client sets for marketing (Rao Bahadur's home page counter). The monitor's screen is
    4:3 and covers, so portrait pictures for the `reel` are paired side by side on black.
    Phone screens are shown as 4:3 "boards" (`public/work/mutiny/boards/`): 1600×1200 on

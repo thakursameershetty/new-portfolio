@@ -336,6 +336,13 @@
   text-wrap: pretty;
 }
 
+/* Where the entry leads (the Figma prototypes), under its detail. */
+.entryAction {
+  grid-column: 1;
+  justify-self: start;
+  margin-top: 6px;
+}
+
 /* Phones: the heading sits above its entries, and each date moves under its title. */
 @media (max-width: 600px) {
   /* The Résumé and About keys side by side, sharing the width: tighter, without their

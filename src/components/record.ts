@@ -1,7 +1,8 @@
 import { monthOf, type TimelineItem } from "./AboutTimeline";
 
 // Everything below the statement comes from the résumé (public/resume.pdf), and only what
-// it states: keep the two in step when either changes.
+// it states: keep the two in step when either changes. (Practice, the Figma explorations,
+// is the owner's own addition.)
 export interface Entry {
   title: string;
   detail?: string;
@@ -86,6 +87,27 @@ export const record: {
           detail: "24-hour hackathon · MindBridge, AI for accessibility",
           when: "Mar 2025",
           timeline: { short: "GDG", ...oneMonth(2025, 3) },
+        },
+      ],
+    },
+    {
+      heading: "Practice",
+      tone: "practice",
+      entries: [
+        {
+          title: "Figma, self-taught",
+          detail:
+            "Self-taught, and still exploring: small interactions and ideas, tried out as prototypes.",
+          when: "Jun 2021 – now",
+          timeline: {
+            short: "Figma practice",
+            lane: "practice",
+            from: monthOf(2021, 6),
+            to: "now",
+            wavy: true,
+            logo: "figma",
+            href: "/practice",
+          },
         },
       ],
     },

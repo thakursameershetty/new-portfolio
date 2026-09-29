@@ -10,6 +10,8 @@ import {
   useTransform,
   type AnimationPlaybackControls,
 } from "framer-motion";
+import Link from "next/link";
+import { FigmaLogo, PracticeArrow } from "./Explorations";
 import { useIntro } from "./SiteIntro";
 import { useInView } from "./useInView";
 import styles from "./AboutTimeline.module.css";
@@ -57,7 +59,7 @@ export interface TimelineItem {
   short: string;
   lane: string;
   /** Kind of entry, which sets its colour. */
-  tone: "work" | "study" | "event";
+  tone: "work" | "study" | "event" | "practice";
   from: number;
   /** Last month, inclusive, or "now". */
   to: number | "now";
@@ -68,6 +70,12 @@ export interface TimelineItem {
   group?: string;
   /** Known only to the year: drawn dashed, across the whole year. */
   yearOnly?: boolean;
+  /** A mark before its label. */
+  logo?: "figma";
+  /** Practice rather than a role: drawn as a thin wavy line, held back. */
+  wavy?: boolean;
+  /** Its label links to a page (the Figma practice). */
+  href?: string;
 }
 
 /** Ids of the items running during month `m`. */
@@ -323,11 +331,13 @@ export function AboutTimeline({
                     item.yearOnly && styles.yearOnly,
                     item.to === item.from && styles.point,
                     item.to === "now" && styles.ongoing,
+                    item.wavy && styles.wavy,
                     lit?.includes(item.id) && styles.lit,
                   )}
                   style={
                     {
                       "--tone": `var(--tone-${item.tone})`,
+                      "--fill": `var(--tone-${item.tone}-fill, var(--tone-${item.tone}))`,
                       "--from": item.from,
                       "--len": endOf(item) + 1 - item.from,
                       left: `${(item.from / span) * 100}%`,
@@ -347,11 +357,27 @@ export function AboutTimeline({
                   lit?.includes(item.id),
                 );
                 const tone = { "--tone": `var(--tone-${label.items[0].tone})` };
+                // A label that leads somewhere is a link, taking its press from the ruler,
+                // so pressing it doesn't scrub. The ruler is a picture to screen readers,
+                // so the same link is in the list beside it.
+                const href =
+                  !group && label.items.length === 1 ? label.items[0].href : undefined;
+                const labelKey = label.items.map((item) => item.id).join();
+                const Label = href ? Link : "span";
                 const main = (
-                  <span
-                    key={label.items.map((item) => item.id).join()}
+                  <Label
+                    key={labelKey}
+                    href={href as string}
+                    {...(href && {
+                      tabIndex: -1,
+                      "aria-hidden": true,
+                      "data-feel": "land",
+                      onPointerDown: (event: React.PointerEvent) =>
+                        event.stopPropagation(),
+                    })}
                     className={clsx(
                       styles.barLabel,
+                      href && styles.labelOpens,
                       label.items.some((item) => item.to === "now") &&
                         styles.labelOngoing,
                       // A group's name steps aside while one of its own names shows.
@@ -372,8 +398,12 @@ export function AboutTimeline({
                       } as React.CSSProperties
                     }
                   >
+                    {label.items[0].logo === "figma" && !group && (
+                      <FigmaLogo size={11} />
+                    )}
                     {group ?? label.items.map((item) => item.short).join(" · ")}
-                  </span>
+                    {href && <PracticeArrow size={11} />}
+                  </Label>
                 );
                 if (!group) return [main];
                 // Each member's own name, over its mark, shown only while it's lit.

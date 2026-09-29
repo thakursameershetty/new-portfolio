@@ -1,0 +1,10 @@
+/* The About page's styles do the rest; the header here has no ID card beside it. */
+.header {
+  padding: clamp(40px, 8vh, 96px) 0 clamp(48px, 8vh, 80px);
+}
+
+.label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
