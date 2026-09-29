@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { ProjectView } from "@/components/ProjectView";
+import { PageSound } from "@/components/SiteIntro";
 import { projects } from "@/components/projects";
 import { jsonLd, projectImage, projectJsonLd } from "@/components/site";
 import styles from "./page.module.css";
@@ -48,13 +49,17 @@ export default async function ProjectPage({ params }: PageProps<"/work/[id]">) {
   const { id } = await params;
   const project = projects.find((entry) => entry.id === id);
   if (!project) notFound();
+  // Its own sound, as on /about: a shared link hears the case study as the home page's
+  // overlay does, with the sound key beside the hints switch.
   return (
-    <main className={styles.page}>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: jsonLd(projectJsonLd(project)) }}
-      />
-      <ProjectView project={project} />
-    </main>
+    <PageSound>
+      <main className={styles.page}>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: jsonLd(projectJsonLd(project)) }}
+        />
+        <ProjectView project={project} />
+      </main>
+    </PageSound>
   );
 }

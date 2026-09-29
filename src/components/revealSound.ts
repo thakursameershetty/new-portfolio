@@ -34,8 +34,11 @@ export interface PointerSounds {
   tick(height: number, speed: number, across: number): void;
   /** A firm clack where the pointer pressed, then clicks spreading out with the shockwave. */
   press(height: number, across: number): void;
-  /** A split-flap letter turning over; `landed` is the heavier final flap. */
-  flap(across: number, landed: boolean): void;
+  /**
+   * A split-flap letter turning over; `landed` is the heavier final flap. `level` scales it
+   * (1 is full), for boards that should sit further back.
+   */
+  flap(across: number, landed: boolean, level?: number): void;
   /**
    * Intro moments: the greeting swapping for the name, the name landing, and the avatar
    * arriving.
@@ -333,7 +336,7 @@ export function createPointerSounds(context: AudioContext): PointerSounds {
       }
       playPress(context, output, noise, at, 0.16);
     },
-    flap(across, landed) {
+    flap(across, landed, level = 1) {
       const at = context.currentTime;
       const pan = toPan(across) * 0.7;
       playClick(
@@ -342,10 +345,10 @@ export function createPointerSounds(context: AudioContext): PointerSounds {
         noise,
         at,
         landed ? 2200 : 3400 + Math.random() * 600,
-        (landed ? 0.06 : 0.018) * (0.8 + Math.random() * 0.2),
+        (landed ? 0.06 : 0.018) * (0.8 + Math.random() * 0.2) * level,
         pan,
       );
-      if (landed) playKnock(context, output, at, 0.05, pan * 0.5, 210);
+      if (landed) playKnock(context, output, at, 0.05 * level, pan * 0.5, 210);
     },
     press(height, across) {
       const at = context.currentTime;

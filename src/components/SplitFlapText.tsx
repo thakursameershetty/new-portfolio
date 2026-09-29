@@ -11,6 +11,13 @@ const letterStagger = 0.035;
 const defaultLineGap = 0.32;
 // Mid-flip clicks from many letters at once would buzz, so they share this minimum spacing.
 const flipSoundGapSeconds = 0.025;
+// Letters land in clusters, and every landing clack at once would stack into one loud,
+// smeared hit, so landings keep a wider spacing (the letters still all land on screen).
+const landSoundGapSeconds = 0.08;
+// Every board on the page keeps to the same spacing, so two headings turning over at
+// once (the title and a part, or a quick scroll) don't double up. In seconds, on the
+// performance.now() clock.
+const lastSound = { flip: -Infinity, land: -Infinity };
 
 interface SplitFlapLine {
   text: string;
@@ -76,12 +83,14 @@ export function SplitFlapText({
 
     const startedAt = performance.now();
     const played = letters.map(() => -1);
-    let lastFlipSound = 0;
     let frame = 0;
 
     const tick = (now: number) => {
       const elapsed = (now - startedAt) / 1000;
       let allLanded = true;
+      // What turned over this frame: one sound at most is played for it, a landing first.
+      let landedAcross = -1;
+      let flippedAcross = -1;
 
       const next = letters.map((letter, index) => {
         if (elapsed < letter.start) {
@@ -96,14 +105,29 @@ export function SplitFlapText({
 
         if (step > played[index] && letter.final !== " ") {
           played[index] = step;
-          const landed = step === letter.flips;
-          if (landed || elapsed - lastFlipSound >= flipSoundGapSeconds) {
-            if (!landed) lastFlipSound = elapsed;
-            onFlapRef.current?.(letter.across, landed);
-          }
+          if (step === letter.flips) landedAcross = letter.across;
+          else flippedAcross = letter.across;
         }
         return step;
       });
+
+      const seconds = now / 1000;
+      if (
+        landedAcross >= 0 &&
+        seconds - lastSound.land >= landSoundGapSeconds &&
+        // Not on top of another board's tick from this same frame.
+        seconds - lastSound.flip >= 0.012
+      ) {
+        lastSound.land = seconds;
+        lastSound.flip = seconds;
+        onFlapRef.current?.(landedAcross, true);
+      } else if (
+        flippedAcross >= 0 &&
+        seconds - lastSound.flip >= flipSoundGapSeconds
+      ) {
+        lastSound.flip = seconds;
+        onFlapRef.current?.(flippedAcross, false);
+      }
 
       setSteps((previous) =>
         previous.every((step, index) => step === next[index]) ? previous : next,

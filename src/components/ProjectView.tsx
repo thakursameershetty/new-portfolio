@@ -24,7 +24,7 @@ import {
   writeHintPreference,
 } from "./hintPreference";
 import { ScreenViewer, type ViewerChannel } from "./ScreenViewer";
-import { useIntro } from "./SiteIntro";
+import { SoundKey, useIntro } from "./SiteIntro";
 import { SplitFlapText } from "./SplitFlapText";
 import {
   caseChannels,
@@ -60,6 +60,8 @@ const caseHints: GestureHint[] = [
 
 // A part counts as the one being read once its top passes this far down the screen.
 const readingLine = 0.38;
+// How loud the part headings' split-flaps are against the title's (about 8 dB quieter).
+const partFlapLevel = 0.4;
 
 /** What's being looked at closely: what's on the monitor, or a picture in the story. */
 type Closer = { from: "set" | "story"; channel: number; item: number };
@@ -82,8 +84,8 @@ export function ProjectView({
   project,
   onClose,
   onSelect,
-  onTap,
-  onCue,
+  onTap: onTapProp,
+  onCue: onCueProp,
   className,
   ref,
 }: {
@@ -102,7 +104,18 @@ export function ProjectView({
 }) {
   const router = useRouter();
   const reduceMotion = useReducedMotion();
-  const { playFlap, setHum } = useIntro();
+  const { playFlap, playCue, setHum } = useIntro();
+  // In the home page's overlay the sounds come from the props; opened on its own (a shared
+  // link), from the page's sound.
+  const tapFromPage = useCallback(() => playCue("tap"), [playCue]);
+  const onCue = onCueProp ?? playCue;
+  const onTap = onTapProp ?? tapFromPage;
+  // The part headings flip as each part scrolls in, again and again down the page, so their
+  // flaps sit well back; the title keeps the full sound.
+  const playPartFlap = useCallback(
+    (across: number, landed: boolean) => playFlap(across, landed, partFlapLevel),
+    [playFlap],
+  );
   const sections = useMemo(() => caseSections(project), [project]);
   const channels = useMemo(() => caseChannels(project), [project]);
   const study = project.caseStudy;
@@ -557,6 +570,8 @@ export function ProjectView({
         {/* How to work the set and the pictures: a switch in the hero's top corner, and the
             card of hints dropping from it. */}
         <div className={styles.hintsCorner}>
+          {/* Only on the page opened on its own; the home page has its own sound key. */}
+          <SoundKey className={styles.soundKey} />
           <HintsToggle
             shown={hintsShown}
             onToggle={toggleHints}
@@ -812,7 +827,7 @@ export function ProjectView({
                     <FlapWords
                       text={section.heading}
                       active={seen.has(position)}
-                      onFlap={playFlap}
+                      onFlap={playPartFlap}
                     />
                   </span>
                 </h2>
@@ -920,16 +935,29 @@ export function ProjectView({
                 {arrow === "←" && (
                   <ArrowIcon direction="left" size={12} animated={false} />
                 )}
-                {label} disk
+                {label}
+                <span className={styles.pagerLabelMore}>disk</span>
                 {arrow === "→" && <ArrowIcon size={12} animated={false} />}
               </span>
-              <span className={styles.pagerTitle}>
+              <span className={styles.pagerBody}>
+                {/* The disk itself, in its colour, with its number on the sticker: it lifts
+                    out of the card on hover, like taking the next one from the box. */}
                 <span
-                  className={styles.pagerChip}
+                  className={styles.pagerDisk}
                   style={{ "--chip": other.disk } as CSSProperties}
                   aria-hidden="true"
-                />
-                {padNumber(diskNumber(other))} {other.title}
+                >
+                  <span className={styles.pagerDiskFace}>
+                    <span className={styles.pagerShutter} />
+                    <span className={styles.pagerSticker}>
+                      {padNumber(diskNumber(other))}
+                    </span>
+                  </span>
+                </span>
+                <span className={styles.pagerText}>
+                  <span className={styles.pagerTitle}>{other.title}</span>
+                  <span className={styles.pagerBlurb}>{other.blurb}</span>
+                </span>
               </span>
             </>
           );
@@ -948,7 +976,12 @@ export function ProjectView({
               {content}
             </button>
           ) : (
-            <Link key={label} href={`/work/${other.id}`} className={pagerClass}>
+            <Link
+              key={label}
+              href={`/work/${other.id}`}
+              className={pagerClass}
+              onMouseEnter={onTap}
+            >
               {content}
             </Link>
           );

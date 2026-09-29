@@ -271,7 +271,7 @@ interface IntroState {
   /** Plays the grid ripple's sound (thump, ring clicks, swell) when sound is on. */
   playRipple: (duration: number, from?: RevealFrom) => void;
   /** Plays a split-flap letter sound when sound is on; silent otherwise. */
-  playFlap: (across: number, landed: boolean) => void;
+  playFlap: (across: number, landed: boolean, level?: number) => void;
   /** Plays an intro text cue when sound is on; silent otherwise. */
   playCue: (cue: IntroCue) => void;
   /** Fades the preview monitor's hum in or out (only heard while sound is on). */
@@ -314,7 +314,7 @@ const SoundKeyContext = createContext<{
  * server component, like the page's keys) plays that cue when pressed, and ticks on hover.
  */
 export function PageSound({ children }: { children: ReactNode }) {
-  const { soundOn, waiting, toggle, active, sounds } = useSiteSound();
+  const { soundOn, live, waiting, toggle, active, sounds } = useSiteSound();
 
   const playCue = useCallback(
     (cue: IntroCue) => {
@@ -324,9 +324,25 @@ export function PageSound({ children }: { children: ReactNode }) {
     [active, sounds],
   );
   const playFlap = useCallback(
-    (across: number, landed: boolean) => sounds()?.flap(across, landed),
+    (across: number, landed: boolean, level?: number) =>
+      sounds()?.flap(across, landed, level),
     [sounds],
   );
+  // A case study's monitor hums while lit. Remembered, so turning sound on while it's up
+  // brings the hum in too.
+  const humWantedRef = useRef(false);
+  const setHum = useCallback(
+    (on: boolean) => {
+      humWantedRef.current = on;
+      engine?.sounds.hum(on && active());
+    },
+    [active],
+  );
+
+  useEffect(() => {
+    engine?.sounds.hum(soundOn && live && humWantedRef.current);
+  }, [soundOn, live]);
+
   const getSounds = sounds;
 
   const value = useMemo<IntroState>(
@@ -338,9 +354,9 @@ export function PageSound({ children }: { children: ReactNode }) {
       playRipple: () => {},
       playFlap,
       playCue,
-      setHum: () => {},
+      setHum,
     }),
-    [soundOn, getSounds, playFlap, playCue],
+    [soundOn, getSounds, playFlap, playCue, setHum],
   );
   const key = useMemo(
     () => ({ on: soundOn, waiting, toggle }),
@@ -473,7 +489,8 @@ export function SiteIntro({ children }: SiteIntroProps) {
   // Sounds only while the audio is actually running (a suspended one would queue them and
   // play them all at once on resume); on the home page the haptics go with the sound.
   const playFlap = useCallback(
-    (across: number, landed: boolean) => sounds()?.flap(across, landed),
+    (across: number, landed: boolean, level?: number) =>
+      sounds()?.flap(across, landed, level),
     [sounds],
   );
 

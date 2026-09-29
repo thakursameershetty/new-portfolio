@@ -906,6 +906,11 @@ function onScreen(element: HTMLElement | null): element is HTMLElement {
   return rect.bottom > 0 && rect.top < window.innerHeight && rect.width > 0;
 }
 
+// Undoes the fades that hid a disk in the list while its file was open.
+function restoreDisk(disk: HTMLElement) {
+  for (const animation of disk.getAnimations()) animation.cancel();
+}
+
 function DiskWindow({
   project,
   disk,
@@ -924,6 +929,9 @@ function DiskWindow({
   const morphRef = useRef<HTMLDivElement>(null);
   const closingRef = useRef(false);
   const shownIdRef = useRef<string | null>(null);
+  // The disk in the list that's hidden while its file is open (it became the window). Paging
+  // to a neighbour moves the gap to that neighbour's disk, so this one has to come back.
+  const hiddenDiskRef = useRef<HTMLElement | null>(null);
   const { playCue } = useIntro();
   const reduceMotion = useReducedMotion();
 
@@ -957,11 +965,21 @@ function DiskWindow({
     const morph = morphRef.current;
     if (!dialog || !project || !panel || !morph) return;
 
-    // Already open: paged to another project, so start it from the top and fade it in.
+    // Already open: paged to another project, so start it from the top and fade it in. The
+    // disk it was opened from goes back in its place in the list, and the new one's disk
+    // leaves a gap instead, for closing to shrink back into.
     if (dialog.open) {
       if (shownIdRef.current === project.id) return;
       shownIdRef.current = project.id;
       dialog.scrollTop = 0;
+      if (hiddenDiskRef.current && hiddenDiskRef.current !== disk) {
+        restoreDisk(hiddenDiskRef.current);
+        hiddenDiskRef.current = null;
+      }
+      if (disk && !reduceMotion) {
+        disk.animate({ opacity: [0, 0] }, { duration: 1, fill: "forwards" });
+        hiddenDiskRef.current = disk;
+      }
       if (!reduceMotion) panel.animate({ opacity: [0, 1] }, { duration: 220 });
       return;
     }
@@ -979,6 +997,7 @@ function DiskWindow({
     }
     morph.style.display = "block";
     disk.animate({ opacity: [1, 0] }, { duration: 140, fill: "forwards" });
+    hiddenDiskRef.current = disk;
     const grow = morph.animate([box.disk, box.window], {
       ...morphOpen,
       fill: "forwards",
@@ -1005,9 +1024,10 @@ function DiskWindow({
       dialog.close();
       dialog.classList.remove(styles.closing);
       for (const animation of dialog.getAnimations()) animation.cancel();
-      if (disk) {
-        for (const animation of disk.getAnimations()) animation.cancel();
-      }
+      if (disk) restoreDisk(disk);
+      // Whichever disk is still hidden comes back too, even if it's not the one closed into.
+      if (hiddenDiskRef.current) restoreDisk(hiddenDiskRef.current);
+      hiddenDiskRef.current = null;
       shownIdRef.current = null;
       onClosed();
     };
