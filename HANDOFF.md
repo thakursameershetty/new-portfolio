@@ -85,8 +85,9 @@ grain, darker idle cells). Features, each a prop or uniform:
 - **Haptics** are fired here, from `playCue` (per-cue table `cueHaptics`, each hit a separate
   `[delay, ms]` buzz so a later one can't cancel an earlier one) and from the ripple
   (`buzzRipple`). They follow the sound toggle: sound off → no haptics.
-- **Phone tilt permission** (`requestTilt` from `deviceTilt.ts`) is asked from the first tap on
-  the page (iOS only allows the prompt from a gesture).
+- **Phone tilt permission** (`armTilt` from `deviceTilt.ts`) starts tilt at once where it can
+  (Android, or iOS already granted) and otherwise asks on every `touchend`/`click` until answered
+  (iOS only allows the prompt from a gesture, and Safari sends no `click` for taps on plain content).
 - Renders `SiteNav` and `ClickSpark`.
 
 ### Sound — `src/components/revealSound.ts`
@@ -120,7 +121,7 @@ iOS Safari doesn't let websites vibrate (an iOS 18 hidden-switch hack exists but
 patterns; deliberately not used). Patterns are short (4–28 ms) so they read as mechanical ticks.
 
 ### Phone tilt — `src/components/deviceTilt.ts`
-`requestTilt()` (from a tap; iOS asks permission, Android doesn't) and `onTilt(listener)`.
+`armTilt()` / `requestTilt()` (from a tap; iOS asks permission, Android doesn't) and `onTilt(listener)`.
 Uses `deviceorientation`, maps axes for the screen orientation (portrait/landscape), and
 measures tilt **relative to a resting angle that slowly follows the phone** (`settleRate`), so
 holding it at any angle rests level. `fullTilt = 18°` tips the box all the way. Touch screens

@@ -2,7 +2,7 @@
 // being held: that resting angle is learned from the first reading and then follows slowly,
 // so holding the phone still at any angle settles the box level again, and only a tilt moves
 // it. Touch screens only. iOS asks the visitor first, and only allows the question from a
-// tap, so `requestTilt` is called from one (the first tap on the page).
+// tap, so `armTilt` asks on every tap until there's an answer.
 
 type Listener = (x: number, y: number) => void;
 
@@ -13,27 +13,61 @@ const settleRate = 0.006;
 
 const listeners = new Set<Listener>();
 let started = false;
+// Declined: don't ask again.
+let refused = false;
+let asking = false;
 let rest: { across: number; up: number } | null = null;
 
+type Permission = () => Promise<"granted" | "denied">;
+
+function permissionFor(): Permission | undefined {
+  const permission = (
+    DeviceOrientationEvent as unknown as { requestPermission?: Permission }
+  ).requestPermission;
+  return typeof permission === "function" ? permission : undefined;
+}
+
 export function requestTilt() {
-  if (started || typeof window === "undefined" || !("DeviceOrientationEvent" in window)) return;
+  if (started || refused || asking) return;
+  if (typeof window === "undefined" || !("DeviceOrientationEvent" in window)) return;
   if (!window.matchMedia("(pointer: coarse)").matches) return;
 
-  const permission = (
-    DeviceOrientationEvent as unknown as {
-      requestPermission?: () => Promise<"granted" | "denied">;
-    }
-  ).requestPermission;
-  if (typeof permission !== "function") {
+  const permission = permissionFor();
+  if (!permission) {
     start();
     return;
   }
+  asking = true;
   permission()
     .then((answer) => {
       if (answer === "granted") start();
+      else refused = true;
     })
-    // Declined, or not asked from a tap: the boxes just don't tilt.
-    .catch(() => {});
+    // Not asked from a tap (iOS won't show the prompt): the next tap asks again.
+    .catch(() => {})
+    .finally(() => (asking = false));
+}
+
+/**
+ * Starts the tilt as soon as it can. Android needs no permission, and an iPhone that was
+ * already asked this visit answers without a prompt, so it starts right away there. Otherwise
+ * iOS only asks from a tap, and Safari sends no `click` for a tap on plain page content (only
+ * on links, buttons and the like), so it asks on every touch that ends, until answered.
+ * Returns a cleanup.
+ */
+export function armTilt() {
+  requestTilt();
+  const ask = () => {
+    requestTilt();
+    if (started || refused) disarm();
+  };
+  const disarm = () => {
+    window.removeEventListener("touchend", ask, true);
+    window.removeEventListener("click", ask, true);
+  };
+  window.addEventListener("touchend", ask, { capture: true, passive: true });
+  window.addEventListener("click", ask, true);
+  return disarm;
 }
 
 /** Follow the tilt, from -1 to 1 across (right is positive) and up. Returns an unsubscribe. */

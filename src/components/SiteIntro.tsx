@@ -27,7 +27,7 @@ import {
   type PointerSounds,
 } from "./revealSound";
 import { ClickSpark } from "./ClickSpark";
-import { requestTilt } from "./deviceTilt";
+import { armTilt } from "./deviceTilt";
 import { buzz } from "./haptics";
 import { SiteNav } from "./SiteNav";
 import { VolumeIcon } from "./icons/VolumeIcon";
@@ -347,12 +347,9 @@ export function PageSound({ children }: { children: ReactNode }) {
     [soundOn, waiting, toggle],
   );
 
-  // Phones that ask before sharing their tilt (iOS) only may from a tap: ask on the first,
-  // for the ID card.
-  useEffect(() => {
-    window.addEventListener("click", requestTilt, { once: true });
-    return () => window.removeEventListener("click", requestTilt);
-  }, []);
+  // Phones that ask before sharing their tilt (iOS) only may from a tap: ask on each until
+  // answered, for the ID card.
+  useEffect(() => armTilt(), []);
 
   // data-feel: the cue on press, and the home keys' hover tick on the way in.
   useEffect(() => {
@@ -589,13 +586,12 @@ export function SiteIntro({ children }: SiteIntroProps) {
       window.clearTimeout(wait);
     };
 
-    // Phones that ask before sharing their tilt (iOS) only may from a tap: ask on the first.
-    const askTilt = () => requestTilt();
-    window.addEventListener("click", askTilt, { once: true });
+    // Phones that ask before sharing their tilt (iOS) only may from a tap.
+    const disarmTilt = armTilt();
 
     return () => {
       stop();
-      window.removeEventListener("click", askTilt);
+      disarmTilt();
     };
   }, []);
 

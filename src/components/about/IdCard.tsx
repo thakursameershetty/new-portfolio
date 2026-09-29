@@ -152,11 +152,11 @@ export function IdCard() {
     const release = () => (touchingRef.current = false);
     window.addEventListener("pointerup", release);
     window.addEventListener("pointercancel", release);
-    // A sharp jolt knocks the loop in its slot: a clink, when the tilt's speed (smoothed,
+    // A sharp jolt knocks the card against its clip: a tap, when the tilt's speed (smoothed,
     // in full tilts per second) jumps past `jolt`, at most one per `rest` ms, and only
     // while the card's hanging where it can be seen (not docked, not scrolled away).
-    const jolt = 3;
-    const rest = 550;
+    const jolt = 3.5;
+    const rest = 700;
     let last: { x: number; y: number; t: number } | null = null;
     let speed = 0;
     let lastClink = 0;

@@ -291,12 +291,16 @@ export function createPointerSounds(context: AudioContext): PointerSounds {
         return;
       }
       if (cue === "clink") {
-        // The ID card's metal loop knocking in its slot as the phone jolts it: a small tick,
-        // then two short, slightly clashing rings, like thin metal on plastic.
-        const lift = 0.94 + Math.random() * 0.12;
-        playClick(context, output, noise, at, 5200 * lift, 0.016);
-        playRing(context, output, noise, at + 0.004, 3150 * lift, 0.009);
-        playRing(context, output, noise, at + 0.011, 4780 * lift, 0.005);
+        // The ID card knocking against its clip as the phone jolts it: a dull plastic tap
+        // with a soft body, and a fainter one as it swings back. No ring, so it reads as a
+        // plastic card, not metal.
+        const lift = 0.9 + Math.random() * 0.2;
+        playMuffled(context, output, noise, at, 0.05);
+        playClick(context, output, noise, at, 1700 * lift, 0.035);
+        playKnock(context, output, at, 0.03, 0, 260 * lift);
+        const back = at + 0.07 + Math.random() * 0.03;
+        playClick(context, output, noise, back, 1500 * lift, 0.014);
+        playKnock(context, output, back, 0.012, 0, 230 * lift);
         return;
       }
       if (cue === "switchOn" || cue === "switchOff") {
