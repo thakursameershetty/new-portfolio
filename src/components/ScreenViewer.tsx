@@ -3,6 +3,7 @@
 import { useEffect, useLayoutEffect, useRef } from "react";
 import { useReducedMotion } from "framer-motion";
 import Image from "next/image";
+import { Diagram } from "./diagrams/Diagram";
 import type { ScreenItem } from "./projects";
 import { ArrowIcon } from "./icons/ArrowIcon";
 import styles from "./ScreenViewer.module.css";
@@ -234,6 +235,9 @@ export function ScreenViewer({
             referrerPolicy="strict-origin-when-cross-origin"
             allowFullScreen
           />
+        )}
+        {current?.type === "diagram" && (
+          <Diagram key={current.diagram} id={current.diagram} fit />
         )}
         {current?.type === "card" && (
           <div key={current.title} className={styles.card}>

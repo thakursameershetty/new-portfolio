@@ -52,6 +52,12 @@ const diskSeatedZ = front + 0.1 - diskSize / 2;
 
 const imageHold = 4200;
 const videoLimit = 14000;
+// A picture that hasn't come up: snow after this long, the hand's first slap a little after,
+// then another every so often, up to a few.
+const noSignalAfter = 700;
+const firstSlap = 800;
+const slapGap = 3400;
+const maxSlaps = 5;
 
 const easeOutCubic = (t: number) => 1 - Math.pow(1 - t, 3);
 const easeInQuad = (t: number) => t * t;
@@ -71,6 +77,7 @@ export async function createCrtSet(
     onScreen,
     onScreenHover,
     onItem,
+    onThump,
   }: {
     channels: CrtChannel[];
     /** The project's floppy, in the drive. */
@@ -90,6 +97,8 @@ export async function createCrtSet(
     onScreenHover?: (over: boolean) => void;
     /** The screen moved on to another item by itself. */
     onItem?: (item: number) => void;
+    /** The hand slapped the monitor's top, for its thud. */
+    onThump?: () => void;
   },
 ): Promise<CrtSet> {
   const fonts = await loadFonts(canvas);
@@ -181,6 +190,8 @@ export async function createCrtSet(
         uScreenAspect: { value: screenWidth / screenHeight },
         uTime: { value: 0 },
         uStatic: { value: 0 },
+        uSnow: { value: 0 },
+        uJolt: { value: 0 },
         uPower: { value: reduceMotion ? 1 : 0 },
       },
       vertexShader: tubeVertex,
@@ -406,6 +417,57 @@ export async function createCrtSet(
   remoteShadow.position.set(0.66, 0.001, 0.6);
   set.add(remoteShadow);
 
+  // ---- The hand that slaps the monitor when its picture won't come up: a right hand, palm
+  // down and fingers pointing left, reaching in from above on the right, in a sleeve cut off
+  // just past the wrist. Its origin is under the wrist. ----
+  const skin = keep(
+    new THREE.MeshStandardMaterial({ color: 0xc68c62, roughness: 0.6, transparent: true, opacity: 0 }),
+  );
+  const cloth = keep(
+    new THREE.MeshStandardMaterial({ color: 0x36405a, roughness: 0.85, transparent: true, opacity: 0 }),
+  );
+  const hand = new THREE.Group();
+  hand.visible = false;
+  hand.scale.setScalar(1.4);
+  set.add(hand);
+  const palm = new THREE.Mesh(keep(new RoundedBoxGeometry(0.17, 0.05, 0.16, 4, 0.022)), skin);
+  palm.position.set(-0.08, 0.025, 0);
+  hand.add(palm);
+  // Index (nearest the viewer) to little finger, held together for the slap.
+  [0.11, 0.125, 0.115, 0.088].forEach((length, index) => {
+    const finger = new THREE.Mesh(keep(new THREE.CapsuleGeometry(0.023, length, 4, 10)), skin);
+    finger.rotation.z = Math.PI / 2;
+    finger.position.set(-0.155 - length / 2, 0.023, 0.057 - index * 0.038);
+    hand.add(finger);
+  });
+  const thumb = new THREE.Mesh(keep(new THREE.CapsuleGeometry(0.025, 0.07, 4, 10)), skin);
+  thumb.rotation.set(0, 0.6, Math.PI / 2);
+  thumb.position.set(-0.07, 0.022, 0.098);
+  hand.add(thumb);
+  // The forearm keeps its own angle as the wrist cocks back and slaps down.
+  const forearm = new THREE.Group();
+  hand.add(forearm);
+  const wrist = new THREE.Mesh(keep(new THREE.CylinderGeometry(0.05, 0.056, 0.16, 16)), skin);
+  wrist.rotation.z = Math.PI / 2;
+  wrist.position.set(0.07, 0.028, 0);
+  forearm.add(wrist);
+  const sleeve = new THREE.Mesh(keep(new THREE.CapsuleGeometry(0.072, 0.2, 6, 18)), cloth);
+  sleeve.rotation.z = Math.PI / 2;
+  sleeve.position.set(0.27, 0.03, 0);
+  forearm.add(sleeve);
+  const armLift = 0.45;
+  // Where the wrist comes down on the monitor's top: towards the front, so the fingers land
+  // in view, and the arm reaching off to the right.
+  const slapAt = new THREE.Vector3(0.44, standHeight + bodyHeight, 0.05);
+  const poseHand = (lift: number, cock: number, drift: number, opacity: number) => {
+    hand.position.set(slapAt.x + drift, slapAt.y + lift, slapAt.z);
+    hand.rotation.z = -cock;
+    forearm.rotation.z = armLift + cock;
+    skin.opacity = opacity;
+    cloth.opacity = opacity;
+    hand.visible = opacity > 0;
+  };
+
   // The floor the set stands on: faint grid lines in the page's ink (a stronger one every
   // fourth), fading out in an oval around the set so it melts into the page. It turns with the
   // set when it's dragged round.
@@ -439,11 +501,18 @@ export async function createCrtSet(
   const imageTexture = (src: string) => {
     let pending = images.get(src);
     if (!pending) {
-      pending = loader.loadAsync(src).then((loaded) => {
-        loaded.colorSpace = THREE.SRGBColorSpace;
-        loaded.anisotropy = renderer.capabilities.getMaxAnisotropy();
-        return keep(loaded);
-      });
+      pending = loader.loadAsync(src).then(
+        (loaded) => {
+          loaded.colorSpace = THREE.SRGBColorSpace;
+          loaded.anisotropy = renderer.capabilities.getMaxAnisotropy();
+          return keep(loaded);
+        },
+        (error) => {
+          // Forget a failed load, so trying again fetches it afresh.
+          images.delete(src);
+          throw error;
+        },
+      );
       images.set(src, pending);
     }
     return pending;
@@ -488,6 +557,16 @@ export async function createCrtSet(
   let showToken = 0;
   // While held, the current item stays put (and a clip loops) instead of moving on.
   let held = false;
+  // The item on screen, while it's being watched for coming up (see `watch`).
+  let signal: { loaded: () => boolean; retry: () => void; onUp?: () => void; up: boolean } | null =
+    null;
+  let slapTimer = 0;
+  let slaps = 0;
+  // How far the screen has fallen to snow (eased towards `snowGoal`), and how hard the set is
+  // still shaking from a slap (1 on impact, dying away).
+  let snowGoal = 0;
+  let snow = 0;
+  let jolt = 0;
 
   const show = (map: THREE.Texture) => {
     tubeMaterial.uniforms.uMap.value = map;
@@ -495,6 +574,9 @@ export async function createCrtSet(
   };
   const stopItem = () => {
     window.clearTimeout(itemTimer);
+    window.clearTimeout(slapTimer);
+    signal = null;
+    snowGoal = 0;
     if (playing) {
       playing.onended = null;
       playing.pause();
@@ -518,16 +600,26 @@ export async function createCrtSet(
       onItem?.(itemIndex);
     };
     drawDisplay(channelText(channel));
-    if (item.type === "card") {
+    if (item.type === "diagram") {
+      // Diagrams are left off the monitor's channels (see `caseChannels`); just in case.
+      show(blank);
+      itemTimer = window.setTimeout(advance, imageHold);
+    } else if (item.type === "card") {
       show(cardTexture(item, channel));
       itemTimer = window.setTimeout(advance, imageHold);
     } else if (item.type === "image" || item.type === "youtube") {
       // A YouTube video shows its thumbnail; the closer look plays it.
-      imageTexture(item.src)
-        .then((map) => {
-          if (token === showToken) show(map);
-        })
-        .catch(() => {});
+      let loaded = false;
+      const load = () =>
+        imageTexture(item.src)
+          .then((map) => {
+            if (token !== showToken) return;
+            loaded = true;
+            show(map);
+          })
+          .catch(() => {});
+      void load();
+      watch(() => loaded, load);
       itemTimer = window.setTimeout(advance, imageHold);
     } else {
       const { video, texture: map } = videoTexture(item.src);
@@ -537,6 +629,15 @@ export async function createCrtSet(
       video.onended = advance;
       video.play().catch(() => {});
       playing = video;
+      watch(
+        () => video.readyState >= HTMLMediaElement.HAVE_CURRENT_DATA,
+        () => {
+          video.load();
+          video.play().catch(() => {});
+        },
+        // Its shape is only known once it has loaded.
+        () => show(map),
+      );
       itemTimer = window.setTimeout(advance, videoLimit);
     }
   };
@@ -550,6 +651,54 @@ export async function createCrtSet(
     playItem();
     onItem?.(itemIndex);
   };
+
+  // ---- No picture: when an item hasn't come up after a moment, the screen falls to snow and
+  // the hand comes down and slaps the monitor's top, trying the picture again, until it's up
+  // (or it has tried a few times). ----
+  function watch(loaded: () => boolean, retry: () => void, onUp?: () => void) {
+    const watched = { loaded, retry, onUp, up: loaded() };
+    signal = watched;
+    if (watched.up) return;
+    const knock = () => {
+      if (signal !== watched || watched.up) return;
+      // Not while it's being looked at closely (the closer look covers the set).
+      if (!held) {
+        slaps++;
+        if (reduceMotion) watched.retry();
+        else void slap(watched);
+      }
+      if (slaps < maxSlaps) slapTimer = window.setTimeout(knock, slapGap);
+    };
+    slaps = 0;
+    slapTimer = window.setTimeout(() => {
+      if (signal !== watched || watched.up) return;
+      if (!reduceMotion) snowGoal = 1;
+      slapTimer = window.setTimeout(knock, firstSlap);
+    }, noSignalAfter);
+  }
+  let slapping = false;
+  async function slap(watched: NonNullable<typeof signal>) {
+    if (slapping) return;
+    slapping = true;
+    const impact = (strength: number, tryAgain: boolean) => {
+      jolt = strength;
+      flicker(0.9 * strength, 380);
+      onThump?.();
+      if (tryAgain && signal === watched && !watched.up) watched.retry();
+    };
+    // In from above, fading up, the wrist cocked back.
+    await tween((e) => poseHand(0.34 - 0.18 * e, 0.75, 0.12 * (1 - e), e), 320, easeOutCubic);
+    // Two hard slaps, the first trying the picture again.
+    await tween((e) => poseHand(0.16 * (1 - e), 0.75 * (1 - e), 0, 1), 110, easeInQuad);
+    impact(1, true);
+    await tween((e) => poseHand(0.1 * e, 0.45 * e, 0, 1), 170, easeOutCubic);
+    await tween((e) => poseHand(0.1 * (1 - e), 0.45 * (1 - e), 0, 1), 100, easeInQuad);
+    impact(0.8, false);
+    // A moment pressed flat, as if waiting to see, then away.
+    await tween(() => poseHand(0, 0, 0, 1), 260);
+    await tween((e) => poseHand(0.3 * e, 0.3 * e, 0.12 * e, 1 - e), 380, easeInQuad);
+    slapping = false;
+  }
 
   // ---- Motion. ----
   let frame = 0;
@@ -706,6 +855,19 @@ export async function createCrtSet(
     staticLevel = now < staticUntil ? staticFrom * ((staticUntil - now) / staticDuration) : 0;
     tubeMaterial.uniforms.uStatic.value = staticLevel;
     tubeMaterial.uniforms.uTime.value = now / 1000;
+
+    if (signal && !signal.up && signal.loaded()) {
+      signal.up = true;
+      snowGoal = 0;
+      signal.onUp?.();
+    }
+    snow += (snowGoal - snow) * (1 - Math.exp(-delta / 160));
+    tubeMaterial.uniforms.uSnow.value = snow;
+    // The slap rocks the monitor on its stand and knocks the picture about.
+    jolt = Math.max(0, jolt - delta / 420);
+    monitor.position.y = -0.01 * jolt * jolt;
+    monitor.rotation.z = Math.sin(now / 24) * 0.012 * jolt;
+    tubeMaterial.uniforms.uJolt.value = jolt;
 
     const k = 1 - Math.exp(-delta / 140);
     turn.yaw += (turnGoal.yaw - turn.yaw) * k;
@@ -940,6 +1102,7 @@ export async function createCrtSet(
     async eject() {
       held = true;
       stopItem();
+      poseHand(0, 0, 0, 0);
       driveLight.color.set(0xffb347);
       await Promise.all([
         tween((e) => (diskMesh.position.z = diskSeatedZ + 0.3 * e), 360, easeOutCubic),
@@ -1056,6 +1219,8 @@ const tubeFragment = /* glsl */ `
   uniform float uScreenAspect;
   uniform float uTime;
   uniform float uStatic;
+  uniform float uSnow;
+  uniform float uJolt;
   uniform float uPower;
   varying vec2 vUv;
 
@@ -1073,12 +1238,16 @@ const tubeFragment = /* glsl */ `
     vec2 fit = uv - 0.5;
     if (uTexAspect > uScreenAspect) fit.x *= uScreenAspect / uTexAspect;
     else fit.y *= uTexAspect / uScreenAspect;
-    vec3 colour = texture2D(uMap, fit + 0.5).rgb;
+    // A slap tears the picture sideways in bands and bounces it.
+    vec2 at = fit + 0.5;
+    at.x += (noise(vec2(floor(vUv.y * 48.0), floor(uTime * 24.0))) - 0.5) * 0.08 * uJolt;
+    at.y += sin(uTime * 55.0) * 0.03 * uJolt;
+    vec3 colour = texture2D(uMap, at).rgb;
 
-    // Static between channels.
+    // Static between channels, and snow while there's no picture.
     float grain = noise(floor(uv * vec2(260.0, 200.0)) + floor(uTime * 40.0));
-    colour = mix(colour, vec3(grain * 0.9), uStatic * 0.7);
-    colour += (noise(vec2(uTime, floor(uv.y * 90.0))) - 0.5) * 0.12 * uStatic;
+    colour = mix(colour, vec3(grain * 0.8), max(uStatic * 0.7, uSnow * 0.85));
+    colour += (noise(vec2(uTime, floor(uv.y * 90.0))) - 0.5) * 0.12 * max(uStatic, uSnow * 0.6);
 
     // Scanlines (fading to an even tone once they're finer than the pixels showing them, as
     // when the set is turned edge-on, so they don't shimmer into moiré), a slow rolling band,

@@ -37,7 +37,7 @@ export function CaseMonitor({
   /** A key on the remote chose this channel. */
   onSelect: (index: number) => void;
   onPower?: () => void;
-  onCue?: (cue: "remoteKey" | "driveLoad") => void;
+  onCue?: (cue: "remoteKey" | "driveLoad" | "thump") => void;
   /** Look closer at the screen, starting from this item of the current channel. */
   onLookCloser: (item: number) => void;
   /** Filled with a way to find the screen on the page, for the closer look to grow from. */
@@ -88,6 +88,7 @@ export function CaseMonitor({
           onKey: () => handlers.current.onCue?.("remoteKey"),
           onPower: () => handlers.current.onPower?.(),
           onSeat: () => handlers.current.onCue?.("driveLoad"),
+          onThump: () => handlers.current.onCue?.("thump"),
           onScreen: (item) => handlers.current.onLookCloser(item),
           onScreenHover: setOverScreen,
           onItem: (item) => (itemRef.current = item),

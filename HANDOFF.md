@@ -259,8 +259,11 @@ edge). Screen: scanlines, vignette, glass reflection, a static burst on every ch
 the project's `media` (clip to its end, stills 1.8s each). Sounds: `crtOn`, `channel`, and the
 hum while visible. Hidden on `(hover: none)`.
 
-**Media:** real for every project except parts of SamudraGupt-Q (test cards,
-`samudragupt-1.jpg`). AI Gym Trainer's old placeholders (`demo-friday.*`, `gym-1/2.jpg`) and
+**Media:** real for every project. SamudraGupt-Q's stills (dashboard per attack, both phone
+consoles) came from the owner's `SamudraGuptQ.pptx` on 2026-09-30; it has no screen recording
+yet, and three test cards remain (the store-now-decrypt-later illustration, next steps, and
+the deck's slide-4/10 diagrams if redrawn). Its placeholder `samudragupt-1.jpg` went to the
+Trash on 2026-09-30. AI Gym Trainer's old placeholders (`demo-friday.*`, `gym-1/2.jpg`) and
 the unused `stickers/cat.png` went to the Trash on 2026-09-29
 (`portfolio-unused-assets-2026-09-29`).
 SamudraGupt-Q has no link until there's a real one. `public/` holds only what the code uses:
@@ -312,8 +315,17 @@ outside `public/`, which ships with the site.
 
 ## Open items / next steps
 
-1. **Real media:** SamudraGupt-Q's test cards, once the
-   owner supplies them.
+**Animated diagrams (`src/components/diagrams/`, 2026-09-30):** a case-study figure of
+`type: "diagram"` is an interactive SVG with its own controls (so it isn't wrapped in the
+"look closer" button; its controls include one). SamudraGupt-Q has three, each a part's
+`lead`: `packet-flow` (How it works: packets through the quantum engine's four checks, six
+pickable scenarios), `bell-pair` (Quantum key: the E91 circuit from `quantum_layer.py`, shot
+by shot, H gate switchable, "run all 512") and `fleet-average` (Privacy: CKKS averaging, depth
+sliders). They follow the site's reduced-motion setting and pause off screen. The monitor
+can't play them (WebGL textures), so parts with one set `screen` or drop off the monitor.
+
+1. **Real media:** a SamudraGupt-Q screen recording (the deck had only stills), and its two
+   remaining test cards.
 2. **Case studies (in progress):** one per project, written up in `projects.ts`
    (`caseStudy`). Peddi (the Roblox world, made with Dworak) is written from the owner's
    screenshots in `public/work/peddi/` (resized to 1680px, the player list blurred since it

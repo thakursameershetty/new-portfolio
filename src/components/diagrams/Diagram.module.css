@@ -1,0 +1,259 @@
+/* An animated diagram in a case study: drawn in SVG to fill its box's width, in the
+   monitor's phosphor colours on the figures' near-black. */
+.root {
+  display: block;
+  width: 100%;
+  /* Sized by its box, never by its contents: the scenario tabs scroll instead of widening
+     the figure (a grid track grows to fit what's in it). */
+  contain: inline-size;
+}
+
+.svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+/* In the closer look: as large as fits, centred. */
+.fit {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: clamp(12px, 3vw, 32px);
+}
+
+.fit .svg {
+  width: 100%;
+  height: 100%;
+  max-height: 100%;
+}
+
+/* Small caps-style labels, in the site's pixel face. */
+.tag {
+  font-family: var(--font-hero), monospace;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+}
+
+.letter {
+  font-family: var(--font-hero), monospace;
+  font-size: 15px;
+}
+
+.name {
+  font-family: var(--font-display), sans-serif;
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.small {
+  font-family: var(--font-display), sans-serif;
+  font-size: 12px;
+}
+
+.status {
+  font-family: var(--font-display), sans-serif;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+/* The controls under a diagram: back, play or pause, on; a tab per scenario (its bar filling
+   as it plays); and "look closer". */
+.root,
+.fit {
+  background: #0b0d0c;
+}
+
+.fit {
+  display: flex;
+  flex-direction: column;
+  place-items: stretch;
+  padding: 0;
+}
+
+.fit .svg {
+  flex: 1;
+  min-height: 0;
+  height: auto;
+  padding: clamp(12px, 3vw, 32px);
+}
+
+.controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px clamp(12px, 2vw, 20px);
+  border-top: 1px solid rgba(245, 241, 234, 0.1);
+}
+
+.transport {
+  display: flex;
+  gap: 4px;
+  flex: none;
+}
+
+.control {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border: 1px solid rgba(245, 241, 234, 0.16);
+  border-radius: 999px;
+  background: transparent;
+  color: #f5f1ea;
+  cursor: pointer;
+  transition:
+    background-color 200ms ease,
+    border-color 200ms ease;
+}
+
+.control:hover {
+  border-color: rgba(245, 241, 234, 0.4);
+  background: rgba(245, 241, 234, 0.06);
+}
+
+.control svg {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+
+/* The tabs scroll sideways when they don't fit (on a phone). */
+.scenarios {
+  display: flex;
+  gap: 6px;
+  flex: 1;
+  min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.scenarios::-webkit-scrollbar {
+  display: none;
+}
+
+.scenario {
+  position: relative;
+  flex: none;
+  overflow: hidden;
+  padding: 8px 12px;
+  border: 1px solid rgba(245, 241, 234, 0.12);
+  border-radius: 999px;
+  background: transparent;
+  color: rgba(245, 241, 234, 0.55);
+  font-family: var(--font-hero), monospace;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    color 200ms ease,
+    border-color 200ms ease;
+}
+
+.scenario:hover {
+  color: #f5f1ea;
+}
+
+.scenario[aria-pressed="true"] {
+  border-color: rgba(245, 241, 234, 0.4);
+  color: #f5f1ea;
+}
+
+.scenarioFill {
+  position: absolute;
+  inset: 0;
+  transform-origin: left;
+  background: rgba(159, 226, 154, 0.14);
+}
+
+.scenario[data-tone="bad"] .scenarioFill {
+  background: rgba(229, 75, 69, 0.16);
+}
+
+.scenarioLabel {
+  position: relative;
+}
+
+.control:focus-visible,
+.scenario:focus-visible {
+  outline: 2px solid #9fe29a;
+  outline-offset: 2px;
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.statusSmall {
+  font-family: var(--font-display), sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+/* A gate's letter, and the decrypted answer. */
+.gate {
+  font-family: var(--font-display), sans-serif;
+  font-size: 22px;
+  font-weight: 500;
+}
+
+.big {
+  font-family: var(--font-display), sans-serif;
+  font-size: 40px;
+  font-weight: 500;
+}
+
+.controls {
+  flex-wrap: wrap;
+}
+
+.control:disabled,
+.scenario:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+/* The depth sliders, one per drone. */
+.sliders {
+  display: flex;
+  flex: 1;
+  flex-wrap: wrap;
+  gap: 6px 16px;
+  min-width: 0;
+}
+
+.slider {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 120px;
+  color: rgba(245, 241, 234, 0.55);
+  font-family: var(--font-hero), monospace;
+  font-size: 11px;
+}
+
+.slider input {
+  flex: 1;
+  min-width: 0;
+}
+
+/* A few tabs (not a strip of scenarios): they wrap rather than scroll. */
+.wrap {
+  flex-wrap: wrap;
+}

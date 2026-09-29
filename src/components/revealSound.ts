@@ -67,6 +67,7 @@ export type IntroCue =
   | "diskRattle"
   | "crtOn"
   | "static"
+  | "thump"
   | "detent"
   | "clink"
   | "switchOn"
@@ -110,6 +111,19 @@ export function createPointerSounds(context: AudioContext): PointerSounds {
       }
     }
     crackleTimer = window.setTimeout(crackle, 300 + Math.random() * 1100);
+  };
+
+  // The tube's hum and static surging for a moment, then settling back to their usual level.
+  const surge = (at: number) => {
+    if (!humLevel || !humOn) return;
+    const level = humLevel.gain;
+    level.cancelScheduledValues(at);
+    level.setValueAtTime(level.value, at);
+    level.linearRampToValueAtTime(humVolume * channelSwell, at + 0.05);
+    level.setTargetAtTime(humVolume, at + 0.2, 0.08);
+    for (let crack = 0; crack < 3; crack++) {
+      playClick(context, humLevel, noise, at + 0.03 + crack * 0.05 + Math.random() * 0.03, 3000 + Math.random() * 4000, 0.4 + Math.random() * 0.4);
+    }
   };
 
   return {
@@ -232,18 +246,29 @@ export function createPointerSounds(context: AudioContext): PointerSounds {
         playClick(context, output, noise, at + 0.025, 6200, 0.012);
         return;
       }
+      if (cue === "thump") {
+        // A hand slapping the monitor's top: a hollow thud through its plastic case, loose
+        // bits inside rattling, and the tube's static jumping (as when changing channel).
+        playKnock(context, output, at, 0.14, 0, 85);
+        playClick(context, output, noise, at, 650, 0.05);
+        for (let i = 0; i < 3; i++) {
+          playClick(
+            context,
+            output,
+            noise,
+            at + 0.03 + Math.random() * 0.09,
+            2200 + Math.random() * 2400,
+            0.008 + Math.random() * 0.01,
+            (Math.random() - 0.5) * 0.3,
+          );
+        }
+        surge(at);
+        return;
+      }
       if (cue === "static") {
         // The tube changing channel: its own hum and static surge while the picture flickers
         // over, then settle back to their usual level.
-        if (!humLevel || !humOn) return;
-        const level = humLevel.gain;
-        level.cancelScheduledValues(at);
-        level.setValueAtTime(level.value, at);
-        level.linearRampToValueAtTime(humVolume * channelSwell, at + 0.05);
-        level.setTargetAtTime(humVolume, at + 0.2, 0.08);
-        for (let crack = 0; crack < 3; crack++) {
-          playClick(context, humLevel, noise, at + 0.03 + crack * 0.05 + Math.random() * 0.03, 3000 + Math.random() * 4000, 0.4 + Math.random() * 0.4);
-        }
+        surge(at);
         return;
       }
       if (cue === "shutter") {

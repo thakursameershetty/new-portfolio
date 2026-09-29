@@ -31,11 +31,13 @@ import {
   caseSections,
   diskNumber,
   sectionPictures,
+  screenKey,
   diskOrder,
   readingMinutes,
   type Project,
   type ScreenItem,
 } from "./projects";
+import { Diagram } from "./diagrams/Diagram";
 import { ArrowIcon } from "./icons/ArrowIcon";
 import styles from "./ProjectView.module.css";
 
@@ -97,7 +99,13 @@ export function ProjectView({
   /** The monitor's own sounds: its keys, the disk going in and out, and looking closer. */
   onCue?: (
     cue:
-      "remoteKey" | "driveLoad" | "driveEject" | "insert" | "crtOn" | "static",
+      | "remoteKey"
+      | "driveLoad"
+      | "driveEject"
+      | "insert"
+      | "crtOn"
+      | "static"
+      | "thump",
   ) => void;
   className?: string;
   ref?: Ref<HTMLElement>;
@@ -305,7 +313,7 @@ export function ProjectView({
   const litRef = useRef(false);
   const warmTimerRef = useRef(0);
   const monitorCue = useCallback(
-    (cue: "remoteKey" | "driveLoad") => {
+    (cue: "remoteKey" | "driveLoad" | "thump") => {
       onCue?.(cue);
       if (cue !== "driveLoad") return;
       litRef.current = true;
@@ -774,19 +782,32 @@ export function ProjectView({
                 const item = index + offset;
                 return (
                   <figure
-                    key={figure.type === "card" ? figure.title : figure.src}
+                    key={screenKey(figure)}
                     className={clsx(styles.figure, styles.arrive)}
                     style={{ "--order": textCount + item } as CSSProperties}
                   >
-                    <button
-                      type="button"
-                      ref={(node) => setFigureRef(item, node)}
-                      className={styles.figureButton}
-                      aria-label={`Look closer: ${figure.type === "card" ? figure.title : figure.alt}`}
-                      onClick={() => open(item)}
-                    >
-                      <FigureMedia figure={figure} layout={layout} />
-                    </button>
+                    {figure.type === "diagram" ? (
+                      // A diagram has controls of its own, so it can't sit inside a button;
+                      // its "look closer" is one of them.
+                      <div
+                        ref={(node) => setFigureRef(item, node)}
+                        className={clsx(styles.figureButton, styles.figureDiagram)}
+                        role="group"
+                        aria-label={figure.alt}
+                      >
+                        <Diagram id={figure.diagram} onOpen={() => open(item)} />
+                      </div>
+                    ) : (
+                      <button
+                        type="button"
+                        ref={(node) => setFigureRef(item, node)}
+                        className={styles.figureButton}
+                        aria-label={`Look closer: ${figure.type === "card" ? figure.title : figure.alt}`}
+                        onClick={() => open(item)}
+                      >
+                        <FigureMedia figure={figure} layout={layout} />
+                      </button>
+                    )}
                     {figure.type !== "card" && figure.caption && (
                       <figcaption className={styles.caption}>
                         {figure.caption}
@@ -1082,7 +1103,7 @@ function FigureCarousel({
       <div className={styles.carouselStage}>
         {figures.map((figure, item) => (
           <button
-            key={figure.type === "card" ? figure.title : figure.src}
+            key={screenKey(figure)}
             type="button"
             ref={(node) => setRef(item, node)}
             className={clsx(styles.figureButton, styles.carouselSlide)}
@@ -1133,7 +1154,7 @@ function FigureCarousel({
           >
             {figures.map((figure, item) => (
               <button
-                key={figure.type === "card" ? figure.title : figure.src}
+                key={screenKey(figure)}
                 type="button"
                 role="tab"
                 aria-selected={item === active}
@@ -1178,6 +1199,7 @@ function FigureMedia({
       </span>
     );
   }
+  if (figure.type === "diagram") return <Diagram id={figure.diagram} />;
   if (figure.type === "video") {
     return (
       <video

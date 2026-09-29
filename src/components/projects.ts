@@ -32,12 +32,36 @@ export type YouTubeMedia = {
   label?: string;
 };
 
+/** The animated diagrams (in `diagrams/`), drawn in SVG. */
+export type DiagramId = "packet-flow" | "bell-pair" | "fleet-average";
+
+/** An animated diagram in the story and the closer look. The monitor can't play one (its
+ *  screen is a WebGL texture), so a part with a diagram gives the monitor a `screen`. */
+export type DiagramFigure = {
+  type: "diagram";
+  diagram: DiagramId;
+  alt: string;
+  caption?: string;
+  label?: string;
+};
+
 /**
- * A picture in a case study (or on its monitor): a still or clip, a YouTube video, or (until
- * the footage exists) a test card naming what will go there.
+ * A picture in a case study (or on its monitor): a still or clip, a YouTube video, an
+ * animated diagram, or (until the footage exists) a test card naming what will go there.
  */
 export type ScreenItem =
-  ProjectMedia | YouTubeMedia | { type: "card"; title: string; note: string };
+  | ProjectMedia
+  | YouTubeMedia
+  | DiagramFigure
+  | { type: "card"; title: string; note: string };
+
+/** What tells a picture apart from the others in its part (a React key). */
+export const screenKey = (item: ScreenItem) =>
+  item.type === "card"
+    ? item.title
+    : item.type === "diagram"
+      ? item.diagram
+      : item.src;
 
 /** One part of a case study: its text, then its pictures, large. */
 export interface CaseSection {
@@ -1912,17 +1936,22 @@ export const projects: Project[] = [
       "TenSEAL",
       "Stable Baselines3",
     ],
-    // Placeholder media for the hover preview: swap for real screenshots and clips.
+    // Stills from the final-year presentation; no screen recording exists yet.
     media: [
       {
         type: "image",
-        src: "/work/samudragupt/architecture.jpg",
-        alt: "SamudraGupt-Q system architecture",
+        src: "/work/samudragupt/swarm.jpg",
+        alt: "The command dashboard: three drone nodes linked on the seabed, a submarine nearby",
       },
       {
         type: "image",
-        src: "/work/samudragupt-1.jpg",
-        alt: "SamudraGupt-Q screenshot 1",
+        src: "/work/samudragupt/sonar-threat.jpg",
+        alt: "The dashboard flagging a hostile submarine picked up by one node's sonar",
+      },
+      {
+        type: "image",
+        src: "/work/samudragupt/kinetic-strike.jpg",
+        alt: "A struck drone marked as hacked, with a MAYDAY alert asking to cut it off",
       },
     ],
     caseStudy: {
@@ -1939,9 +1968,10 @@ export const projects: Project[] = [
           layout: "pair",
           figures: [
             {
-              type: "card",
-              title: "Command dashboard",
-              note: "Recording coming soon",
+              type: "image",
+              src: "/work/samudragupt/swarm.jpg",
+              alt: "The command dashboard: fleet status, the quantum layer's Bell value and key bits, three linked drone nodes and the encrypted telemetry bar",
+              caption: "The command dashboard, with a three-drone swarm.",
             },
             {
               type: "image",
@@ -1984,6 +2014,26 @@ export const projects: Project[] = [
             "Privacy: TenSEAL averages the fleet's depth readings while they're still encrypted (CKKS)",
             "AI agent: a PPO agent reads link quality, latency and g-force, and chooses to carry on, rotate keys or cut the node off",
           ],
+          lead: {
+            type: "diagram",
+            diagram: "packet-flow",
+            alt: "Animation: packets travel from the phones through the relay and the four checks to the dashboard; a packet with a stripped key is blocked at the key check, a rogue node at the signature check, and a shaken drone is cut off by the AI agent",
+            caption:
+              "Every packet, every check: until one is stopped at the check that catches it.",
+          },
+          // The diagram can't play on the monitor, so its channel shows the drawings.
+          screen: [
+            {
+              type: "image",
+              src: "/work/samudragupt/architecture.jpg",
+              alt: "System architecture diagram",
+            },
+            {
+              type: "image",
+              src: "/work/samudragupt/sequence.jpg",
+              alt: "Sequence diagram: key exchange, encrypted telemetry and the AI agent's decision",
+            },
+          ],
           layout: "pair",
           figures: [
             {
@@ -1999,6 +2049,39 @@ export const projects: Project[] = [
           ],
         },
         {
+          id: "quantum",
+          label: "Quantum key",
+          heading: "Keys from entangled pairs",
+          paragraphs: [
+            "The key exchange follows the E91 idea. Qiskit simulates a two-qubit circuit: an H gate puts the first qubit in both states at once, and a CNOT ties the second to it. Measured, the pair always agrees, 00 or 11, never 01 or 10.",
+            "I run it 512 times, turn each agreeing pair into a bit (00 → 0, 11 → 1), shuffle the bits and keep the first 64 as the key. Switch the H gate off and you can see why it's there: every result is 00, and the key is all zeros.",
+            "It's a simulation, not photons in water, and the Bell value on the dashboard is generated rather than measured from these shots (more under Limits).",
+          ],
+          lead: {
+            type: "diagram",
+            diagram: "bell-pair",
+            alt: "Interactive circuit: two qubits pass an H gate and a CNOT, are measured as 00 or 11, and each result adds a bit to the key; the H gate can be switched off, and all 512 shots run at once",
+            caption:
+              "The circuit from quantum_layer.py. Run it a shot at a time, or all 512.",
+          },
+        },
+        {
+          id: "privacy",
+          label: "Privacy",
+          heading: "Averaging what no one can read",
+          paragraphs: [
+            "The fleet needs an average depth, but no single server should see every drone's readings. With CKKS encryption, through TenSEAL, each drone encrypts its depth before it's sent. The cloud adds the three ciphertexts and multiplies the sum by ⅓ without decrypting anything, and only the naval command centre can decrypt the result.",
+            "Drag a drone's depth and its ciphertext turns into entirely different noise, while the decrypted average still comes out right. The outlier filter is the exception: it decrypts the readings, which I come back to under Limits.",
+          ],
+          lead: {
+            type: "diagram",
+            diagram: "fleet-average",
+            alt: "Interactive diagram: three drones encrypt their depths, an untrusted cloud adds the ciphertexts blind, and the naval command centre decrypts only the fleet average; each drone's depth has a slider",
+            caption:
+              "498.5, 502.1 and 499.8 m in; 500.13 m out, and nothing in between is readable.",
+          },
+        },
+        {
           id: "decisions",
           label: "Decisions",
           heading: "Decisions I'm glad I made",
@@ -2007,7 +2090,7 @@ export const projects: Project[] = [
             "I gave the agent three choices instead of a yes-or-no alarm. Rotating keys is a middle step, so a noisy reading doesn't split the swarm the way cutting a node off would.",
             "I built the attacker as its own console. Spoofing a node, stripping its key or striking it all happen live, against the running system.",
           ],
-          layout: "pair",
+          layout: "row",
           figures: [
             {
               type: "image",
@@ -2015,9 +2098,29 @@ export const projects: Project[] = [
               alt: "Flowchart of the threat response, from the quantum check to Protocol Omega",
             },
             {
-              type: "card",
-              title: "Drone and attacker consoles",
-              note: "Recording coming soon",
+              type: "image",
+              src: "/work/samudragupt/drone-console.jpg",
+              alt: "The drone console on a phone: callsign, thrust slider, pitch and roll, a kinetic strike button and sonar contacts",
+              caption: "A phone as a drone.",
+            },
+            {
+              type: "image",
+              src: "/work/samudragupt/attacker-console.jpg",
+              alt: "The attacker console on a phone, in red: spoofing a MAC address and a button to infiltrate the swarm",
+              caption: "The attacker's console.",
+            },
+          ],
+          // The phones are too tall for the 4:3 screen, so it shows what the attacker sets off.
+          screen: [
+            {
+              type: "image",
+              src: "/work/samudragupt/threat-flow.jpg",
+              alt: "Flowchart of the threat response, from the quantum check to Protocol Omega",
+            },
+            {
+              type: "image",
+              src: "/work/samudragupt/rogue-node.jpg",
+              alt: "An unknown node appearing in the swarm, with its traffic blocked",
             },
           ],
         },
@@ -2035,17 +2138,44 @@ export const projects: Project[] = [
             "A violent shake, which triggers Protocol Omega: the node is cut off and its keys wiped",
             "A drone reporting a false depth, which the fleet average has to ignore",
           ],
-          layout: "pair",
+          layout: "carousel",
           figures: [
             {
-              type: "card",
-              title: "Kinetic strike → Protocol Omega",
-              note: "Recording coming soon",
+              type: "image",
+              src: "/work/samudragupt/single-node.jpg",
+              alt: "One drone node online, its quantum channel up and no alerts",
+              caption: "One node joins and its quantum channel comes up.",
+              label: "One node",
             },
             {
-              type: "card",
-              title: "Rogue node detected",
-              note: "Recording coming soon",
+              type: "image",
+              src: "/work/samudragupt/sonar-threat.jpg",
+              alt: "An external threat alert: a hostile submarine identified by one node, with its depth and range",
+              caption:
+                "A hostile submarine on sonar: flagged, and the swarm holds together.",
+              label: "Sonar contact",
+            },
+            {
+              type: "image",
+              src: "/work/samudragupt/key-failure.jpg",
+              alt: "A system breach alert: decryption failed for a node with a missing quantum key, which is marked as hacked",
+              caption: "A packet with its key stripped: the node's traffic is blocked.",
+              label: "Stripped key",
+            },
+            {
+              type: "image",
+              src: "/work/samudragupt/rogue-node.jpg",
+              alt: "An unknown node among the swarm, marked in red, with its traffic blocked",
+              caption: "A rogue node with a spoofed MAC address shows up as unknown.",
+              label: "Rogue node",
+            },
+            {
+              type: "image",
+              src: "/work/samudragupt/kinetic-strike.jpg",
+              alt: "A MAYDAY alert after a severe impact on one node, with buttons to cut it off or ignore",
+              caption:
+                "A violent shake reads as a strike, and the dashboard asks to cut the node off.",
+              label: "Kinetic strike",
             },
           ],
         },
@@ -2095,8 +2225,8 @@ export const projects: Project[] = [
     media: [
       {
         type: "video",
-        src: "/work/guesture-shop/shop.mp4",
-        poster: "/work/guesture-shop/shop.jpg",
+        src: "/work/guesture-shop/shop-hands.mp4",
+        poster: "/work/guesture-shop/shop-hands.jpg",
         alt: "Gesture Shop: browsing and adding products to the cart by hand",
       },
       {
@@ -2148,8 +2278,8 @@ export const projects: Project[] = [
       reel: [
         {
           type: "video",
-          src: "/work/guesture-shop/shop.mp4",
-          poster: "/work/guesture-shop/shop.jpg",
+          src: "/work/guesture-shop/shop-hands.mp4",
+          poster: "/work/guesture-shop/shop-hands.jpg",
           alt: "Gesture Shop, used by hand",
         },
         {
@@ -2181,8 +2311,8 @@ export const projects: Project[] = [
           figures: [
             {
               type: "video",
-              src: "/work/guesture-shop/shop.mp4",
-              poster: "/work/guesture-shop/shop.jpg",
+              src: "/work/guesture-shop/shop-hands.mp4",
+              poster: "/work/guesture-shop/shop-hands.jpg",
               alt: "Using Gesture Shop by hand in front of a laptop: pointing at products, grabbing them and dropping them in the cart",
               caption: "Browsing and filling the cart, hands off the laptop.",
             },
@@ -2641,7 +2771,10 @@ export function caseChannels(project: Project): CaseChannel[] {
   // Without a write-up, the overview's pictures are the reel again.
   if (!project.caseStudy) return channels;
   project.caseStudy.sections.forEach((section, part) => {
-    const screen = section.screen ?? sectionPictures(section);
+    // Diagrams can't play on the monitor; a part with one gives it a `screen` instead.
+    const screen =
+      section.screen ??
+      sectionPictures(section).filter((figure) => figure.type !== "diagram");
     if (screen?.length) channels.push({ label: section.label, screen, part });
   });
   return channels;
