@@ -240,6 +240,11 @@ Spotmies · Amerox, Peddi, TMN · Satara Today) and **Personal · Hobby & academ
   reads as one name) · kind · the project's `blurb` (a line written to fit **2 lines** whole;
   never the case-study `summary`, which ran long and got cut off with "…") · role + stack as plain text ·
   small cream keycap link (only if the project has one). Hover slides the disk's shutter.
+- Phones (≤560px): the title and the kind stay on one line each (`Marquee.tsx`): one
+  that's too long rests 1.8s, then scrolls left with a copy following it round, faded at
+  the edges, like a song title in a music app (asked for over "TMN · SATARA TODAY" wrapping
+  to two lines). It only moves when it overflows; reduced motion wraps it instead, never
+  "…". The stage tag sits on its own line under the kind in every row.
 - Phones (≤560px): an index — disk, title, kind, and a 40px ↗ key for links; summary/role/stack
   hidden (they're in the window). **The whole row is tappable** (title button's `::after`
   covers the row; the disk and link sit above it).

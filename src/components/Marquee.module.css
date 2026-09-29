@@ -1,0 +1,29 @@
+/* Wider screens (and reduced motion) leave the text to wrap as normal. */
+.marquee {
+  display: block;
+  min-width: 0;
+  max-width: 100%;
+}
+
+/* Phones: one line, and anything past its end hidden until it scrolls into view. */
+@media (max-width: 560px) and (prefers-reduced-motion: no-preference) {
+  .marquee {
+    overflow: hidden;
+    align-self: stretch;
+  }
+
+  .track {
+    display: inline-flex;
+    white-space: nowrap;
+  }
+
+  .text {
+    flex: none;
+  }
+
+  /* While it scrolls, its ends fade, so words slide in and out rather than being cut. */
+  .moving {
+    -webkit-mask-image: linear-gradient(90deg, transparent, #000 10px, #000 calc(100% - 18px), transparent);
+    mask-image: linear-gradient(90deg, transparent, #000 10px, #000 calc(100% - 18px), transparent);
+  }
+}

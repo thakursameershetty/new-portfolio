@@ -656,9 +656,26 @@
     font-size: 10px;
   }
 
+  /* The name takes the rest of the line, and scrolls there if it's longer (Marquee). */
+  .entryOpen {
+    flex: 1;
+    min-width: 0;
+  }
+
+  /* The stage on a line of its own under the kind, in every row, so the rows share one
+     shape (title, kind, stage) instead of the tag fitting beside some kinds and wrapping
+     under others. */
   .entryKind {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
     margin-top: 4px;
     font-size: 13px;
+  }
+
+  .entryStage {
+    padding: 1px 5px;
+    font-size: 9px;
   }
 
   /* The title's tap area covers the whole row; the disk and the link sit above it. */

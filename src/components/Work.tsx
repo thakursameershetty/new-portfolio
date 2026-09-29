@@ -19,6 +19,7 @@ import { useIntro } from "./SiteIntro";
 import { SplitFlapText } from "./SplitFlapText";
 import type { DiskBoxScene, ScreenRect } from "./diskBox3d";
 import { onTilt } from "./deviceTilt";
+import { Marquee } from "./Marquee";
 import { ProjectView } from "./ProjectView";
 import {
   disciplines,
@@ -772,11 +773,11 @@ function EntryCopy({
             }}
             aria-label={`${project.title}: open the case study`}
           >
-            {project.title}
+            <Marquee>{project.title}</Marquee>
           </button>
         </h4>
         <p className={styles.entryKind}>
-          {project.kind}
+          <Marquee>{project.kind}</Marquee>
           {stage && <span className={styles.entryStage}>{stage}</span>}
         </p>
         <p className={styles.entrySummary}>{project.blurb}</p>
