@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { Analytics } from "@vercel/analytics/next";
 import { MiniPlayer } from "@/components/MiniPlayer";
 import { site } from "@/components/site";
 import localFont from "next/font/local";
@@ -124,6 +125,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           {/* The music's mini disc: here in the layout, so it carries on across pages. */}
           <MiniPlayer />
         </ThemeProvider>
+        <Analytics />
       </body>
     </html>
   );
