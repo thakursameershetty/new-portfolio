@@ -987,6 +987,11 @@ function DiskWindow({
     closingRef.current = false;
     shownIdRef.current = project.id;
     dialog.showModal();
+    // showModal focuses the first button inside, the first section tick, which then wears a
+    // focus ring whenever the browser counts the open as keyboard-led (a key pressed last,
+    // or the page loaded straight onto a case study). Focus the window itself instead: it's
+    // still where Tab starts from, but nothing is ringed until someone actually tabs.
+    dialog.focus({ preventScroll: true });
     dialog.scrollTop = 0;
     if (reduceMotion) return;
 
@@ -1078,6 +1083,7 @@ function DiskWindow({
       ref={dialogRef}
       className={styles.window}
       aria-labelledby="project-title"
+      tabIndex={-1}
       onCancel={(event) => {
         // Esc: close with the morph instead of instantly.
         event.preventDefault();
