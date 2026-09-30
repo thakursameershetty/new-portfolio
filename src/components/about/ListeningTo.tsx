@@ -382,8 +382,12 @@ function SwipeShelf({
 
   return (
     <div className={styles.swipe}>
-      <ul
+      {/* layoutScroll: the covers carry layoutIds (to fly into the player), so every detent's
+          re-render re-measures them. Without it, Framer reads the strip's own scroll as the
+          covers having moved and springs them back, which stalls a fast flick. */}
+      <motion.ul
         ref={stripRef}
+        layoutScroll
         className={styles.strip}
         onScroll={onScroll}
         aria-label="Songs"
@@ -426,7 +430,7 @@ function SwipeShelf({
             </motion.li>
           );
         })}
-      </ul>
+      </motion.ul>
 
       <div
         key={centred}
