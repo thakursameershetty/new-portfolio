@@ -4,7 +4,7 @@
 import type { Project } from "./projects";
 
 export const site = {
-  url: "https://www.thakursameershetty.com",
+  url: "https://thakursameershetty.com",
   name: "Thakur Sameer Shetty",
   shortName: "Thakur",
   jobTitle: "Product Designer",
