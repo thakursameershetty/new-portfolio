@@ -61,7 +61,7 @@ export function Watching() {
   // The poster in focus, and the one before it (to tell which posters wrapped round).
   const [[active, previous], setTurn] = useState([0, 0]);
   const setActive = (next: number) => setTurn(([current]) => [next, current]);
-  const drag = useRef<{ x: number; moved: boolean } | null>(null);
+  const drag = useRef<{ x: number; t: number; moved: boolean } | null>(null);
   const { playCue } = useIntro();
   // A turn by hand clicks like a detent (the arrow keys add their own press instead);
   // turns the slideshow makes itself stay silent. It goes round: past the last is the first.
@@ -162,7 +162,11 @@ export function Watching() {
           setFocused(false);
       }}
       onPointerDown={(event) => {
-        drag.current = { x: event.clientX, moved: false };
+        drag.current = {
+          x: event.clientX,
+          t: event.timeStamp,
+          moved: false,
+        };
         setDragging(true);
       }}
       onPointerMove={(event) => {
@@ -174,12 +178,27 @@ export function Watching() {
           go(active + (dx < 0 ? 1 : -1));
         }
       }}
-      onPointerUp={() => {
+      onPointerUp={(event) => {
+        // A fast flick can lift off before any move event got past 40px (phones send only
+        // one or two), so it's judged again here on where the finger ended up: far enough,
+        // or a shorter one flicked quickly.
+        const start = drag.current;
+        if (start && !start.moved) {
+          const dx = event.clientX - start.x;
+          const speed = Math.abs(dx) / Math.max(event.timeStamp - start.t, 1);
+          if (Math.abs(dx) > 40 || (Math.abs(dx) > 16 && speed > 0.4)) {
+            start.moved = true;
+            go(active + (dx < 0 ? 1 : -1));
+          }
+        }
         // Let the click that ends a swipe through without also picking a poster.
         setTimeout(() => (drag.current = null), 0);
         setDragging(false);
       }}
-      onPointerCancel={() => setDragging(false)}
+      onPointerCancel={() => {
+        drag.current = null;
+        setDragging(false);
+      }}
     >
       <div className={styles.kinds}>
         {kinds.map((option) => {
