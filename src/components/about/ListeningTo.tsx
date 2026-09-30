@@ -13,6 +13,7 @@ import {
   motion,
   useReducedMotion,
 } from "framer-motion";
+import { Marquee } from "../Marquee";
 import { useIntro } from "../SiteIntro";
 import * as music from "../music";
 import { tracks, type Track } from "./taste";
@@ -437,8 +438,14 @@ function SwipeShelf({
         className={clsx(styles.flip, styles.stripLabel)}
         aria-hidden="true"
       >
-        <p className={styles.artist}>{track.artist}</p>
-        <p className={styles.title}>{track.title}</p>
+        {/* One line each, scrolling if too long (as the Work cards' titles do), so a long
+            title doesn't grow the card and jolt the page mid-swipe. */}
+        <p className={styles.artist}>
+          <Marquee>{track.artist}</Marquee>
+        </p>
+        <p className={styles.title}>
+          <Marquee>{track.title}</Marquee>
+        </p>
       </div>
       <p className={styles.hint}>Swipe to browse · tap to play</p>
     </div>
