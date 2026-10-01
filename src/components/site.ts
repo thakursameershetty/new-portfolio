@@ -15,7 +15,7 @@ export const site = {
   location: { city: "Visakhapatnam", region: "Andhra Pradesh", country: "IN" },
   links: {
     linkedin: "https://www.linkedin.com/in/thakur-sameer-shetty-tammana/",
-    dribbble: "https://dribbble.com/thakur5002",
+    threads: "https://www.threads.com/@thakur.sameer.shetty",
     github: "https://github.com/thakursameershetty",
   },
 };

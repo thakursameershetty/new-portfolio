@@ -10,7 +10,7 @@ import styles from "./AboutFooter.module.css";
 
 /**
  * The foot of the About page: a closing line, the same contact keys as the home page's
- * Contact section (copy the email or open the mail app, LinkedIn, Dribbble, GitHub), a way
+ * Contact section (copy the email or open the mail app, LinkedIn, Threads, GitHub), a way
  * on to the work, and the site's credits, over the same living grid as the home page's
  * Contact: dark at first, its red growing down cell by cell as the section scrolls in (and
  * pulling back if it scrolls away), out of a ragged, dissolving top edge; each cell the
