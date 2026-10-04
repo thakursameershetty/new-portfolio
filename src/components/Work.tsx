@@ -181,7 +181,8 @@ export function Work() {
         </span>
       </h2>
       <p className={styles.startLine}>
-        Short on time? You can go with the {numberWord(featuredCount)} marked{" "}
+        <span className={styles.startLead}>Short on time? </span>
+        You can go with the {numberWord(featuredCount)} marked{" "}
         <StarGlyph className={styles.startStar} />
         <span className={styles.srOnly}>(Featured)</span>.
       </p>
@@ -894,6 +895,7 @@ function DiskBox({
           ref={boxRef}
           type="button"
           className={styles.box}
+          data-shelf={id}
           data-3d={scene ? "" : undefined}
           onMouseEnter={() => playCue(dealt ? "tap" : "rattle")}
           onPointerMove={(event) => {
@@ -947,7 +949,10 @@ function DiskBox({
 
         <p className={styles.shelfNote}>
           {note}
-          <span className={styles.shelfHint}> · {hint}</span>
+          <span className={styles.shelfHint}>
+            <span className={styles.shelfDot}> · </span>
+            {hint}
+          </span>
         </p>
         {/* What's inside, readable without opening anything, as the box's index: each disk
             on its own line, three to a column; once it's open, the cards say it all. */}
@@ -1394,6 +1399,28 @@ function onScreen(element: HTMLElement | null): element is HTMLElement {
   return rect.bottom > 0 && rect.top < window.innerHeight && rect.width > 0;
 }
 
+// Keeps the page where it is for a moment: closing a file steps back through the history, and
+// the browser (or the router) may then restore the scroll from when the file was opened,
+// over the scroll that brought the disk into view. Anyone scrolling themselves ends it.
+function holdScroll(top: number, duration: number) {
+  const end = performance.now() + duration;
+  let frame = 0;
+  const stop = () => {
+    cancelAnimationFrame(frame);
+    for (const type of ["wheel", "touchstart", "keydown"])
+      window.removeEventListener(type, stop);
+  };
+  const keep = () => {
+    if (Math.abs(window.scrollY - top) > 1)
+      window.scrollTo({ top, behavior: "instant" });
+    if (performance.now() < end) frame = requestAnimationFrame(keep);
+    else stop();
+  };
+  for (const type of ["wheel", "touchstart", "keydown"])
+    window.addEventListener(type, stop, { passive: true });
+  frame = requestAnimationFrame(keep);
+}
+
 // Undoes the fades that hid a disk in the list while its file was open.
 function restoreDisk(disk: HTMLElement) {
   for (const animation of disk.getAnimations()) animation.cancel();
@@ -1423,29 +1450,33 @@ function DiskWindow({
   const { playCue } = useIntro();
   const reduceMotion = useReducedMotion();
 
-  // The disk's box and the screen's, as keyframes for the morphing block.
-  const boxes = useCallback(() => {
-    if (!onScreen(disk)) return null;
-    const from = disk.getBoundingClientRect();
-    return {
-      disk: {
-        left: `${from.left}px`,
-        top: `${from.top}px`,
-        width: `${from.width}px`,
-        height: `${from.height}px`,
-        borderRadius: `${from.width * 0.045}px`,
-        backgroundColor: project?.disk ?? windowColor,
-      },
-      window: {
-        left: "0px",
-        top: "0px",
-        width: `${window.innerWidth}px`,
-        height: `${window.innerHeight}px`,
-        borderRadius: "0px",
-        backgroundColor: windowColor,
-      },
-    };
-  }, [disk, project]);
+  // The disk's box and the screen's, as keyframes for the morphing block. `target` is what
+  // it shrinks into on closing: the disk (the default), or its box while the box is shut.
+  const boxes = useCallback(
+    (target: HTMLElement | null = disk) => {
+      if (!onScreen(target)) return null;
+      const from = target.getBoundingClientRect();
+      return {
+        disk: {
+          left: `${from.left}px`,
+          top: `${from.top}px`,
+          width: `${from.width}px`,
+          height: `${from.height}px`,
+          borderRadius: `${from.width * 0.045}px`,
+          backgroundColor: project?.disk ?? windowColor,
+        },
+        window: {
+          left: "0px",
+          top: "0px",
+          width: `${window.innerWidth}px`,
+          height: `${window.innerHeight}px`,
+          borderRadius: "0px",
+          backgroundColor: windowColor,
+        },
+      };
+    },
+    [disk, project],
+  );
 
   useLayoutEffect(() => {
     const dialog = dialogRef.current;
@@ -1529,8 +1560,29 @@ function DiskWindow({
       finish();
       return;
     }
-    const box = boxes();
-    if (!box || !disk) {
+    // Shrink into the disk, wherever it is: scroll it into view first (the page is behind the
+    // file, so nobody sees it move), or, while its box is shut, into the box that holds it.
+    const bringIntoView = (element: HTMLElement) => {
+      const rect = element.getBoundingClientRect();
+      const comfortable =
+        rect.top >= window.innerHeight * 0.08 &&
+        rect.bottom <= window.innerHeight * 0.92;
+      if (comfortable) return;
+      element.scrollIntoView({ block: "center", behavior: "instant" });
+      holdScroll(window.scrollY, morphClose.duration + 500);
+    };
+    let target: HTMLElement | null = disk;
+    if (target) bringIntoView(target);
+    else if (project) {
+      const shelf = shelves.find((entry) => entry.projects.includes(project));
+      target = shelf
+        ? document.querySelector<HTMLElement>(`[data-shelf="${shelf.id}"]`)
+        : null;
+      if (target) bringIntoView(target);
+    }
+    const intoDisk = target === disk;
+    const box = boxes(target);
+    if (!box || !target) {
       dialog
         .animate({ opacity: [1, 0] }, { duration: 200, fill: "forwards" })
         .finished.then(finish, finish);
@@ -1544,10 +1596,13 @@ function DiskWindow({
       ...morphClose,
       fill: "forwards",
     });
-    disk.animate(
-      { opacity: [0, 1] },
-      { duration: 140, delay: morphClose.duration - 140, fill: "forwards" },
-    );
+    const settle = { duration: 140, delay: morphClose.duration - 140 };
+    if (intoDisk) {
+      target.animate({ opacity: [0, 1] }, { ...settle, fill: "forwards" });
+    } else {
+      // Into the shut box: the file slips in and is gone.
+      morph.animate({ opacity: [1, 0] }, { ...settle, fill: "forwards" });
+    }
     shrink.finished
       .then(() => {
         morph.style.display = "none";
