@@ -31,6 +31,7 @@
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 6px;
   background: rgba(0, 0, 0, 0.24);
+  -webkit-backdrop-filter: blur(20px);
   backdrop-filter: blur(20px);
   transition:
     background-color 300ms ease,
@@ -106,10 +107,15 @@
   outline: none;
 }
 
-/* Over the black page: a faintly lighter bar, and a cream tile so the active tab shows. */
+/* Over the black page: dark smoked glass, blurred hard and a touch richer, so the tabs stay
+   readable over anything scrolling beneath (a bright screenshot included); a cream tile
+   marks the active tab. */
 .onDark .plate {
   border-color: rgba(255, 255, 255, 0.12);
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(16, 16, 15, 0.66);
+  -webkit-backdrop-filter: blur(24px) saturate(140%);
+  backdrop-filter: blur(24px) saturate(140%);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
 }
 
 .onDark .indicator {

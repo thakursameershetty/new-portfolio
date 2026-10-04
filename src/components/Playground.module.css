@@ -171,6 +171,21 @@
   .frame {
     border-radius: 14px;
   }
+
+  /* Always showing here, so kept small: one line in the corner, cut short if it must be,
+     leaving the clip to be seen. */
+  .caption {
+    bottom: 8px;
+    left: 8px;
+    max-width: calc(100% - 16px);
+    overflow: hidden;
+    padding: 4px 7px;
+    border-radius: 6px;
+    font-size: 9px;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
 }
 
 /* Without hover, the captions always show. */

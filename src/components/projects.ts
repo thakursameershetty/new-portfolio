@@ -3456,7 +3456,7 @@ export const projects: Project[] = [
   },
   {
     id: "gesture",
-    cover: "/work/guesture-shop/shop-hands-cover.jpg",
+    cover: "/work/guesture-shop/shop-hands-frame.jpg",
     mini: true,
     disciplines: ["design", "development", "3d"],
     title: "Gesture Shop · Aura",

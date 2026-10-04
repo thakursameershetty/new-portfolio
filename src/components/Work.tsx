@@ -65,7 +65,7 @@ const featuredCount = projects.filter((project) => project.featured).length;
 const numberWord = (count: number) =>
   ["no", "one", "two", "three", "four", "five", "six"][count] ?? String(count);
 
-/** The star on the "start here" stickers and tags: Material Symbols Rounded's, filled. */
+/** The star on the "featured" stickers and tags: Material Symbols Rounded's, filled. */
 function StarGlyph({ className }: { className?: string }) {
   return (
     <svg
@@ -183,7 +183,7 @@ export function Work() {
       <p className={styles.startLine}>
         Short on time? You can go with the {numberWord(featuredCount)} marked{" "}
         <StarGlyph className={styles.startStar} />
-        <span className={styles.srOnly}>(Start here)</span>.
+        <span className={styles.srOnly}>(Featured)</span>.
       </p>
 
       <div className={styles.shelves}>
@@ -1251,7 +1251,7 @@ function EntryCopy({
         <p className={styles.entryKind}>
           <Marquee>{project.kind}</Marquee>
         </p>
-        {/* The tags on a row of their own, so "Start here" sits in the same place on every
+        {/* The tags on a row of their own, so "Featured" sits in the same place on every
             card, whatever the length of the kind before it. */}
         {(stage || project.featured) && (
           <p className={styles.entryTags}>
@@ -1259,7 +1259,7 @@ function EntryCopy({
             {project.featured && (
               <span className={styles.entryFeatured}>
                 <StarGlyph />
-                Start here
+                Featured
               </span>
             )}
           </p>
