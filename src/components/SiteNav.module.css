@@ -177,6 +177,7 @@
     transition: none;
   }
 }
+
 /* Pressed: the tab or key sinks a touch, in place of the browser's tap highlight. */
 .link:active,
 .sound:active {
