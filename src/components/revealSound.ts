@@ -71,7 +71,8 @@ export type IntroCue =
   | "detent"
   | "clink"
   | "switchOn"
-  | "switchOff";
+  | "switchOff"
+  | "hop";
 
 export function createPointerSounds(context: AudioContext): PointerSounds {
   const output = context.createGain();
@@ -269,6 +270,20 @@ export function createPointerSounds(context: AudioContext): PointerSounds {
         // The tube changing channel: its own hum and static surge while the picture flickers
         // over, then settle back to their usual level.
         surge(at);
+        return;
+      }
+      if (cue === "hop") {
+        // The contents' dot hopping to another part: a soft rounded "bip" as it lifts, its
+        // pitch rising with the jump, then a tiny, dull tap as it lands (timed to the hop's
+        // 0.46s arc). Quiet, left of centre like the list, and nudged in pitch so a run of
+        // hops while scrolling doesn't sound like a loop.
+        const lift = 1 + (Math.random() - 0.5) * 0.08;
+        const hop = context.createStereoPanner();
+        hop.pan.value = -0.35;
+        hop.connect(output);
+        playChirp(context, hop, at, { from: 440 * lift, to: 880 * lift, volume: 0.022, duration: 0.11 });
+        playKnock(context, hop, at + 0.4, 0.022, 0, 240 * lift);
+        playMuffled(context, hop, noise, at + 0.4, 0.02);
         return;
       }
       if (cue === "shutter") {

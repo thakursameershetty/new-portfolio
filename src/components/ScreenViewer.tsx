@@ -7,6 +7,7 @@ import { Diagram } from "./diagrams/Diagram";
 import type { ScreenItem } from "./projects";
 import { ArrowIcon } from "./icons/ArrowIcon";
 import styles from "./ScreenViewer.module.css";
+import { MaterialIcon } from "./icons/MaterialIcon";
 
 /** A set of pictures to look through: the monitor's reel, or a part of the story. */
 export interface ViewerChannel {
@@ -179,7 +180,7 @@ export function ScreenViewer({
           onMouseEnter={onTap}
           aria-label="Step back"
         >
-          <span aria-hidden="true">✕</span>
+          <MaterialIcon name="minimise" size={20} />
           <span className={styles.closeLabel}>Back</span>
         </button>
       </header>

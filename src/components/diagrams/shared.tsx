@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, type RefObject } from "react";
+import { MaterialIcon } from "../icons/MaterialIcon";
 
 // What the animated diagrams share: their colours, how they size and pause themselves, and
 // the icons on their controls.
@@ -71,19 +72,30 @@ export function seeded(seed: number) {
 export const ease = (x: number) =>
   x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
 
-const ICONS = {
+// Back and forward are drawn here; the rest are Material Symbols.
+const STEPS = {
   prev: <path d="M10 3.5 5.5 8l4.5 4.5" />,
   next: <path d="M6 3.5 10.5 8 6 12.5" />,
-  pause: <path d="M5.5 3.5v9M10.5 3.5v9" />,
-  play: <path d="M5 3v10l8-5z" fill="currentColor" stroke="none" />,
-  expand: <path d="M9.5 3h3.5v3.5M6.5 13H3V9.5M13 3 9 7M3 13l4-4" />,
-  reset: <path d="M3.5 8a4.5 4.5 0 1 0 1.3-3.2M3.5 3v2.5H6" />,
 };
 
-export function ControlIcon({ name }: { name: keyof typeof ICONS }) {
-  return (
-    <svg viewBox="0 0 16 16" aria-hidden="true">
-      {ICONS[name]}
-    </svg>
-  );
+const MATERIAL = {
+  play: "play",
+  pause: "pause",
+  expand: "zoom",
+  reset: "replay",
+} as const;
+
+export function ControlIcon({
+  name,
+}: {
+  name: keyof typeof STEPS | keyof typeof MATERIAL;
+}) {
+  if (name === "prev" || name === "next") {
+    return (
+      <svg viewBox="0 0 16 16" aria-hidden="true">
+        {STEPS[name]}
+      </svg>
+    );
+  }
+  return <MaterialIcon name={MATERIAL[name]} size={20} />;
 }

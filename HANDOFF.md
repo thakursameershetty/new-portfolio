@@ -108,6 +108,8 @@ thump, keycaps, split-flap, plastic). Pieces:
     `rattle` (box hover), `diskRattle` (faint ticks while disks sway), `diskTap` (a disk
     knocking a neighbour/wall).
   - CRT monitor: `crtOn` (soft pop + tube tick), `channel` (switching projects).
+  - Case studies: `hop` (the contents dot hopping between parts: a soft rising "bip", then a
+    dull landing tap at 0.4s, panned left; added 2026-10-04, the older cues untouched).
 - The box and disk sounds are rendered **once, offline** (`record()` with an
   `OfflineAudioContext`) into a forward buffer and a reversed copy — that's how "close = open
   played backwards" works.
@@ -314,6 +316,13 @@ outside `public/`, which ships with the site.
   kept the original disk-by-disk choreography).
 
 ## Open items / next steps
+
+**Case study restructure (2026-10-04): see `HANDOFF-case-studies.md`** for the new template,
+the widget diagram kit (`diagrams/widget.tsx`), the design language cards
+(`diagrams/SystemCard.tsx`), the numbered points / stats table / inline links / contents
+sidebar in `ProjectView.tsx`, the facts settled with the owner, and what's still open. Where it
+and the notes below disagree, it is newer. New dependency: `facehash`. New fonts in
+`src/fonts/` (Epilogue, Inter, Cinzel, Outfit, General Sans) are scoped to the cards.
 
 **Animated diagrams (`src/components/diagrams/`, 2026-09-30):** a case-study figure of
 `type: "diagram"` is an interactive SVG with its own controls (so it isn't wrapped in the

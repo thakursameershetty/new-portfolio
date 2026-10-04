@@ -859,34 +859,178 @@ a.briefPerson:focus-visible {
   margin-top: 14px;
 }
 
-.highlights {
+/* Key points: numbered, each with its title in ink and the rest under it, two to a row when
+   they're short (as in a case study's insights). */
+.points {
   display: grid;
-  gap: 10px;
-  margin-top: 20px;
+  gap: 28px 40px;
+  margin-top: 32px;
   list-style: none;
+}
+
+@media (min-width: 640px) {
+  .points[data-columns="2"] {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.point {
+  display: grid;
+  gap: 6px;
+  align-content: start;
+}
+
+.pointNumber {
+  font-family: var(--font-display), sans-serif;
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+  color: rgba(26, 26, 26, 0.45);
+}
+
+.pointTitle {
+  font-family: var(--font-display), sans-serif;
+  font-size: 18px;
+  font-weight: 500;
+  line-height: 1.3;
+}
+
+.pointBody {
   font-size: 15px;
-  line-height: 1.5;
+  line-height: 1.6;
+  color: rgba(26, 26, 26, 0.75);
 }
 
-.highlights li {
-  position: relative;
-  padding-left: 22px;
+/* Numbers set out as a table: a cell each, ruled, with the figure large over what it counts. */
+.stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  margin-top: 28px;
+  border-top: 1px solid rgba(26, 26, 26, 0.14);
+  border-left: 1px solid rgba(26, 26, 26, 0.14);
+  border-radius: 16px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.45);
 }
 
-/* An arrow drawn as a shape (a text "→" can turn into an emoji on iPhones), in the text's
-   colour, faded. */
-.highlights li::before {
+.stat {
+  display: flex;
+  flex-direction: column-reverse;
+  justify-content: flex-end;
+  gap: 4px;
+  padding: 18px 20px;
+  border-right: 1px solid rgba(26, 26, 26, 0.14);
+  border-bottom: 1px solid rgba(26, 26, 26, 0.14);
+}
+
+.statValue {
+  margin: 0;
+  font-family: var(--font-display), sans-serif;
+  font-size: clamp(28px, 4vw, 36px);
+  font-weight: 500;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+/* The figure's underline in the project's own colour: the one highlight. */
+.statValue::after {
   content: "";
+  display: block;
+  width: 28px;
+  height: 3px;
+  margin-top: 10px;
+  border-radius: 2px;
+  background: var(--disk);
+}
+
+.statLabel {
+  font-size: 14px;
+  color: rgba(26, 26, 26, 0.6);
+}
+
+/* ---- The contents: on wide screens, every part listed beside the story, the one being read
+   in ink. Narrower, the pill's ticks do this job. ---- */
+.contents {
+  display: none;
+}
+
+@media (min-width: 1280px) {
+  .storyLayout {
+    display: grid;
+    grid-template-columns: 180px minmax(0, 1fr);
+    gap: 8px;
+    max-width: 1440px;
+    margin: 0 auto;
+    padding-left: var(--pad);
+  }
+
+  .contents {
+    display: block;
+    position: sticky;
+    top: calc(var(--bar) + 48px);
+    align-self: start;
+    max-height: calc(100svh - var(--bar) - 72px);
+    overflow-y: auto;
+    padding-top: clamp(56px, 8vw, 112px);
+    scrollbar-width: none;
+  }
+}
+
+.contentsList {
+  position: relative;
+  display: grid;
+  gap: 2px;
+  margin-top: 14px;
+  list-style: none;
+}
+
+/* The dot beside the part being read; ProjectView moves it (and hops it between parts). */
+.contentsDot {
   position: absolute;
-  top: 0.35em;
+  top: 0;
   left: 0;
-  width: 13px;
-  height: 13px;
-  background: rgba(26, 26, 26, 0.5);
-  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 12h15.5M20 12l-6 6M20 12l-6-6'/%3E%3C/svg%3E")
-    center / contain no-repeat;
-  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 12h15.5M20 12l-6 6M20 12l-6-6'/%3E%3C/svg%3E")
-    center / contain no-repeat;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #1a1a1a;
+  pointer-events: none;
+}
+
+.contentsTop,
+.contentsItem {
+  display: block;
+  width: 100%;
+  padding: 6px 0;
+  border: 0;
+  background: none;
+  font-family: var(--font-display), sans-serif;
+  font-size: 15px;
+  line-height: 1.3;
+  text-align: left;
+  color: rgba(26, 26, 26, 0.5);
+  cursor: pointer;
+  transition: color 200ms ease;
+}
+
+.contentsTop {
+  font-size: 14px;
+}
+
+.contentsTop:hover,
+.contentsItem:hover {
+  color: #1a1a1a;
+}
+
+.contentsItem[aria-current] {
+  font-weight: 600;
+  color: #1a1a1a;
+}
+
+.contentsTop:focus-visible,
+.contentsItem:focus-visible {
+  outline: 2px solid var(--disk);
+  outline-offset: 2px;
+  border-radius: 4px;
 }
 
 /* The pictures: framed dark, so each project's own look shows on the cream page. */
@@ -952,6 +1096,13 @@ a.briefPerson:focus-visible {
 /* A diagram's frame: it has its own controls (and "look closer"), so it stays put. */
 .figureDiagram {
   cursor: auto;
+}
+
+/* A widget diagram: as wide as the text, not the story, so it doesn't dwarf the screens. */
+.figureCompact {
+  width: 100%;
+  max-width: 680px;
+  justify-self: center;
 }
 
 .figureDiagram:hover {
@@ -1639,4 +1790,17 @@ a.briefPerson:focus-visible {
     order: -1;
     margin-bottom: 20px;
   }
+}
+
+/* A link inside a paragraph or point: underlined, in the text's own colour. */
+.inlineLink {
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+  transition: text-decoration-color 200ms ease;
+}
+
+.inlineLink:hover {
+  text-decoration-thickness: 2px;
 }

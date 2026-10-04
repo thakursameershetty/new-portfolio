@@ -9,6 +9,7 @@ import {
   useState,
   useSyncExternalStore,
   type CSSProperties,
+  type ReactNode,
   type Ref,
 } from "react";
 import Image from "next/image";
@@ -37,7 +38,7 @@ import {
   type Project,
   type ScreenItem,
 } from "./projects";
-import { Diagram } from "./diagrams/Diagram";
+import { Diagram, isCompactDiagram } from "./diagrams/Diagram";
 import { ArrowIcon } from "./icons/ArrowIcon";
 import styles from "./ProjectView.module.css";
 
@@ -105,7 +106,8 @@ export function ProjectView({
       | "insert"
       | "crtOn"
       | "static"
-      | "thump",
+      | "thump"
+      | "hop",
   ) => void;
   className?: string;
   ref?: Ref<HTMLElement>;
@@ -228,9 +230,11 @@ export function ProjectView({
   const partRefs = useRef<(HTMLElement | null)[]>([]);
   const openingRef = useRef<HTMLDivElement>(null);
   const heldRef = useRef(false);
+  // When the hold on a tick's part lets go: once the scrolling has stopped.
+  const releaseRef = useRef(0);
+  const updateRef = useRef<() => void>(() => {});
   useEffect(() => {
     let frame = 0;
-    let release = 0;
     const update = () => {
       frame = 0;
       const opening = openingRef.current?.getBoundingClientRect();
@@ -244,27 +248,30 @@ export function ProjectView({
       });
       setCurrent(reading);
     };
+    updateRef.current = update;
     const handleScroll = () => {
+      // Held for a tick's part: let go only once the page has been still for a moment, however
+      // long or slow the scroll there is (a fixed time ran out on long ones, and the dot
+      // hopped through every part on the way).
+      if (heldRef.current) {
+        window.clearTimeout(releaseRef.current);
+        releaseRef.current = window.setTimeout(() => {
+          heldRef.current = false;
+          update();
+        }, 180);
+      }
       if (!frame) frame = requestAnimationFrame(update);
-    };
-    const handleScrollEnd = () => {
-      window.clearTimeout(release);
-      release = window.setTimeout(() => (heldRef.current = false), 60);
     };
     // Captured on the document, so it hears the overlay's own scrolling as well as the page's.
     document.addEventListener("scroll", handleScroll, {
       capture: true,
       passive: true,
     });
-    document.addEventListener("scrollend", handleScrollEnd, { capture: true });
     update();
     return () => {
       cancelAnimationFrame(frame);
-      window.clearTimeout(release);
+      window.clearTimeout(releaseRef.current);
       document.removeEventListener("scroll", handleScroll, { capture: true });
-      document.removeEventListener("scrollend", handleScrollEnd, {
-        capture: true,
-      });
     };
   }, [sections]);
 
@@ -293,8 +300,13 @@ export function ProjectView({
       if (!part) return;
       setCurrent(target);
       heldRef.current = true;
-      // In case nothing scrolls (already there), or scrollend never comes.
-      window.setTimeout(() => (heldRef.current = false), 1400);
+      // A new click replaces the last one's hold. If nothing scrolls (already there), the
+      // hold lets go on its own.
+      window.clearTimeout(releaseRef.current);
+      releaseRef.current = window.setTimeout(() => {
+        heldRef.current = false;
+        updateRef.current();
+      }, 400);
       part.scrollIntoView({
         behavior: reduceMotion ? "auto" : "smooth",
         block: "start",
@@ -380,6 +392,38 @@ export function ProjectView({
     window.addEventListener("keydown", handleKey);
     return () => window.removeEventListener("keydown", handleKey);
   }, [current, closer, goTo, onCue, sections.length]);
+
+  // The contents' dot: beside the part being read, and when that changes, it hops there in a
+  // little arc out to the right instead of sliding straight down the list.
+  const contentsLabelRefs = useRef<(HTMLSpanElement | null)[]>([]);
+  const contentsDotRef = useRef<HTMLSpanElement>(null);
+  const dotAtRef = useRef<{ x: number; y: number } | null>(null);
+  useEffect(() => {
+    const dot = contentsDotRef.current;
+    const label = contentsLabelRefs.current[current];
+    // Hidden (a narrow window): nothing to place.
+    if (!dot || !label || !label.offsetParent) return;
+    const to = {
+      x: label.offsetLeft + label.offsetWidth + 10,
+      y: label.offsetTop + label.offsetHeight / 2 - 3.5,
+    };
+    const from = dotAtRef.current;
+    dotAtRef.current = to;
+    const place = (point: { x: number; y: number }) =>
+      `translate(${point.x}px, ${point.y}px)`;
+    dot.style.transform = place(to);
+    if (!from || reduceMotion || (from.x === to.x && from.y === to.y)) return;
+    const reach = Math.min(40, 14 + Math.abs(to.y - from.y) * 0.12);
+    const middle = {
+      x: Math.max(from.x, to.x) + reach,
+      y: (from.y + to.y) / 2,
+    };
+    dot.animate(
+      [{ transform: place(from) }, { transform: place(middle) }, { transform: place(to) }],
+      { duration: 460, easing: "cubic-bezier(0.3, 0.7, 0.2, 1)" },
+    );
+    onCue?.("hop");
+  }, [current, onCue, reduceMotion, sections]);
 
   // The pictures in the story, to grow the closer look from (and shrink it back into).
   const figureRefs = useRef(new Map<string, HTMLElement>());
@@ -752,13 +796,50 @@ export function ProjectView({
         </button>
       </div>
 
+      <div className={styles.storyLayout}>
+      <nav className={styles.contents} aria-label="In this case study">
+        <button
+          type="button"
+          className={styles.contentsTop}
+          onClick={() =>
+            openingRef.current?.scrollIntoView({
+              behavior: reduceMotion ? "auto" : "smooth",
+              block: "start",
+            })
+          }
+        >
+          Scroll to top
+        </button>
+        <ol className={styles.contentsList}>
+          {sections.map((section, position) => (
+            <li key={section.id}>
+              <button
+                type="button"
+                className={styles.contentsItem}
+                aria-current={position === current ? "true" : undefined}
+                onClick={() => goTo(position)}
+              >
+                <span
+                  ref={(node) => {
+                    contentsLabelRefs.current[position] = node;
+                  }}
+                >
+                  {section.label}
+                </span>
+              </button>
+            </li>
+          ))}
+          <span ref={contentsDotRef} className={styles.contentsDot} aria-hidden="true" />
+        </ol>
+      </nav>
       <div className={styles.story}>
         {sections.map((section, position) => {
           const channel = storyChannels.findIndex(
             (entry) => entry.part === position,
           );
+          const statCount = section.stats?.length ? 1 : 0;
           const textCount =
-            section.paragraphs.length + (section.points?.length ?? 0);
+            section.paragraphs.length + statCount + (section.points?.length ?? 0);
           // Pictures are numbered across the part (the lead first), as the closer look and the
           // monitor count them.
           const lead = section.lead ? 1 : 0;
@@ -783,7 +864,13 @@ export function ProjectView({
                 return (
                   <figure
                     key={screenKey(figure)}
-                    className={clsx(styles.figure, styles.arrive)}
+                    className={clsx(
+                      styles.figure,
+                      styles.arrive,
+                      figure.type === "diagram" &&
+                        isCompactDiagram(figure.diagram) &&
+                        styles.figureCompact,
+                    )}
                     style={{ "--order": textCount + item } as CSSProperties}
                   >
                     {figure.type === "diagram" ? (
@@ -858,25 +945,55 @@ export function ProjectView({
                     className={clsx(styles.paragraph, styles.arrive)}
                     style={{ "--order": order } as CSSProperties}
                   >
-                    {paragraph}
+                    {linked(paragraph)}
                   </p>
                 ))}
-                {section.points && (
-                  <ul className={styles.highlights}>
-                    {section.points.map((point, order) => (
-                      <li
-                        key={point}
-                        className={styles.arrive}
-                        style={
-                          {
-                            "--order": section.paragraphs.length + order,
-                          } as CSSProperties
-                        }
-                      >
-                        {point}
-                      </li>
+                {section.stats && section.stats.length > 0 && (
+                  <dl
+                    className={clsx(styles.stats, styles.arrive)}
+                    style={{ "--order": section.paragraphs.length } as CSSProperties}
+                  >
+                    {section.stats.map((stat) => (
+                      <div key={stat.label} className={styles.stat}>
+                        <dt className={styles.statLabel}>{stat.label}</dt>
+                        <dd className={styles.statValue}>{stat.value}</dd>
+                      </div>
                     ))}
-                  </ul>
+                  </dl>
+                )}
+                {section.points && (
+                  <ol
+                    className={styles.points}
+                    // Short points sit two to a row; longer ones get the full width.
+                    data-columns={
+                      section.points.length > 1 &&
+                      section.points.every((point) => point.length < 120)
+                        ? 2
+                        : 1
+                    }
+                  >
+                    {section.points.map((point, order) => {
+                      const { title, body } = splitPoint(point);
+                      return (
+                        <li
+                          key={point}
+                          className={clsx(styles.point, styles.arrive)}
+                          style={
+                            {
+                              "--order":
+                                section.paragraphs.length + statCount + order,
+                            } as CSSProperties
+                          }
+                        >
+                          <span className={styles.pointNumber} aria-hidden="true">
+                            {padNumber(order + 1)}
+                          </span>
+                          {title && <strong className={styles.pointTitle}>{title}</strong>}
+                          <span className={styles.pointBody}>{linked(body)}</span>
+                        </li>
+                      );
+                    })}
+                  </ol>
                 )}
               </div>
 
@@ -899,6 +1016,7 @@ export function ProjectView({
             </section>
           );
         })}
+      </div>
       </div>
 
       {closer?.from === "set" && (
@@ -1273,4 +1391,35 @@ function FlapWords({
       onFlap={onFlap}
     />
   );
+}
+
+/** A paragraph or point, with any `[text](https://…)` in it made a link that opens in a new tab. */
+function linked(text: string): ReactNode {
+  const parts = text.split(/\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)/);
+  if (parts.length === 1) return text;
+  return parts.map((part, k) => {
+    // split() puts each link's text and address after the plain text before it.
+    if (k % 3 === 1) {
+      return (
+        <a
+          key={k}
+          href={parts[k + 1]}
+          target="_blank"
+          rel="noopener noreferrer"
+          className={styles.inlineLink}
+        >
+          {part}
+        </a>
+      );
+    }
+    return k % 3 === 0 ? part : null;
+  });
+}
+
+/** A point's title and the rest, when it starts "Title: the rest" (the rest capitalised). */
+function splitPoint(point: string): { title?: string; body: string } {
+  const match = point.match(/^([^:[\]()]{2,48}):\s+([\s\S]+)$/);
+  if (!match) return { body: point };
+  const body = match[2];
+  return { title: match[1], body: body.charAt(0).toUpperCase() + body.slice(1) };
 }

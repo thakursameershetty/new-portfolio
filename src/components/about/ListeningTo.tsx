@@ -19,6 +19,7 @@ import * as music from "../music";
 import { tracks, type Track } from "./taste";
 import key from "./Keycap.module.css";
 import styles from "./ListeningTo.module.css";
+import { MaterialIcon } from "../icons/MaterialIcon";
 
 // How many covers the shelf fans out at once.
 const shelfSize = 9;
@@ -608,38 +609,9 @@ function Player({
               aria-label={player.playing ? "Pause" : "Play"}
             >
               {player.playing ? (
-                <svg
-                  aria-hidden="true"
-                  width="22"
-                  height="22"
-                  viewBox="0 0 24 24"
-                >
-                  <rect
-                    x="6"
-                    y="5"
-                    width="4"
-                    height="14"
-                    rx="1"
-                    fill="currentColor"
-                  />
-                  <rect
-                    x="14"
-                    y="5"
-                    width="4"
-                    height="14"
-                    rx="1"
-                    fill="currentColor"
-                  />
-                </svg>
+                <MaterialIcon name="pause" size={28} />
               ) : (
-                <svg
-                  aria-hidden="true"
-                  width="22"
-                  height="22"
-                  viewBox="0 0 24 24"
-                >
-                  <path d="M7 5v14l12-7z" fill="currentColor" />
-                </svg>
+                <MaterialIcon name="play" size={28} />
               )}
             </button>
             <button

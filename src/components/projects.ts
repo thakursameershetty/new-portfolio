@@ -33,7 +33,23 @@ export type YouTubeMedia = {
 };
 
 /** The animated diagrams (in `diagrams/`), drawn in SVG. */
-export type DiagramId = "packet-flow" | "bell-pair" | "fleet-average";
+export type DiagramId =
+  | "packet-flow"
+  | "bell-pair"
+  | "fleet-average"
+  | "submission-flow"
+  | "quote-flow"
+  | "sign-in-flow"
+  | "two-scripts"
+  | "feed-styles"
+  | "tmn-system"
+  | "nova-home"
+  | "nova-cards"
+  | "nova-system"
+  | "rao-join"
+  | "rao-system"
+  | "spotmies-system"
+  | "mutiny-system";
 
 /** An animated diagram in the story and the closer look. The monitor can't play one (its
  *  screen is a WebGL texture), so a part with a diagram gives the monitor a `screen`. */
@@ -72,6 +88,9 @@ export interface CaseSection {
   label: string;
   heading: string;
   paragraphs: string[];
+  /** Numbers worth seeing at a glance, set out as a table under the paragraphs. */
+  stats?: { value: string; label: string }[];
+  /** Key points, each numbered; "Title: the rest" sets its title above the rest. */
   points?: string[];
   figures?: ScreenItem[];
   /** A picture shown on its own, full width, before the figures (whatever their layout). */
@@ -184,8 +203,7 @@ export const projects: Project[] = [
       "Likes, replies and trending theories that update live",
       "An admin panel for the debate, the critics' videos, users and theories",
     ],
-    // Confirm: add the database / live-update service.
-    stack: ["Next.js", "GSAP", "Vercel"],
+    stack: ["Next.js", "GSAP", "Postgres", "Railway", "Cloudinary", "UploadThing", "Vercel"],
     link: { href: "https://raobahadur.in", label: "raobahadur.in" },
     media: [
       {
@@ -270,7 +288,7 @@ export const projects: Project[] = [
           label: "Brief",
           heading: "Keep people talking after the film",
           paragraphs: [
-            "Rao Bahadur is a Telugu film directed by Venkatesh Maha. Its makers asked Spotmies for a site where people who'd watched it could share their opinions and dig into the hidden details the director had put in. It's a slow, detailed film, and it opened in the same week as a much bigger star's, so it needed word of mouth. Spotmies gave the project to me, and I designed and built all of it.",
+            "Rao Bahadur is a Telugu film directed by Venkatesh Maha. Its makers asked Spotmies for a site where people who'd watched it could share their opinions and dig into the hidden details the director had put in. It's a slow, detailed film, and it opened in the same week as a much bigger star's, so it needed word of mouth. The film's team hired MutinyX, which brought in Spotmies, and Spotmies gave the project to me. I designed and built all of it.",
             "The first draft took two to three days and covered about 90% of the site. The client's changes, like the admin panel, took it to five or six.",
           ],
           figures: [
@@ -284,13 +302,45 @@ export const projects: Project[] = [
           ],
         },
         {
+          id: "constraints",
+          label: "Constraints",
+          heading: "The limits I worked inside",
+          paragraphs: ["Every choice below had to fit these:"],
+          points: [
+            "Live in under a week, in time for the July 2026 release",
+            "The same week as a bigger star's film, so it had to spread by word of mouth",
+            "No messy sign-up or login pages: on a fan site, people who meet one leave",
+            "My first time building something with this much content at this scale",
+          ],
+        },
+        {
+          id: "ownership",
+          label: "My part",
+          heading: "What I owned, and what I didn't",
+          paragraphs: [
+            "The film's team hired MutinyX, which brought in Spotmies; I worked with Spotmies only.",
+          ],
+          points: [
+            "Mine: the design, the frontend, the backend and the admin panel, and every asset, from the posters and stills I found to the graphics I made",
+            "Mine too: the spoiler question, the easter egg, and how to join in without signing up",
+            "The client's: the user flow, what the site had to include, and the rule against sign-up pages",
+          ],
+        },
+        {
           id: "identity",
           act: "The decisions",
           label: "No sign-up",
           heading: "No sign-up, just a name",
           paragraphs: [
-            "Fans of a smaller film won't make an account just to leave a comment, and a fan discussion doesn't need real names. So reading is open to everyone, and only your first like, reply or post asks for a nickname. As you type it, a face is drawn from the letters, so everyone has an avatar without uploading a photo.",
+            "The client's one firm rule was no messy sign-up or login pages: fans of a smaller film won't make an account just to leave a comment, and most who meet a sign-up page leave. How to do without one was my call. Reading is open to everyone, and only your first like, reply or post asks for a nickname. As you type it, a face is drawn from the letters with FaceHash, so everyone has an avatar without uploading a photo.",
+            "The trade-off: without accounts, anyone can post as anyone. So the film team watched the theories from the admin panel and could remove any that crossed a line.",
           ],
+          lead: {
+            type: "diagram",
+            diagram: "rao-join",
+            alt: "Animated diagram: on a usual fan site, liking a theory opens a sign-up form for an email and a password twice, then asks you to check your inbox; on Rao Bahadur, the first like asks only for a nickname, a face is drawn from it as it's typed, and the like lands",
+            caption: "Liking a theory for the first time, on a usual fan site and on Rao Bahadur.",
+          },
           layout: "pair",
           figures: [
             {
@@ -312,7 +362,7 @@ export const projects: Project[] = [
           label: "Spoilers",
           heading: "Ask before you spoil it",
           paragraphs: [
-            "Rooting for the film starts with one question: have you watched it? If not, you go to the buzz page, with trailers, critics' posts and where to book tickets, and nothing that gives the film away. If you have, you pick your favourite characters and go on to the theories.",
+            "This was my idea. Rooting for the film starts with one question: have you watched it? If not, you go to the buzz page, with trailers, critics' posts and where to book tickets, and nothing that gives the film away. If you have, you pick your favourite characters and go on to the theories.",
           ],
           layout: "pair",
           figures: [
@@ -346,6 +396,21 @@ export const projects: Project[] = [
               caption: "Found by searching “the insect”.",
             },
           ],
+        },
+        {
+          id: "design-language",
+          act: "The look",
+          label: "Design language",
+          heading: "Gold, peacock and Cinzel",
+          paragraphs: [
+            "The look comes from the film's main posters: gold on near-black, with a peacock green. Gold is for buttons and anything you can act on, with a gold gradient on the big headings; peacock green marks small labels. Headings and buttons are set in Cinzel, and everything you read in Inter.",
+          ],
+          lead: {
+            type: "diagram",
+            diagram: "rao-system",
+            alt: "Rao Bahadur's design language: gold #F5C66D for buttons, a gold gradient from #FFD16A to #D6812E for headings, peacock #008288 for labels and #010A09 for the page; Cinzel for headings and buttons and Inter for text; fully round buttons and tags",
+            caption: "The colours, type and shape behind the site.",
+          },
         },
         {
           id: "more",
@@ -389,7 +454,7 @@ export const projects: Project[] = [
               src: "/work/raobahadur/admin-theories.jpg",
               alt: "Admin dashboard listing theories, comments and replies",
               caption:
-                "The admin panel: users, theories, the debate and the buzz page.",
+                "The admin panel: users and theories to watch, the debate (on or off, and its answers), and the buzz page's videos and posts.",
             },
             {
               type: "image",
@@ -404,7 +469,7 @@ export const projects: Project[] = [
           label: "Hard part",
           heading: "Keeping it fast and live",
           paragraphs: [
-            "I was still new to building at this scale. The hardest part was keeping pages quick while theories, replies, videos and images piled up, and making likes and counts update live without a refresh. I also reworked the animations several times, until each one explained something instead of getting in the way.",
+            "It runs on Next.js, with a Postgres database on Railway and the images and videos in Cloudinary and UploadThing. I was still new to building at this scale. The hardest part was keeping pages quick while theories, replies, videos and images piled up, and making likes and counts update live without a refresh. I also reworked the animations several times, until each one explained something instead of getting in the way.",
           ],
           figures: [
             {
@@ -424,7 +489,14 @@ export const projects: Project[] = [
           paragraphs: [
             // The count on the home page is set by the client for marketing, so it isn't quoted
             // here; these totals are from the admin panel.
-            "Fans posted 271 theories and 144 comments and replies. The film's official X account sent people to the site four times in its first ten days, asked for easter eggs and theories, and said the director would reply to the best ones. Spotmies was told on a call that the filmmakers loved the site.",
+            "Fans filled the site with theories and replies. The film's official X account sent people to the site four times in its first ten days, asked for easter eggs and theories, and said the director would reply to the best ones. Spotmies was told on a call that the filmmakers loved the site.",
+            "It also carried on past the cinema run. The debate opened after the film left cinemas, and once it closed, the site turned to pointing fans to the film on Netflix.",
+          ],
+          stats: [
+            { value: "271", label: "theories posted" },
+            { value: "144", label: "comments and replies" },
+            { value: "4", label: "official posts about it" },
+            { value: "36,000+", label: "views on those posts" },
           ],
           layout: "row",
           // Paired side by side, so they fill the monitor's 4:3 screen.
@@ -472,7 +544,12 @@ export const projects: Project[] = [
           label: "Reflection",
           heading: "A site can't change a release date",
           paragraphs: [
-            "The film got good reviews but didn't do well at the box office, partly because it came out alongside a bigger film. The site kept the people who had watched it talking, and gave the film team something to post about, but it couldn't bring in the people who never went to see it.",
+            "The site was built in a hurry, in under a week, and it still gave the client everything they asked for. The film got good reviews but didn't do well at the box office, partly because it came out alongside a bigger film. The site kept the people who had watched it talking, and gave the film team something to post about, but it couldn't bring in the people who never went to see it.",
+          ],
+          points: [
+            "What I learned: in a week, decide early what has to be right. Here it was joining in without an account, and everything else could follow",
+            "What I'd change: plan for speed from the start, setting up how images load and counts update before the content piled up, not after",
+            "What I'd do next: a spoiler-free way into the theories, to draw in people who haven't watched it yet",
           ],
         },
       ],
@@ -488,12 +565,12 @@ export const projects: Project[] = [
     role: "Design + frontend",
     context: "Spotmies",
     summary:
-      "The creator app for MutinyX, an influencer marketing network: designed in Figma and built in React Native twice, six months apart, plus the Next.js landing pages for its rebrand. My first big project at Spotmies.",
+      "The creator app for MutinyX, an influencer marketing network: designed in Figma twice, six months apart, with the second version's frontend built by me in React Native, plus the Next.js landing pages for its rebrand. My first big project at Spotmies.",
     blurb:
-      "The creator app for an influencer marketing network, designed and built twice, and its website.",
+      "The creator app for an influencer marketing network, designed twice and rebuilt to match, and its website.",
     highlights: [
-      "Designed the first version, about 35 screens, in three days, then built its frontend in React Native",
-      "Redesigned it after the rebrand, around a new flow for submitting each deliverable",
+      "Designed the first version, about 35 screens, in three days, and built some of its screens in React Native",
+      "Redesigned it after the rebrand, around a new flow for submitting each deliverable, and built its frontend in React Native",
       "Designed and built the MutinyX landing pages in Next.js",
     ],
     stack: ["Figma", "React Native", "Next.js", "HTML/CSS/JS"],
@@ -520,39 +597,39 @@ export const projects: Project[] = [
       timeframe: "Feb–Sep 2026",
       client: { logo: "/work/mutiny/logo-dark.svg", name: "MutinyX" },
       headline:
-        "Designing a creator app twice, and rebuilding it around the work that comes after yes",
+        "Redesigning a creator app around the work that comes after yes",
       brief: [
         {
           label: "Role",
           value: "Design + frontend",
-          note: "The creator app, twice, and the website",
+          note: "Designed both; built part of v1 and all of v2's frontend",
         },
         {
-          label: "Product",
-          value: "MutinyX",
-          note: "Brands, creators and agencies in one network",
+          label: "Team",
+          value: "Me + my team lead",
+          note: "With Spotmies developers on version 1's build",
+        },
+        {
+          label: "Timeline",
+          value: "Feb–Sep 2026",
+          note: "Version 1 in Feb, version 2 in Aug–Sep",
+        },
+        {
+          label: "Problem",
+          value: "Lost after yes",
+          note: "Creators couldn't tell where or how to submit each deliverable",
+        },
+        {
+          label: "Outcome",
+          value: "v2 approved",
+          note: "Frontend signed off, now in testing",
+        },
+        {
+          label: "Platform",
+          value: "iOS + Android",
+          note: "React Native, plus the Next.js website",
           logo: "/work/mutiny/logo-dark.svg",
           href: "https://www.mutinyx.in",
-        },
-        {
-          label: "Stage",
-          value: "0 → 1, then v2",
-          note: "In production: frontend approved, backend under way",
-        },
-        {
-          label: "Version 1",
-          value: "3 days of design",
-          note: "Feb 2026, then a React Native draft",
-        },
-        {
-          label: "Version 2",
-          value: "5 days of design",
-          note: "Aug 2026, its frontend built in Sep",
-        },
-        {
-          label: "Website",
-          value: "Next.js",
-          note: "Landing pages for the June rebrand",
         },
       ],
       reel: [
@@ -582,22 +659,21 @@ export const projects: Project[] = [
       sections: [
         {
           id: "brief",
-          act: "The brief",
+          act: "The problem",
           label: "Brief",
-          heading: "The creator side of a network",
+          heading: "A creator app that stopped at yes",
           paragraphs: [
-            "MutinyX connects brands, agencies and creators for influencer marketing. Brands and agencies plan and run campaigns; creators use the Mutiny Talent app to find campaigns, quote a price, submit their work and get paid.",
-            "The creator app was my first big project at Spotmies. I designed it twice, six months apart, built its frontend both times, and in between designed and built the website for the rebrand.",
+            "MutinyX connects brands, agencies and creators for influencer marketing. Brands and agencies run campaigns from a desktop dashboard; creators use the app to find them, quote a price, submit their work and get paid. This is the creators' app, called Mutiny Talent until June.",
+            "Version 1 made finding a campaign and saying yes easy. What came after was harder: as soon as a brand asked for more than one deliverable, creators couldn't tell where each one went or what came next. The app that shipped had also drifted from the design. Creators complained to the client, and their complaints became the brief for version 2: the same premium design, built exactly as designed.",
           ],
         },
         {
           id: "version-1",
-          act: "Version 1",
           label: "Version 1",
-          heading: "A whole app in three days",
+          heading: "Where it started: a whole app in three days",
           paragraphs: [
-            "From February 25 to 27, I designed about 35 screens in Figma, from signing up to getting paid: finding campaigns, negotiating a price, tracking the work, chats, the wallet and the creator's profile.",
-            "In the first week of March, I built the frontend in React Native, on the architecture my team lead had set. The draft covered all of the UI, and my team lead took it from there to the development team for production. The app in the stores changed along the way, so the screens here are from my Figma file.",
+            "In February, my first big project at Spotmies, the client gave me a user flow, the logo and a few references, and asked for a premium, production-ready design. I designed about 35 screens in Figma over three days, from February 25 to 28, from signing up to getting paid: finding campaigns, negotiating a price, tracking the work, chats, the wallet and the profile. From early March, I built some of them in React Native (the opening and sign-in, the campaigns list, transactions and the profile), while my team lead and the Spotmies developers built the rest.",
+            "Covering the whole journey that fast got the product live, but it treated a campaign as one pipeline, and that's where it broke. By release, the build had also changed the design, even on the screens I'd built: what creators got wasn't what the client had approved.",
           ],
           layout: "carousel",
           figures: [
@@ -626,41 +702,164 @@ export const projects: Project[] = [
           ],
         },
         {
-          id: "website",
-          act: "The rebrand",
-          label: "Website",
-          heading: "Landing pages for MutinyX",
+          id: "goals",
+          label: "Goals",
+          heading: "What version 2 had to do, and within what",
           paragraphs: [
-            "In June, Mutiny Talent became MutinyX. I designed and built its landing pages in Next.js: one for the network as a whole, one for creators, and a pair for brands and agencies that share a layout, with the micro-interactions designed and built together.",
+            "In June, Mutiny Talent took the name of the brands' dashboard, MutinyX, so both sides now share one name. The client wanted a fresh app with the same premium feel, and this time built exactly as designed. From August 25, I had five days to redesign it, with these goals:",
           ],
-          layout: "carousel",
+          points: [
+            "Make every deliverable clear: where it goes, what's next, and where it stands",
+            "Stop asking creators to guess at a price the brand never set",
+            "Get creators in with as little as a phone number",
+            "Carry the new MutinyX brand",
+            "Ship what was designed, by building the frontend myself",
+          ],
+        },
+        {
+          id: "constraints",
+          label: "Constraints",
+          heading: "The limits I worked inside",
+          paragraphs: [
+            "Every choice below had to fit these:",
+          ],
+          points: [
+            "Phones only: the app is for creators, while brands work in a separate desktop dashboard",
+            "From the client: a user flow, the logo and a few references; the rest of the look was mine to set",
+            "It had to feel premium and production-ready, not like a prototype",
+            "Five days to redesign, then about a week to build the frontend",
+            "The React Native architecture was already in place, so new flows had to fit it",
+            "Creators' followers and data came from Instagram, so sign-in had to connect to it",
+          ],
+        },
+        {
+          id: "ownership",
+          label: "My part",
+          heading: "What I owned, and what I didn't",
+          paragraphs: [
+            "In version 1, I designed everything and built a few screens; in version 2, I designed and built the whole frontend. Here's where my part ends and the others' begin:",
+          ],
+          points: [
+            "Mine: both versions' design in Figma, some of version 1's screens, the submissions flow (which I pitched), the opening animation, and version 2's frontend in React Native",
+            "My team lead's, with the Spotmies developers: the rest of version 1's build and its release, the app's architecture, the Instagram connection, the backend, and the brands' desktop dashboard",
+            "The client's: the user flow, the brand, and sign-off on every step",
+            "Decided together: dropping the price slider, and phone-number-only sign-in",
+          ],
+        },
+        {
+          id: "submissions",
+          act: "The decisions",
+          label: "Submissions",
+          heading: "One place for every deliverable",
+          paragraphs: [
+            "In version 1, a campaign had one progress timeline. A brand asking for two reels and a story still got one upload button, so creators couldn't tell which piece they were submitting, or what the brand had already approved.",
+            "In version 2, every deliverable sits in its own tab at the top of the submissions screen, with steps that fit what it is: a reel goes from script to work to proof of work, while a story or post goes from post to proof. Each step is reviewed and shows where it stands.",
+            "I pitched the flow to the client, then designed and built it once they approved. It adds a screen of tabs, but creators always know what's left.",
+          ],
+          lead: {
+            type: "diagram",
+            diagram: "submission-flow",
+            alt: "Animated diagram: in version 1, two reels and a story all go through one upload button under one timeline, and it's unclear which moved it; in version 2, each has its own track with its own steps",
+            caption:
+              "A campaign with two reels and a story, before and after.",
+          },
+          // The monitor can't play a diagram, so it shows the Figma prototype instead.
+          screen: [
+            {
+              type: "video",
+              src: "/work/mutiny/boards/v2-submit-flow.mp4",
+              poster: "/work/mutiny/boards/v2-submit-flow.jpg",
+              alt: "The version 2 submission flow: a reel's script uploaded and approved, then its work, then the proof of work",
+              caption:
+                "The whole flow, from script to proof of work, prototyped in Figma.",
+            },
+          ],
+          layout: "pair",
           figures: [
             {
-              type: "video",
-              src: "/work/mutiny/site-home.mp4",
-              poster: "/work/mutiny/site-home.jpg",
-              alt: "Scrolling through the MutinyX home page: the hero, the three sides of the network, the globe, the FAQ and the closing banner",
-              caption: "The home page, for the whole network.",
-              label: "Home",
+              type: "image",
+              src: "/work/mutiny/boards/v1-submit.jpg",
+              alt: "Version 1: a campaign's single progress timeline, the upload screen and the submitted message",
+              caption: "Before: one pipeline per campaign.",
             },
             {
-              type: "video",
-              src: "/work/mutiny/site-creators.mp4",
-              poster: "/work/mutiny/site-creators.jpg",
-              alt: "Scrolling through MutinyX for Creators: phones fanning out of the hero, the app's screens, the seven features joined by a path, the FAQ and the closing banner",
-              caption:
-                "For creators: the app's features, one after another along a path.",
-              label: "Creators",
+              type: "image",
+              src: "/work/mutiny/boards/v2-submit.jpg",
+              alt: "Version 2: deliverable tabs for two reels, with script upload, then work upload, then proof of work",
+              caption: "After: a tab per deliverable, each step reviewed in turn.",
+            },
+          ],
+        },
+        {
+          id: "quote",
+          label: "Quoting",
+          heading: "The feature we dropped",
+          paragraphs: [
+            "Version 1 had a price slider that showed how your price changed your chances of being accepted. It looked helpful, but brands set one budget for a whole campaign, across nano, micro and mega creators, not a price per creator, so there was no honest number to put on it.",
+            "My team lead and the client decided to drop it, and I designed what replaced it: creators type their own quote, and the app only says whether it's within the brand's budget or above it. They lose the guidance of a suggested price, but they quote what they're worth instead of guessing what the brand wants.",
+          ],
+          lead: {
+            type: "diagram",
+            diagram: "quote-flow",
+            alt: "Animated diagram: in version 1, a slider moves the price between $490 and $550 and promises better or worse odds that nothing backs up; in version 2, the creator types a quote and the app says whether it's above or within the brand's budget",
+            caption: "Quoting a price, before and after.",
+          },
+          layout: "pair",
+          figures: [
+            {
+              type: "image",
+              src: "/work/mutiny/boards/v1-quote.jpg",
+              alt: "Version 1: the price slider at $500, $490 and $550, each with its chance of acceptance",
+              caption: "Before: a slider promising odds it couldn't know.",
+              label: "Version 1",
+            },
+            {
+              type: "image",
+              src: "/work/mutiny/boards/v2-quote.jpg",
+              alt: "Version 2: a quote of ₹5000, marked above the brand's budget, and the same quote marked within it",
+              caption: "After: your own quote, within the brand's budget or above it.",
+              label: "Version 2",
+            },
+          ],
+        },
+        {
+          id: "sign-in",
+          label: "Sign-in",
+          heading: "One field to get in",
+          paragraphs: [
+            "Version 1 asked new creators for a name, email and phone before an OTP. The client wanted a phone number to be enough, so one field now does both: an existing creator gets an OTP and is in, and a new one adds a name and email, then connects Instagram so their followers come in by themselves (my team lead and the developers built that part).",
+          ],
+          lead: {
+            type: "diagram",
+            diagram: "sign-in-flow",
+            alt: "Animated diagram: in version 1, a name, email and phone are typed before a five-digit OTP; in version 2, a phone number and a six-digit OTP are enough to get back in",
+            caption: "Getting in, before and after.",
+          },
+          layout: "pair",
+          figures: [
+            {
+              type: "image",
+              src: "/work/mutiny/boards/v1-signin.jpg",
+              alt: "Version 1 sign-up: name, email and phone, the OTP keypad, then the entered OTP",
+              caption: "Before: name, email and phone, then an OTP.",
+              label: "Version 1",
+            },
+            {
+              type: "image",
+              src: "/work/mutiny/boards/v2-signin.jpg",
+              alt: "Version 2 sign-in: a phone number, then the OTP boxes, then the entered OTP",
+              caption: "After: a phone number, then an OTP.",
+              label: "Version 2",
             },
           ],
         },
         {
           id: "opening",
-          act: "Version 2",
+          act: "The craft",
           label: "Opening",
           heading: "An opening that explains the app",
           paragraphs: [
-            "The rebrand called for a fresh app, so from August 25 I redesigned it over five days. Version 1 opened on a rotating globe of faces. The new opening says what the app is for: find campaigns, find brands, find collaborations, find you, as campaign posters fly past.",
+            "Version 1 opened on a rotating globe of faces, which looked good but didn't say what the app was for. The new opening does: find campaigns, find brands, find collaborations, find you, as campaign posters fly past.",
             "I built it in HTML, CSS and JavaScript, with motion blur and haptics, and embedded it in the React Native app.",
           ],
           figures: [
@@ -676,10 +875,16 @@ export const projects: Project[] = [
         {
           id: "new-look",
           label: "New look",
-          heading: "A fresh look for MutinyX",
+          heading: "Yellow only where you can act",
           paragraphs: [
-            "The app went dark, with the MutinyX yellow for everything you can act on. The tabs became Home, Explore, Chats and Submissions, and Explore split campaigns into public ones and the ones you're invited to, with filters for paid, barter and programs. I prototyped the moving parts in Figma before building them.",
+            "With the rebrand, the client moved to a black logo: yellow on white had looked loud and cheap, not true to the brand. So the app went pure black (#000000), with the MutinyX yellow (#FACB03) kept for everything you can act on, and version 1's SF Pro gave way to General Sans. The tabs became Home, Explore, Chats and Submissions, and Explore split campaigns into public ones and the ones you're invited to, with filters for paid, barter and programs. I prototyped the moving parts in Figma before building them.",
           ],
+          lead: {
+            type: "diagram",
+            diagram: "mutiny-system",
+            alt: "MutinyX's design language: yellow #FACB03 for anything you can act on, pure black #000000 for the page and #1A1A1A from the logo's wordmark, picked from the logo; General Sans for version 2 after version 1's SF Pro; buttons and fields fully round, cards at 25px",
+            caption: "The colours, type and shape behind version 2.",
+          },
           layout: "carousel",
           figures: [
             {
@@ -709,102 +914,61 @@ export const projects: Project[] = [
           ],
         },
         {
-          id: "submissions",
-          label: "Submissions",
-          heading: "One place for every deliverable",
-          paragraphs: [
-            "In version 1, a campaign was one pipeline. When a brand asked for several deliverables, creators couldn't tell where to submit each one, or how. The client raised it, and it's the problem I most wanted to solve.",
-            "In version 2, every deliverable a campaign needs sits in a row of tabs at the top of its submissions screen, and each has its own steps: a reel goes from script to work to proof of work, while a story or feed post goes from post to proof. Each step is reviewed and shows where it stands. I pitched the flow to the client, then designed and built it once they approved.",
-          ],
-          lead: {
-            type: "video",
-            src: "/work/mutiny/boards/v2-submit-flow.mp4",
-            poster: "/work/mutiny/boards/v2-submit-flow.jpg",
-            alt: "The version 2 submission flow: a reel's script uploaded and approved, then its work, then the proof of work",
-            caption:
-              "The whole flow, from script to proof of work, prototyped in Figma.",
-          },
-          layout: "pair",
-          figures: [
-            {
-              type: "image",
-              src: "/work/mutiny/boards/v1-submit.jpg",
-              alt: "Version 1: a campaign's single progress timeline, the upload screen and the submitted message",
-              caption: "Version 1: one pipeline per campaign.",
-            },
-            {
-              type: "image",
-              src: "/work/mutiny/boards/v2-submit.jpg",
-              alt: "Version 2: deliverable tabs for two reels, with script upload, then work upload, then proof of work",
-              caption:
-                "Version 2: a tab per deliverable, each step reviewed in turn.",
-            },
-          ],
-        },
-        {
-          id: "quote",
-          label: "Quoting",
-          heading: "Quote what you're worth",
-          paragraphs: [
-            "Version 1 had a price slider that showed how your price changed your chances of being accepted. But brands set one budget for a whole campaign, across nano, micro and mega creators, not a price for each creator, so there was no fair number to put on the slider.",
-            "My team lead and the client decided to drop it. Now creators type their own quote, and the app only says whether it's within the brand's budget or above it, so they quote what they want, not what they guess the brand wants.",
-          ],
-          layout: "pair",
-          figures: [
-            {
-              type: "image",
-              src: "/work/mutiny/boards/v1-quote.jpg",
-              alt: "Version 1: the price slider at $500, $490 and $550, each with its chance of acceptance",
-              caption:
-                "Version 1: the slider, and how each price changes your chances.",
-              label: "Version 1",
-            },
-            {
-              type: "image",
-              src: "/work/mutiny/boards/v2-quote.jpg",
-              alt: "Version 2: a quote of ₹5000, marked above the brand's budget, and the same quote marked within it",
-              caption:
-                "Version 2: your own quote, above the brand's budget or within it.",
-              label: "Version 2",
-            },
-          ],
-        },
-        {
-          id: "sign-in",
-          label: "Sign-in",
-          heading: "Just a phone number",
-          paragraphs: [
-            "The client wanted creators to get in with a phone number alone. One field now does both: an existing creator gets an OTP and is in, and a new one adds a name and email, then connects Instagram so their followers come in by themselves (the development team built that part).",
-          ],
-          layout: "pair",
-          figures: [
-            {
-              type: "image",
-              src: "/work/mutiny/boards/v1-signin.jpg",
-              alt: "Version 1 sign-up: name, email and phone, the OTP keypad, then the entered OTP",
-              caption: "Version 1: name, email and phone, then an OTP.",
-              label: "Version 1",
-            },
-            {
-              type: "image",
-              src: "/work/mutiny/boards/v2-signin.jpg",
-              alt: "Version 2 sign-in: a phone number, then the OTP boxes, then the entered OTP",
-              caption: "Version 2: a phone number, then an OTP.",
-              label: "Version 2",
-            },
-          ],
-        },
-        {
           id: "status",
-          act: "Where it stands",
-          label: "Status",
-          heading: "Approved, and on to production",
+          act: "What happened",
+          label: "Outcome",
+          heading: "Built as designed, and in testing",
           paragraphs: [
-            "From September 9, I built version 2's frontend in about a week, with every animation and interaction tuned. My team lead has checked and approved it, and is now reworking the backend with the development team.",
+            "From September 9, I built version 2's frontend in about a week, matching the Figma screens with every animation and interaction tuned. My team lead checked and approved it, and is now connecting the backend.",
+            "Version 2 is in testing and no creators are on it yet, so there are no numbers to share. Once it's live, the first thing to watch is how many creators submit a deliverable on the first try.",
+          ],
+        },
+        {
+          id: "reflection",
+          label: "Reflection",
+          heading: "Designing twice taught me more than once",
+          paragraphs: [
+            "Version 1, my first project, taught me how to turn a rough user flow into a prototype that could actually be built. It also taught me that a design can change on its way through development, and that the real test comes after launch: creators' feedback showed me where my flow was weak, and version 2 is the stronger, smoother flow that came out of it.",
+          ],
+          points: [
+            "What I learned: a design is only as good as what ships, which is why I built version 2's frontend myself",
+            "What I'd change: hear from creators directly, not only through the client",
+            "What I'd do next: once version 2 is live, watch how many creators submit on the first try",
+          ],
+        },
+        {
+          id: "website",
+          act: "Also designed",
+          label: "Website",
+          heading: "Landing pages for the rebrand",
+          paragraphs: [
+            "For the June rebrand, I designed and built the MutinyX landing pages in Next.js: one for the network as a whole, one for creators, and a pair for brands and agencies that share a layout, with the micro-interactions designed and built together.",
+          ],
+          layout: "carousel",
+          figures: [
+            {
+              type: "video",
+              src: "/work/mutiny/site-home.mp4",
+              poster: "/work/mutiny/site-home.jpg",
+              alt: "Scrolling through the MutinyX home page: the hero, the three sides of the network, the globe, the FAQ and the closing banner",
+              caption: "The home page, for the whole network.",
+              label: "Home",
+            },
+            {
+              type: "video",
+              src: "/work/mutiny/site-creators.mp4",
+              poster: "/work/mutiny/site-creators.jpg",
+              alt: "Scrolling through MutinyX for Creators: phones fanning out of the hero, the app's screens, the seven features joined by a path, the FAQ and the closing banner",
+              caption:
+                "For creators: the app's features, one after another along a path.",
+              label: "Creators",
+            },
           ],
         },
       ],
     },
+    // Its brief has no Stage cell now, so the Work list reads it from here.
+    stage: "0 → 1",
     disk: "#facb03",
     ink: "#1a1a1a",
   },
@@ -896,7 +1060,7 @@ export const projects: Project[] = [
           heading: "A site that didn't look like the work",
           paragraphs: [
             "When I joined Spotmies, its website was a template: stock photos of smiling people, a light layout and generic lines like “Innovative solutions to stay ahead of the competition”. It said little about what the studio actually builds.",
-            "Once Amero X was handed off, I redesigned it, the landing page and the inner pages, and built it myself in Next.js. It was live by the second week of February 2026.",
+            "Once Amero X was handed off, I redesigned it, the landing page and the inner pages, and built it myself in Next.js. It was live by the second week of February 2026, signed off by Spotmies' CEO and founders.",
           ],
           layout: "pair",
           figures: [
@@ -974,6 +1138,20 @@ export const projects: Project[] = [
           ],
         },
         {
+          id: "design-language",
+          label: "Design language",
+          heading: "Black, cyan and Outfit",
+          paragraphs: [
+            "The old template was light and full of stock photos; the new site is near-black, with the Spotmies cyan kept for highlights, borders and glows. Headings are set in Outfit, the body in the system's own sans, and buttons are fully round.",
+          ],
+          lead: {
+            type: "diagram",
+            diagram: "spotmies-system",
+            alt: "Spotmies' design language: cyan #00EEF9 for highlights and glows, cyan #00D3F3 for fills, #050505 for the page and white for text; Outfit for headings; fully round buttons and 16 to 24px cards",
+            caption: "The colours, type and shape behind the new site.",
+          },
+        },
+        {
           id: "before",
           label: "Before",
           heading: "What it replaced",
@@ -986,6 +1164,26 @@ export const projects: Project[] = [
               alt: "Scrolling through the old Spotmies website",
               caption: "The old site.",
             },
+          ],
+        },
+        {
+          id: "outcome",
+          act: "What happened",
+          label: "Outcome",
+          heading: "Signed off at the top, and live",
+          paragraphs: [
+            "Spotmies' CEO and founders signed it off, and it's live at [spotmies.com](https://www.spotmies.com), the first thing a new client sees of the studio.",
+          ],
+        },
+        {
+          id: "reflection",
+          label: "Reflection",
+          heading: "Show the work, don't describe it",
+          paragraphs: [
+            "Redesigning the company I'd just joined meant designing for people who already had an opinion of the brand. It taught me to lead with proof: the old site called Spotmies innovative; the new one shows what it has built, and lets that do the talking.",
+          ],
+          points: [
+            "What I'd change: build in a way to measure it, like where enquiries come from, so its effect could be seen and not just heard about",
           ],
         },
       ],
@@ -1086,7 +1284,7 @@ export const projects: Project[] = [
           label: "Brief",
           heading: "My first project",
           paragraphs: [
-            "Amero X was the first thing I worked on after joining Spotmies, in December 2025. It's a crypto trading platform: spot and futures trading, copy trading, swaps, P2P deals, staking and a wallet. Its designs already existed, but they felt cheap, and in crypto a cheap look costs trust. My job was to refine them.",
+            "Amero X was the first thing I worked on after joining Spotmies, in December 2025. It's a crypto trading platform: spot and futures trading, copy trading, swaps, P2P deals, staking and a wallet. Its designs already existed, but they felt cheap, and in crypto a cheap look costs trust. My job was to refine them, working with Spotmies' design head and the client.",
           ],
         },
         {
@@ -1162,7 +1360,18 @@ export const projects: Project[] = [
           label: "Handoff",
           heading: "Handed off",
           paragraphs: [
-            "My part ended in January 2026, and the development team took it from there. They changed parts of it later, so the live site at amerox.io differs from what's shown here: the design and build as I handed them over.",
+            "My part ended in January 2026, and the development team took it from there. They changed parts of it later, so the live site at [amerox.io](https://amerox.io) differs from what's shown here: the design and build as I handed them over.",
+          ],
+        },
+        {
+          id: "reflection",
+          label: "Reflection",
+          heading: "Restraint is what makes gold premium",
+          paragraphs: [
+            "My first project taught me that a premium look comes from restraint. Gold everywhere looked cheap; gold kept for the one thing that matters on each screen made the same palette feel trustworthy. Building the landing page myself, to the pixel, also showed me what survives the move from Figma to code.",
+          ],
+          points: [
+            "What I'd change: write down the rules behind the design (where gold goes, and why) at handoff, so whoever changes it later keeps what makes it work",
           ],
         },
       ],
@@ -1298,6 +1507,15 @@ export const projects: Project[] = [
           ],
         },
         {
+          id: "roblox",
+          act: "The decision",
+          label: "Why Roblox",
+          heading: "Why Roblox",
+          paragraphs: [
+            "Peddi came the same way as Rao Bahadur: the film's team gave the contract to MutinyX, and MutinyX to Spotmies. The ask was a game, built fast. Dworak and I proposed Roblox: it comes with its own studio, it's quick to build in and easy for players to pick up, and its MCP let us connect AI tools to Roblox Studio to build faster.",
+          ],
+        },
+        {
           id: "references",
           act: "The world",
           label: "References",
@@ -1410,7 +1628,8 @@ export const projects: Project[] = [
           label: "Making it",
           heading: "Two of us in Roblox Studio",
           paragraphs: [
-            "Dworak and I built the world side by side at Spotmies, in Roblox Studio. These were taken on launch day, still at it after the film's team had shared it.",
+            "I built the world: how it looks, and the small details that refer to Peddi's world and to Ram Charan's character, for whom I tried several character designs, with custom clothes from the film. The mini cricket pitch and its game logic are mine too. Dworak helped build the world early on and started a mini wrestling pitch, which the client cut when the timeline ran short.",
+            "These were taken on launch day, still at it after the film's team had shared it.",
           ],
           layout: "pair",
           figures: [
@@ -1434,7 +1653,12 @@ export const projects: Project[] = [
           label: "Launch",
           heading: "Launched by the film",
           paragraphs: [
-            "The film's official X account launched the world on June 5, 2026: “Enter the world of #PEDDI now on Roblox.” The post reached 49.5K views, with 3.3K likes and 684 reposts.",
+            "The film's official X account launched the world on June 5, 2026: “Enter the world of #PEDDI now on Roblox.” The launch post did this:",
+          ],
+          stats: [
+            { value: "49.5K", label: "views" },
+            { value: "3.3K", label: "likes" },
+            { value: "684", label: "reposts" },
           ],
           layout: "pair",
           // Framed on black, so it fills the monitor's 4:3 screen.
@@ -1477,6 +1701,18 @@ export const projects: Project[] = [
               alt: "Aura Entertainer: PEDDI on Roblox",
               caption: "Aura Entertainer plays Peddi on Roblox.",
             },
+          ],
+        },
+        {
+          id: "reflection",
+          label: "Reflection",
+          heading: "A new tool, and a fixed launch date",
+          paragraphs: [
+            "I'd never used Roblox before this. Building in it to a launch date the film had already set improved my 3D design skills fast, and taught me how to split a world between two people.",
+          ],
+          points: [
+            "What I learned: picking the tool is a design decision too; Roblox Studio is what made the launch date possible",
+            "What I'd change: scope to the timeline from day one, so nothing like the wrestling pitch is started only to be cut",
           ],
         },
       ],
@@ -1526,38 +1762,38 @@ export const projects: Project[] = [
           height: 48,
         },
       ],
-      headline: "One news app in two languages, where readers can talk back",
+      headline: "A news app in two languages, made for readers who talk back",
       brief: [
         {
           label: "Role",
           value: "UI/UX design",
-          note: "The app and website, in Figma",
+          note: "Every screen and prototype, app and website",
         },
         {
-          label: "Product",
-          value: "TMN News",
-          note: "Today Media Network, in English",
-          logo: "/logos/tmn-mark.webp",
+          label: "Team",
+          value: "Just me",
+          note: "Briefed by the client through our project manager",
         },
         {
-          label: "Stage",
-          value: "0 → 1 design",
-          note: "App + website, for phones and desktop",
+          label: "Timeline",
+          value: "3 days + 1 week",
+          note: "A first draft, then the final design",
+        },
+        {
+          label: "Problem",
+          value: "A dated website",
+          note: "Mixed fonts and colours, and no motion",
         },
         {
           label: "Languages",
           value: "English + Marathi",
-          note: "The same design for TMN and Satara Today",
+          note: "One design for TMN and Satara Today",
+          logo: "/logos/tmn-mark.webp",
         },
         {
-          label: "App",
-          value: "In production",
-          note: "Being built by the Spotmies dev team",
-        },
-        {
-          label: "Website",
-          value: "Launching soon",
-          note: "Built by the Spotmies dev team",
+          label: "Outcome",
+          value: "In testing",
+          note: "Being built by the Spotmies developers",
         },
       ],
       reel: [
@@ -1583,21 +1819,151 @@ export const projects: Project[] = [
       sections: [
         {
           id: "brief",
-          act: "The brief",
+          act: "The problem",
           label: "Brief",
-          heading: "One design, two newsrooms",
+          heading: "Two newsrooms, one dated website",
           paragraphs: [
-            "TMN, Today Media Network, is an English news platform, and Satara Today, the voice of Satara, brings the same kind of news to readers there in Marathi. I designed both, the app and the website, in Figma: one design that had to work as well in Marathi as in English, kept minimal so the news leads.",
-            "Parts of it came from The Newspaper, a news app I'd designed on my own the month before. The development team at Spotmies is building both, and I worked with them on how the interactions should be built.",
+            "TMN, Today Media Network, is an English news platform, and Satara Today, the voice of Satara, brings the same kind of news to readers there in Marathi. Both are for everyone, but tuned for Gen Z.",
+            "They had a website, but its fonts and colours didn't match from page to page, and nothing on it moved. The client wanted a news app that felt Gen Z and modern, like Inshorts, not another generic news app, and a website to go with it.",
           ],
         },
         {
+          id: "constraints",
+          label: "Constraints",
+          heading: "The limits I worked inside",
+          paragraphs: ["Every choice below had to fit these:"],
+          points: [
+            "A one-line brief, passed on by our project manager: a Gen Z news app like Inshorts, with a scrollable home feed, a community, a profile, and readers posting their own articles with images",
+            "Three days for the first draft, with no logo or brand colours yet",
+            "One design for two brands and two scripts, English and Marathi",
+            "Phones and desktop: the app and the website",
+          ],
+        },
+        {
+          id: "ownership",
+          label: "My part",
+          heading: "What I owned, and what I didn't",
+          paragraphs: ["I was the only designer, and design was my whole part:"],
+          points: [
+            "Mine: every screen and prototype in Figma, for both drafts, the app and the website",
+            "The client's: the brief, the brand, and the final say on each draft",
+            "Our project manager's: passing on the brief, and feedback on the final design",
+            "The Spotmies developers': building the app and the website",
+          ],
+        },
+        {
+          id: "first-draft",
+          act: "The decisions",
+          label: "First draft",
+          heading: "From Inshorts to Instagram",
+          paragraphs: [
+            "The client asked for an app like Inshorts, in white, black and red, which was already how The Newspaper looked, a news app I'd designed on my own the month before. So I built the first draft on it in three days, about 80% of it from The Newspaper, with a scroll that worked exactly like Inshorts'.",
+            "The client half liked it: it did what Inshorts did, but it didn't feel Gen Z. For the final version I looked at where Gen Z already spends its time, Instagram, and built the home feed on its scroll. This time I asked for the logos and brand colours first, reused most of what I'd already designed, including The Newspaper's community feed, and finished in a week.",
+          ],
+          lead: {
+            type: "diagram",
+            diagram: "feed-styles",
+            alt: "Animated diagram: the first draft's home scrolled like Inshorts, one story filling the screen and snapping to the next; the final home scrolls like Instagram, a feed of stories with likes and comments, one liked as it goes by",
+            caption: "The home feed, first drafted like Inshorts, then like Instagram.",
+          },
+          layout: "pair",
+          figures: [
+            {
+              type: "image",
+              src: "/work/the-newspaper/boards/feed.jpg",
+              alt: "The Newspaper, the first draft's starting point: its front page, an article and search, in white, black and red",
+              caption: "The first draft started from The Newspaper.",
+              label: "First draft",
+            },
+            {
+              type: "image",
+              src: "/work/tmn-satara/app-tour.jpg",
+              alt: "The final design: the TMN app in English beside the Satara Today app in Marathi",
+              caption: "The final design, with each brand's own masthead and colours.",
+              label: "Final",
+            },
+          ],
+        },
+        {
+          id: "languages",
+          label: "Two scripts",
+          heading: "One layout for both scripts",
+          paragraphs: [
+            "Marathi headlines run longer and sit taller than English ones, so every card, headline and tab had to hold both. Rather than a layout for each, the two apps share one: cards grow to fit a longer headline, and only the words and the masthead change.",
+          ],
+          lead: {
+            type: "diagram",
+            diagram: "two-scripts",
+            alt: "Animated diagram: the same top story in English, with a two-line headline, and in Marathi, where the headline runs to three lines and the card grows to hold it in the same layout",
+            caption: "One story in English and in Marathi, in the same layout.",
+          },
+          figures: [
+            {
+              type: "video",
+              src: "/work/tmn-satara/app-tour.mp4",
+              poster: "/work/tmn-satara/app-tour.jpg",
+              alt: "The TMN app in English beside the Satara Today app in Marathi: the home feed, search, people, the profile and the dark theme",
+              caption:
+                "The TMN app, left, and the Satara Today app, right, prototyped in Figma.",
+            },
+          ],
+        },
+        {
+          id: "article",
+          label: "Articles",
+          heading: "An article you can answer",
+          paragraphs: [
+            "For a Gen Z reader, a story is something to react to, not only read. So an article carries more than the story: a pull quote, a quick reaction in their own words (lit, woke, cap, ded or vibe), an instant poll that shows its results, and comments that open from the bottom, with a box for your hot take.",
+          ],
+          figures: [
+            {
+              type: "video",
+              src: "/work/tmn-satara/app-article.mp4",
+              poster: "/work/tmn-satara/app-article.jpg",
+              alt: "Opening an article in both apps: the story, a pull quote, reactions, an instant poll and the comments",
+              caption:
+                "An article in both apps, from the feed to the comments.",
+            },
+          ],
+        },
+        {
+          id: "writing",
+          label: "Writing",
+          heading: "Readers write too",
+          paragraphs: [
+            "The client wanted readers to post their own articles, so anyone can write. A new article takes a title, tags, the text with its formatting, and images or video, then publishes from the top. Your articles sit on your profile, with your followers, badges like News Hound and Comment Guru, and settings like the dark theme and offline mode.",
+          ],
+          figures: [
+            {
+              type: "video",
+              src: "/work/tmn-satara/app-write.mp4",
+              poster: "/work/tmn-satara/app-write.jpg",
+              alt: "Writing a new article in both apps: title, tags, the text and images, then your articles",
+              caption: "Writing and publishing an article.",
+            },
+          ],
+        },
+        {
+          id: "design-language",
+          act: "The final design",
+          label: "Design language",
+          heading: "Three colours, two typefaces, one shape",
+          paragraphs: [
+            "The client asked for white, black and red, so each got one job. Red is the news: breaking stories, the Trending tag and whatever you've selected, so it always points at something. Black is the ink, and white the page. Headlines are set in Epilogue and everything else in Inter, and every chip, tag and button is fully round.",
+          ],
+          lead: {
+            type: "diagram",
+            diagram: "tmn-system",
+            alt: "TMN's design language: red #DB0D14 for the news, black #1A1C1C for the ink and white #FFFFFF for the page; Epilogue for headlines and Inter for everything else, with Marathi in the same layout; and one fully round shape for chips, tags and buttons",
+            caption: "The colours, type and shape behind the design.",
+          },
+        },
+        {
           id: "website",
-          act: "The design",
           label: "Website",
           heading: "A briefing, not a feed",
           paragraphs: [
-            "The website opens on your briefing: the date and the local weather, the top stories in a carousel with the most recent beside them, then local stories, sport and your topics. Every category sits in one row under the search.",
+            "The app opens on a feed and the website on a briefing, the client's call: Gen Z reads on phones, where a feed fits, while the website is more for a proper catch-up. It opens on your briefing: the date and the local weather, the top stories in a carousel with the most recent beside them, then local stories, sport and your topics. Every category sits in one row under the search, and the fonts, colours and motion are consistent from page to page, which the old website never was.",
           ],
           layout: "carousel",
           figures: [
@@ -1620,65 +1986,25 @@ export const projects: Project[] = [
           ],
         },
         {
-          id: "languages",
-          label: "Two scripts",
-          heading: "Made for both scripts",
-          paragraphs: [
-            "Marathi headlines run longer and sit taller than English ones, so every card, headline and tab had to hold both. Side by side, the two apps share one layout; only the words and the masthead change.",
-          ],
-          figures: [
-            {
-              type: "video",
-              src: "/work/tmn-satara/app-tour.mp4",
-              poster: "/work/tmn-satara/app-tour.jpg",
-              alt: "The TMN app in English beside the Satara Today app in Marathi: the home feed, search, people, the profile and the dark theme",
-              caption:
-                "The TMN app, left, and the Satara Today app, right, prototyped in Figma.",
-            },
-          ],
-        },
-        {
-          id: "article",
-          label: "Articles",
-          heading: "An article you can answer",
-          paragraphs: [
-            "An article carries more than the story: a pull quote, a quick reaction (lit, woke, cap, ded or vibe), an instant poll that shows its results, and comments that open from the bottom, with a box for your hot take.",
-          ],
-          figures: [
-            {
-              type: "video",
-              src: "/work/tmn-satara/app-article.mp4",
-              poster: "/work/tmn-satara/app-article.jpg",
-              alt: "Opening an article in both apps: the story, a pull quote, reactions, an instant poll and the comments",
-              caption:
-                "An article in both apps, from the feed to the comments.",
-            },
-          ],
-        },
-        {
-          id: "writing",
-          label: "Writing",
-          heading: "Readers write too",
-          paragraphs: [
-            "Anyone can write. A new article takes a title, tags, the text with its formatting, and images or video, then publishes from the top. Your articles sit on your profile, with your followers, badges like News Hound and Comment Guru, and settings like the dark theme and offline mode.",
-          ],
-          figures: [
-            {
-              type: "video",
-              src: "/work/tmn-satara/app-write.mp4",
-              poster: "/work/tmn-satara/app-write.jpg",
-              alt: "Writing a new article in both apps: title, tags, the text and images, then your articles",
-              caption: "Writing and publishing an article.",
-            },
-          ],
-        },
-        {
           id: "status",
-          act: "Where it stands",
-          label: "Status",
-          heading: "Being built",
+          act: "What happened",
+          label: "Outcome",
+          heading: "Approved, and being built",
           paragraphs: [
-            "The development team has built the website, which launches soon, and is building the app now.",
+            "The client approved the final design, and the Spotmies developers are building the app and the website, both now in testing. No readers are on them yet, so there are no numbers to share.",
+          ],
+        },
+        {
+          id: "reflection",
+          label: "Reflection",
+          heading: "The brief isn't always the answer",
+          paragraphs: [
+            "I designed the first draft carefully, and made it work just like Inshorts, as the client asked, and they still didn't like it: it didn't feel Gen Z. When I took Instagram as the reference instead, reusing most of what I'd already built, they did.",
+          ],
+          points: [
+            "What I learned: the client isn't always right about what they need, so I ask until the requirements are clear before designing anything",
+            "What I'd change: ask for the brand, and what Gen Z means to the client, before the first draft",
+            "What I'd do next: once it's live, watch how many readers react, vote or write, since that's what makes it Gen Z",
           ],
         },
       ],
@@ -1694,9 +2020,9 @@ export const projects: Project[] = [
     role: "Solo: design",
     context: "Project",
     summary:
-      "The Newspaper, an online news app I designed on my own in Figma as a draft: the day's front page with breaking news and top stories, articles to read, the print papers to explore by date, a profile where readers publish their own posts, and every screen in light and dark. Parts of it went into the design of TMN · Satara Today the month after.",
+      "The Newspaper, an online news app I designed on my own in Figma as a draft: the day's front page with breaking news and top stories, articles to read, the print papers to explore by date, a profile where readers publish their own posts, and every screen in light and dark. The month after, it became the first draft of TMN · Satara Today.",
     blurb:
-      "A news app I drafted on my own, in light and dark; parts of it went into TMN · Satara Today.",
+      "A news app I drafted on my own, in light and dark, which became TMN · Satara Today's first draft.",
     highlights: [
       "A front page with the date, the city, breaking news and top stories",
       "The print papers to explore, and a calendar for another day's",
@@ -1755,7 +2081,7 @@ export const projects: Project[] = [
         {
           label: "Led to",
           value: "TMN · Satara Today",
-          note: "Parts of it went into that design",
+          note: "It became that app's first draft",
         },
       ],
       reel: [
@@ -1793,7 +2119,7 @@ export const projects: Project[] = [
           label: "Brief",
           heading: "A newspaper, as an app",
           paragraphs: [
-            "The Newspaper is an online news app I designed on my own in April 2026, as a draft: ten screens in Figma, each in light and dark, prototyped so it could be tapped through. It started as mine alone, and it didn't stay that way: parts of it went into the design of TMN · Satara Today the month after.",
+            "The Newspaper is an online news app I designed on my own in April 2026, as practice, a task I set myself: ten screens in Figma, each in light and dark, prototyped so it could be tapped through. It started as mine alone, and it didn't stay that way: the month after, it became the first draft of TMN · Satara Today.",
           ],
         },
         {
@@ -1902,7 +2228,15 @@ export const projects: Project[] = [
           label: "Outcome",
           heading: "Into TMN · Satara Today",
           paragraphs: [
-            "The Newspaper was never built. The next month I designed the app and website for TMN and Satara Today at Spotmies, and parts of this draft went into that design, which the Spotmies development team is now building.",
+            "The Newspaper was never built as itself. The next month, TMN's client asked for a news app in white, black and red, so I built the first draft of TMN · Satara Today on it, about 80% of it from here. The client wanted something more Gen Z, and the final design moved on, but it kept this draft's community feed. The Spotmies developers are building it now.",
+          ],
+        },
+        {
+          id: "reflection",
+          label: "Reflection",
+          heading: "Practice that paid off",
+          paragraphs: [
+            "Designing with no brief and no client gave me a head start when a real one arrived: most of TMN's first draft came from here. TMN then taught me the other half: a draft made for yourself still has to be reshaped for the client's brand and audience.",
           ],
         },
       ],
@@ -1956,13 +2290,41 @@ export const projects: Project[] = [
     ],
     caseStudy: {
       timeframe: "Final-year B.Tech project, 2025–26",
+      brief: [
+        {
+          label: "Role",
+          value: "Solo build",
+          note: "Research, design and every part of the code",
+        },
+        {
+          label: "Team",
+          value: "Pitched as four",
+          note: "Three teammates joined the pitch to the judges",
+        },
+        {
+          label: "Stage",
+          value: "Working simulation",
+          note: "Phones as drones, a live 3D dashboard",
+        },
+        {
+          label: "Outcome",
+          value: "Demo + paper",
+          note: "Presented, and written up",
+        },
+        {
+          label: "Talk",
+          value: "GITAM Quantumisers",
+          note: "Presented to the club, so members could see how it's built",
+          href: "https://lnkd.in/p/dm_zxSaB",
+        },
+      ],
       sections: [
         {
           id: "overview",
           label: "Overview",
           heading: "What it is",
           paragraphs: [
-            "SamudraGupt-Q is my final-year project, and I built all of it on my own: the research, the design and every part of the code. It's a working simulation of a security system for swarms of autonomous underwater drones.",
+            "SamudraGupt-Q is my final-year project, and I built all of it on my own: the research, the design and every part of the code. My three teammates, there for the course's requirements, helped me pitch it to the judges. It's a working simulation of a security system for swarms of autonomous underwater drones.",
             "Phones stand in for the drones and stream their real motion sensors. A 3D command dashboard shows the swarm live, and a separate attacker console lets me break things on purpose and watch how the system responds.",
           ],
           layout: "pair",
@@ -2196,6 +2558,15 @@ export const projects: Project[] = [
             { type: "card", title: "Next steps", note: "Diagram coming soon" },
           ],
         },
+        {
+          id: "outcome",
+          act: "What happened",
+          label: "Outcome",
+          heading: "A demo, a paper and a club talk",
+          paragraphs: [
+            "I demonstrated it to the judges and wrote it up as a paper. GITAM's Quantumisers club liked it enough to have me present it to them, so their members could see how ideas like these are actually built.",
+          ],
+        },
       ],
     },
     // Built from nothing; no brief yet to say so.
@@ -2375,6 +2746,7 @@ export const projects: Project[] = [
       "Scan a UPI QR, pick a card and swipe to pay",
       "Screens that morph into each other, prototyped with Figma's Smart Animate",
       "A full design system and prototype in 48 hours, a challenge I set myself",
+      "The project that got me hired at Spotmies",
     ],
     stack: ["Figma", "Smart Animate", "Design system", "Prototyping"],
     media: [
@@ -2401,35 +2773,38 @@ export const projects: Project[] = [
       },
     ],
     caseStudy: {
-      // Confirm: when it was made.
-      timeframe: "48-hour challenge",
-      headline: "Your money, upgraded: a UPI app designed in 48 hours",
+      timeframe: "48-hour sprint",
+      headline: "Your money, upgraded: a calmer UPI app, designed in 48 hours",
       brief: [
         {
           label: "Role",
           value: "Solo design",
-          note: "Every screen and its system, in Figma",
+          note: "Research, wireframes, system and every screen",
         },
-        { label: "Product", value: "Nova", note: "A UPI payments app" },
+        {
+          label: "Timeline",
+          value: "48 hours",
+          note: "A sprint I set myself",
+        },
+        {
+          label: "Problem",
+          value: "Cluttered UPI apps",
+          note: "Ads first, the balance hidden, hard to read",
+        },
         {
           label: "Stage",
           value: "Concept",
-          note: "Designed and prototyped end to end, not built",
-        },
-        {
-          label: "Window",
-          value: "48 hours",
-          note: "A challenge I set myself",
+          note: "Prototyped end to end, not built",
         },
         {
           label: "Screens",
           value: "About 50",
-          note: "And the design system behind them",
+          note: "With Smart Animate between them",
         },
         {
-          label: "Motion",
-          value: "Smart Animate",
-          note: "Every screen morphs into the next",
+          label: "Outcome",
+          value: "Got me hired",
+          note: "The project Spotmies hired me on",
         },
       ],
       reel: [
@@ -2463,11 +2838,28 @@ export const projects: Project[] = [
       sections: [
         {
           id: "brief",
-          act: "The brief",
+          act: "The problem",
           label: "Brief",
-          heading: "A payments app in 48 hours",
+          heading: "Paying shouldn't start with an ad",
           paragraphs: [
-            "Nova is a UPI payments app I designed in 48 hours, a deadline I set myself to see how much I could do: its wireframes and user flow, its design system, and about fifty screens in Figma, from the first launch to a finished payment, prototyped so the whole thing could be clicked through, then placed in mockups. The goal was to make paying fast and give people a reason to come back.",
+            "Nova is a UPI payments app I designed in 48 hours, a sprint I set myself to try a new kind of product: finance. Before drawing anything, I went through the apps most people in India pay with, PhonePe, Google Pay and Paytm, and kept running into the same three problems:",
+          ],
+          points: [
+            "Clutter: the home screen is crowded with ads and insurance offers",
+            "Poor hierarchy: everyday tasks like checking your balance hide behind several taps",
+            "Visual noise: colours that don't match, and low-contrast text that's hard to read outdoors",
+          ],
+        },
+        {
+          id: "constraints",
+          label: "Constraints",
+          heading: "The limits I worked inside",
+          paragraphs: ["Every choice below had to fit these:"],
+          points: [
+            "48 hours, on my own, from research to a prototype you can click through",
+            "A concept, not a build: some ideas would take real work with banks to ship",
+            "UPI's own steps stay UPI's: entering your UPI PIN is handed over, not redrawn",
+            "References from Pinterest, Dribbble and Behance, and iOS 26's glass for the look",
           ],
         },
         {
@@ -2489,45 +2881,34 @@ export const projects: Project[] = [
           ],
         },
         {
-          id: "system",
-          label: "System",
-          heading: "Glass, blue and three typefaces",
+          id: "home",
+          act: "The decisions",
+          label: "Home",
+          heading: "Your balance first",
           paragraphs: [
-            "The look starts from iOS 26 and its glass: a blue gradient background with soft blobs of colour, and frosted panels floating over it, in white, a light blue and a deep blue. The type is SF Pro Display, Plus Jakarta Sans and Product Sans, and the app icon is a pinwheel of blue petals, which opens the screens too.",
+            "The answer to clutter and hidden balances was to open on what's yours. Home puts your balance and your cards at the top, then the people you pay most for a quick send, and your latest transactions, with no ads or offers in the way. Stats shows your savings month by month.",
           ],
-          figures: [
-            {
-              type: "image",
-              src: "/work/nova-upi/boards/system.jpg",
-              alt: "Nova's design system: the blue gradient and its three colours, glassmorphism inspired by iOS 26, the app icon, and the fonts SF Pro Display, Plus Jakarta Sans and Product Sans",
-              caption: "Colours, glass, the icon and the type.",
-            },
-          ],
-        },
-        {
-          id: "getting-in",
-          act: "The design",
-          label: "Getting in",
-          heading: "In with a glance",
-          paragraphs: [
-            "The app opens on what it's for, “Your money, upgraded”, with save, spend, invest and pay turning over above it. You continue with Google or Apple, confirm with Face ID, then add your phone number and its OTP.",
-          ],
+          lead: {
+            type: "diagram",
+            diagram: "nova-home",
+            alt: "Animated diagram: a typical UPI app's home shows ads, offers and a grid of services first, and the balance only after tapping Check balance and entering the UPI PIN; Nova's home opens on the balance, the card and quick send",
+            caption: "Home in a typical UPI app, and in Nova.",
+          },
           layout: "carousel",
           figures: [
             {
               type: "video",
-              src: "/work/nova-upi/boards/flow-start.mp4",
-              poster: "/work/nova-upi/boards/flow-start.jpg",
-              alt: "The prototype from the first screen: signing in with Google, then the phone number and OTP",
-              caption:
-                "From opening the app to adding your number, prototyped in Figma.",
+              src: "/work/nova-upi/boards/flow-home.mp4",
+              poster: "/work/nova-upi/boards/flow-home.jpg",
+              alt: "The home screen in the prototype: the cards, quick send, transactions and stats",
+              caption: "Home, quick send, transactions and stats, prototyped.",
               label: "Flow",
             },
             {
               type: "image",
-              src: "/work/nova-upi/boards/signin.jpg",
-              alt: "The opening screen, signing in with Apple and Face ID, and the OTP",
-              caption: "The opening, signing in with Apple, and the OTP.",
+              src: "/work/nova-upi/boards/home.jpg",
+              alt: "Home, the full quick send list, and stats",
+              caption: "Home, everyone to quick send to, and stats.",
               label: "Screens",
             },
           ],
@@ -2537,8 +2918,15 @@ export const projects: Project[] = [
           label: "Cards",
           heading: "Your cards find you",
           paragraphs: [
-            "I designed it so that once your number is in, the cards linked to it appear one at a time, and you pull a card down to add it. A new card is typed straight onto the card itself, which flips over for the CVV.",
+            "UPI apps already look up your bank accounts from your phone number, but they still have you find your bank in a list and pick your account. Nova reimagines that: once your number is in, every card linked to it is fetched and appears one at a time, and you pull a card down to add it. A new card is typed straight onto the card itself, which flips over for the CVV.",
+            "It's a concept: fetching every linked card at once would take real work with banks to build. But it cuts the steps between signing up and paying to almost none.",
           ],
+          lead: {
+            type: "diagram",
+            diagram: "nova-cards",
+            alt: "Animated diagram: a typical UPI app takes your number, then has you scroll a list to find your bank and pick your account; Nova fetches every card linked to the number and you pull one down to add it",
+            caption: "Adding your money, in a typical UPI app and in Nova.",
+          },
           layout: "carousel",
           figures: [
             {
@@ -2561,37 +2949,11 @@ export const projects: Project[] = [
           ],
         },
         {
-          id: "home",
-          label: "Home",
-          heading: "Everything on one screen",
-          paragraphs: [
-            "Home puts your balance and your cards at the top, then the people you pay most for a quick send, and your latest transactions. Stats shows your savings month by month.",
-          ],
-          layout: "carousel",
-          figures: [
-            {
-              type: "video",
-              src: "/work/nova-upi/boards/flow-home.mp4",
-              poster: "/work/nova-upi/boards/flow-home.jpg",
-              alt: "The home screen in the prototype: the cards, quick send, transactions and stats",
-              caption: "Home, quick send, transactions and stats, prototyped.",
-              label: "Flow",
-            },
-            {
-              type: "image",
-              src: "/work/nova-upi/boards/home.jpg",
-              alt: "Home, the full quick send list, and stats",
-              caption: "Home, everyone to quick send to, and stats.",
-              label: "Screens",
-            },
-          ],
-        },
-        {
           id: "pay",
           label: "Paying",
-          heading: "Scan, swipe, done",
+          heading: "Swipe to pay, so you mean it",
           paragraphs: [
-            "Paying starts with the camera on a UPI QR code. Type the amount, pick the card to pay from, and swipe to pay instead of tapping. The tick, the amount and who it went to come up at once, and the balance changes with it.",
+            "Paying starts with the camera on a UPI QR code. Type the amount, pick the card to pay from, and swipe to pay instead of tapping. A tap is easy to make by accident; a swipe takes a moment, so you know you're paying and think before you do. The tick, the amount and who it went to come up at once, and the balance changes with it.",
           ],
           layout: "carousel",
           figures: [
@@ -2608,6 +2970,56 @@ export const projects: Project[] = [
               src: "/work/nova-upi/boards/pay.jpg",
               alt: "Scanning a QR code, choosing a card and swiping to pay, then Payment of ₹100 successful",
               caption: "Scan, pick a card and swipe, then the payment done.",
+              label: "Screens",
+            },
+          ],
+        },
+        {
+          id: "system",
+          act: "The craft",
+          label: "System",
+          heading: "Glass, blue and one typeface",
+          paragraphs: [
+            "Against the visual noise, one calm look throughout. It starts from iOS 26 and its glass: a blue gradient background with soft blobs of colour, and frosted panels floating over it, in white (#FFFFFF), a light blue (#92D5FF) and a deep blue (#0171FF), with black for text. The whole app is set in Product Sans (Google Sans); the style guide lists SF Pro Display and Plus Jakarta Sans as close alternatives. Buttons, chips and panels are fully round, and the app icon is a pinwheel of blue petals, which opens the screens too.",
+          ],
+          lead: {
+            type: "diagram",
+            diagram: "nova-system",
+            alt: "Nova's design language: #0171FF for buttons and links, #92D5FF for the gradient's light end, #FFFFFF for the glass and #000000 for text; Product Sans throughout; and one fully round shape for buttons, chips and the tab bar",
+            caption: "The colours, type and shape behind Nova.",
+          },
+          figures: [
+            {
+              type: "image",
+              src: "/work/nova-upi/boards/system.jpg",
+              alt: "Nova's design system: the blue gradient and its three colours, glassmorphism inspired by iOS 26, the app icon, and the fonts SF Pro Display, Plus Jakarta Sans and Product Sans",
+              caption: "Colours, glass, the icon and the type.",
+            },
+          ],
+        },
+        {
+          id: "getting-in",
+          label: "Getting in",
+          heading: "In with a glance",
+          paragraphs: [
+            "The app opens on what it's for, “Your money, upgraded”, with save, spend, invest and pay turning over above it. You continue with Google or Apple, confirm with Face ID, then add your phone number and its OTP.",
+          ],
+          layout: "carousel",
+          figures: [
+            {
+              type: "video",
+              src: "/work/nova-upi/boards/flow-start.mp4",
+              poster: "/work/nova-upi/boards/flow-start.jpg",
+              alt: "The prototype from the first screen: signing in with Google, then the phone number and OTP",
+              caption:
+                "From opening the app to adding your number, prototyped in Figma.",
+              label: "Flow",
+            },
+            {
+              type: "image",
+              src: "/work/nova-upi/boards/signin.jpg",
+              alt: "The opening screen, signing in with Apple and Face ID, and the OTP",
+              caption: "The opening, signing in with Apple, and the OTP.",
               label: "Screens",
             },
           ],
@@ -2642,7 +3054,6 @@ export const projects: Project[] = [
         },
         {
           id: "mockups",
-          act: "In the hand",
           label: "Mockups",
           heading: "In the hand",
           paragraphs: [
@@ -2671,6 +3082,27 @@ export const projects: Project[] = [
               caption: "The opening, over a laptop. Mockups from Mockuuups.",
               label: "Hand",
             },
+          ],
+        },
+        {
+          id: "status",
+          act: "What happened",
+          label: "Outcome",
+          heading: "The project that got me hired",
+          paragraphs: [
+            "Nova was never built, but it did its job: it's the project that got me hired at Spotmies, who liked it enough to bring me on.",
+          ],
+        },
+        {
+          id: "reflection",
+          label: "Reflection",
+          heading: "What 48 hours taught me",
+          paragraphs: [
+            "Nova was my first big personal project, and an experiment. I reimagined a whole app and designed it in 48 hours, which I'd never done before, and along the way I found the techniques and shortcuts in Figma that made me an expert in it.",
+          ],
+          points: [
+            "What I learned: a tight deadline makes you build a system, because there's no time to draw anything twice",
+            "What I'd change: even for a concept, show the prototype to a few people who pay by UPI every day, to check it really feels quicker to them",
           ],
         },
       ],
@@ -2772,10 +3204,15 @@ export function caseChannels(project: Project): CaseChannel[] {
   if (!project.caseStudy) return channels;
   project.caseStudy.sections.forEach((section, part) => {
     // Diagrams can't play on the monitor; a part with one gives it a `screen` instead.
-    const screen =
+    const pictures =
       section.screen ??
       sectionPictures(section).filter((figure) => figure.type !== "diagram");
-    if (screen?.length) channels.push({ label: section.label, screen, part });
+    // Every part has a channel, so the remote matches the progress ticks; one with no
+    // pictures shows its title on a card.
+    const screen = pictures.length
+      ? pictures
+      : [{ type: "card" as const, title: section.heading, note: section.label }];
+    channels.push({ label: section.label, screen, part });
   });
   return channels;
 }

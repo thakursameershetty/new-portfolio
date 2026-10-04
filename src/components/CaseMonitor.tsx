@@ -1,5 +1,6 @@
 "use client";
 
+import { MaterialIcon } from "./icons/MaterialIcon";
 import { useEffect, useRef, useState } from "react";
 import { useReducedMotion } from "framer-motion";
 import { onTilt } from "./deviceTilt";
@@ -214,7 +215,7 @@ export function CaseMonitor({
         className={styles.lookCloser}
         onClick={() => onLookCloser(itemRef.current)}
       >
-        <span aria-hidden="true">⤢</span> Look closer
+        <MaterialIcon name="zoom" size={20} /> Look closer
       </button>
       {failed && (
         <div className={styles.flatScreen} aria-hidden="true">

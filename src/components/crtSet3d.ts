@@ -300,9 +300,10 @@ export async function createCrtSet(
   remote.rotation.set(remoteTip, -0.42, 0);
   remote.scale.setScalar(1.1);
   // Lifted so its near end rests on the desk.
-  remote.position.set(0.66, 0.31 * Math.sin(remoteTip) * 1.1, 0.6);
+  remote.position.set(0.66, 0.35 * Math.sin(remoteTip) * 1.1, 0.6);
   set.add(remote);
-  const remoteLength = 0.62;
+  // Long enough for four rows of number keys (a case study can have up to 12 channels).
+  const remoteLength = 0.7;
   const remoteWidth = 0.2;
   const remoteThick = 0.036;
   const remoteBody = new THREE.Mesh(
@@ -377,17 +378,20 @@ export async function createCrtSet(
     remote.add(group);
     buttons.push({ mesh: group, kind, index, pressed: 0, lit });
   };
-  addButton("power", -1, 0.055, -0.235, "");
-  addButton("up", -1, -0.042, -0.15, "CH ▲");
-  addButton("down", -1, 0.042, -0.15, "CH ▼");
-  channels.slice(0, 9).forEach((_, index) => {
-    const column = index % 3;
-    const row = Math.floor(index / 3);
-    addButton("channel", index, (column - 1) * 0.058, -0.065 + row * 0.056, String(index + 1));
+  addButton("power", -1, 0.055, -0.27, "");
+  addButton("up", -1, -0.042, -0.185, "CH ▲");
+  addButton("down", -1, 0.042, -0.185, "CH ▼");
+  // 1 to 9 in a grid and, once there are ten channels or more, a 0 centred under them (as on
+  // any remote). Channel 10 is 0; beyond it, key in two digits ("1" then "2" for 12) or use CH.
+  channels.slice(0, 10).forEach((_, index) => {
+    const zero = index === 9;
+    const column = zero ? 1 : index % 3;
+    const row = zero ? 3 : Math.floor(index / 3);
+    addButton("channel", index, (column - 1) * 0.058, -0.1 + row * 0.056, zero ? "0" : String(index + 1));
   });
   // Under the numbers: step through the channel's pictures.
-  addButton("previous", -1, -0.042, 0.125, "◀");
-  addButton("next", -1, 0.042, 0.125, "▶");
+  addButton("previous", -1, -0.042, 0.155, "◀");
+  addButton("next", -1, 0.042, 0.155, "▶");
 
   // Soft shadows under the monitor and the remote.
   const shadowCanvas = document.createElement("canvas");
@@ -413,7 +417,7 @@ export async function createCrtSet(
   // On the desk under the remote, not tipped with it.
   const remoteShadow = new THREE.Mesh(shadowGeometry, shadowMaterial);
   remoteShadow.rotation.set(-Math.PI / 2, 0, 0.42);
-  remoteShadow.scale.set(0.36, 0.62, 1);
+  remoteShadow.scale.set(0.36, 0.7, 1);
   remoteShadow.position.set(0.66, 0.001, 0.6);
   set.add(remoteShadow);
 
@@ -939,6 +943,7 @@ export async function createCrtSet(
     if (button?.kind === "channel") drawDisplay(channelText(button.index));
     else drawDisplay(channelText(channel));
   };
+  let lastDigit: { digit: number; at: number } | null = null;
   const press = (index: number) => {
     const button = buttons[index];
     if (!button) return;
@@ -955,10 +960,18 @@ export async function createCrtSet(
       return;
     }
     const count = channels.length;
-    const next =
-      button.kind === "channel"
-        ? button.index
-        : (channel + (button.kind === "up" ? 1 : -1) + count) % count;
+    let next: number;
+    if (button.kind === "channel") {
+      // A second digit soon after the first makes a two-digit channel, as on a TV remote.
+      const digit = button.index === 9 ? 0 : button.index + 1;
+      const now = performance.now();
+      const joined = lastDigit && now - lastDigit.at < 1500 ? lastDigit.digit * 10 + digit : 0;
+      next = joined >= 10 && joined <= count ? joined - 1 : digit === 0 ? 9 : digit - 1;
+      lastDigit = joined >= 10 && joined <= count ? null : { digit, at: now };
+    } else {
+      lastDigit = null;
+      next = (channel + (button.kind === "up" ? 1 : -1) + count) % count;
+    }
     onSelect(next);
   };
 
@@ -1321,9 +1334,9 @@ function drawDiskTop(disk: { color: string; ink: string; number: number; title: 
 function drawRemoteFace(fonts: Fonts) {
   const canvas = document.createElement("canvas");
   canvas.width = 180;
-  canvas.height = 600;
+  canvas.height = 660;
   const ctx = canvas.getContext("2d")!;
-  ctx.clearRect(0, 0, 180, 600);
+  ctx.clearRect(0, 0, 180, 660);
   // The IR window at the top, the maker's name at the foot, a few printed marks.
   ctx.fillStyle = "#551a14";
   roundRect(ctx, 60, 6, 60, 12, 6);
@@ -1335,8 +1348,8 @@ function drawRemoteFace(fonts: Fonts) {
   ctx.fillStyle = "rgba(245,241,234,0.35)";
   ctx.font = `700 16px ${fonts.hero}`;
   setSpacing(ctx, 4);
-  ctx.fillText("THAKUR", 90, 560);
-  ctx.fillRect(40, 572, 100, 2);
+  ctx.fillText("THAKUR", 90, 620);
+  ctx.fillRect(40, 632, 100, 2);
   return canvas;
 }
 

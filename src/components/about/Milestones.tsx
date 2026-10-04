@@ -70,7 +70,7 @@ const milestones: Milestone[] = [
     tone: "work",
     title: "MutinyX, version 1",
     detail:
-      "About 35 screens designed in three days, then the frontend built in React Native. My first big project at Spotmies.",
+      "About 35 screens designed in three days at the end of February, then some of them built in React Native with the team in March. My first big project at Spotmies.",
     project: "mutiny",
   },
   {
