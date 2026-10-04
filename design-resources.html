@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Design Resource Library</title>
+<style>
+:root{--bg:#f6f5f2;--card:#fff;--ink:#16161a;--mut:#6b6b76;--line:#e4e2dc;--acc:#5b4bff;--accs:#ecebff;--sh:0 1px 2px rgba(0,0,0,.05),0 6px 20px rgba(0,0,0,.04)}
+:root[data-theme=dark]{--bg:#0e0e11;--card:#17171c;--ink:#f1f1f4;--mut:#9494a0;--line:#2a2a32;--acc:#8b7fff;--accs:#24213f;--sh:none}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 "Inter",system-ui,-apple-system,"Segoe UI",sans-serif}
+.wrap{max-width:1200px;margin:0 auto;padding:40px 20px 80px}
+h1{font-size:clamp(28px,5vw,44px);letter-spacing:-.03em;margin:0 0 4px}
+.sub{color:var(--mut);margin:0 0 24px}
+.bar{position:sticky;top:0;z-index:5;background:var(--bg);padding:12px 0;display:flex;flex-wrap:wrap;gap:10px;align-items:center;border-bottom:1px solid var(--line)}
+.search{flex:1 1 240px;padding:10px 14px;border:1px solid var(--line);border-radius:12px;background:var(--card);color:var(--ink);font:inherit}
+.search:focus{outline:2px solid var(--acc);border-color:transparent}
+.seg{display:flex;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:3px}
+button{font:inherit;color:var(--ink);cursor:pointer}
+.seg button,.tg{border:0;background:none;padding:6px 12px;border-radius:9px;color:var(--mut)}
+.seg button.on,.tg.on{background:var(--accs);color:var(--acc);font-weight:600}
+.tg{border:1px solid var(--line);background:var(--card);border-radius:12px;padding:8px 12px}
+.chips{display:flex;gap:8px;overflow-x:auto;padding:14px 0;scrollbar-width:thin}
+.chip{white-space:nowrap;border:1px solid var(--line);background:var(--card);border-radius:99px;padding:5px 12px;font-size:13px;color:var(--mut)}
+.chip.on{background:var(--acc);border-color:var(--acc);color:#fff}
+.chip b{font-weight:600;opacity:.7;margin-left:4px}
+h2{font-size:13px;text-transform:uppercase;letter-spacing:.08em;color:var(--mut);margin:28px 0 12px;display:flex;gap:8px;align-items:center}
+h2::after{content:"";flex:1;height:1px;background:var(--line)}
+.grid{display:grid;gap:14px}
+.cards{grid-template-columns:repeat(auto-fill,minmax(260px,1fr))}
+.compact{grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:10px}
+.list{grid-template-columns:1fr;gap:8px}
+a.item{position:relative;display:flex;gap:12px;text-decoration:none;color:inherit;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;box-shadow:var(--sh);transition:transform .15s,border-color .15s}
+a.item:hover{transform:translateY(-2px);border-color:var(--acc)}
+.fav{width:40px;height:40px;border-radius:11px;flex:none;background:var(--accs);color:var(--acc);display:grid;place-items:center;font-weight:700;overflow:hidden}
+.fav img{width:24px;height:24px}
+.txt{min-width:0;flex:1}
+.nm{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-right:26px}
+.url{color:var(--mut);font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tag{display:inline-block;margin-top:10px;font-size:11.5px;background:var(--accs);color:var(--acc);padding:2px 9px;border-radius:99px}
+.star{position:absolute;top:10px;right:10px;border:0;background:none;font-size:18px;color:var(--mut);line-height:1;padding:4px}
+.star.on{color:#f5a623}
+.cards a.item{flex-direction:column}
+.cards .fav{margin-bottom:2px}
+.list a.item{align-items:center;padding:10px 14px;border-radius:12px}
+.list .fav{width:32px;height:32px}.list .fav img{width:20px;height:20px}
+.list .txt{display:flex;gap:16px;align-items:center}
+.list .nm{flex:0 0 220px;padding:0}.list .url{flex:1}.list .tag{margin:0;flex:none}.list .star{position:static}
+.compact a.item{padding:10px;align-items:center;border-radius:12px}
+.compact .fav{width:30px;height:30px}.compact .fav img{width:18px;height:18px}
+.compact .url,.compact .tag{display:none}.compact .nm{font-size:14px;padding-right:20px}
+.compact .star{top:6px;right:4px;font-size:15px}
+.empty{text-align:center;color:var(--mut);padding:60px 0}
+@media(max-width:640px){.list .url,.list .tag{display:none}.list .nm{flex:1}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Design Resource Library</h1>
+  <p class="sub"><span id="count"></span> curated links for design, UI, motion, type and more.</p>
+  <div class="bar">
+    <input id="q" class="search" type="search" placeholder="Search name, URL or category…  ( / )">
+    <div class="seg" id="views">
+      <button data-v="cards" class="on">▦ Cards</button>
+      <button data-v="list">☰ List</button>
+      <button data-v="compact">▪ Compact</button>
+    </div>
+    <button class="tg on" id="grp">Grouped</button>
+    <button class="tg" id="favOnly">★ Saved</button>
+    <button class="tg" id="theme">◐</button>
+  </div>
+  <div class="chips" id="chips"></div>
+  <div id="out"></div>
+</div>
+<script>
+const D={
+"Inspiration & Galleries":["recent.design","interface-index.com/#all-tags","designspells.com","calltoinspiration.com","godly.website","refero.design","60fps.design","cosmos.so","rebrand.gallery","httpster.net","siteinspire.com","onepagelove.com","landingfolio.com","land-book.com","saaspo.com","pageflows.com","mobbin.com/discover/apps/ios/latest|Mobbin (iOS Latest)","spottedinprod.com","3dwebsites.design","styles.refero.design|Refero Styles","uithemez.com/i/hubfolio_HTML/digital_studio/index.html|Hubfolio Template","humans.wannathis.one","scribbbles.design","highlights.design","nocodesupply.co","thegistof.me"],
+"Portfolios":["bysaurabh.com","yiannifive.com","abhijitrout.in","tigranz.com"],
+"Design Systems":["nordhealth.design|Nord Health","skyscanner.design/latest/welcome-to-backpack-Mtf5OEo4|Skyscanner Backpack","vibe.monday.com/?path=/docs/welcome--docs|Monday Vibe","mews.design/latest/welcome-eumfLxWD|Mews Design","m3.material.io|Material 3"],
+"UI Components":["stacksorted.com/buttons|Stacksorted Buttons","21st.dev/home|21st.dev","ui.aceternity.com/components|Aceternity UI","magicui.design|Magic UI","cult-ui.com|Cult UI","kokonutui.pro|KokonutUI","ui.shadcn.com|shadcn/ui","uilora.com/get-started/web/components|UI Lora","ui.watermelon.sh/home|Watermelon UI","originkit.dev|OriginKit","reactbits.dev/text-animations/split-text|React Bits · Split Text","framer.com/marketplace/components/pixel-button/|Framer · Pixel Button","framer.com/marketplace/components/pixel-wipe-preloader/|Framer · Pixel Wipe Preloader","framer.com/marketplace/components/scroll-flip-card/|Framer · Scroll Flip Card","framer.com/marketplace/components/3d-circular-text/|Framer · 3D Circular Text","framer.com/marketplace/components/3d-video-gallery/|Framer · 3D Video Gallery","bklit.com","smooothy.federic.ooo|Smooothy"],
+"Motion & Animation":["animejs.com|Anime.js","motion.dev|Motion","jitter.video|Jitter","animos.app|Animos","particles.casberry.in|Particles","unicorn.studio|Unicorn Studio"],
+"Typography":["fontshare.com|Fontshare","fontbrief.com/fontbrief|Fontbrief","fontpair.co/all|Fontpair","meshfont.com|Meshfont","spacetypegenerator.com|Space Type Generator","typedither.vercel.app|Type Dither","figma.com/resource-library/modern-fonts/|Figma · Modern Fonts"],
+"Icons & Illustration":["iconsvg.xyz|IconSVG","isocons.app|Isocons","notionicons.so|Notion Icons","iconsax.io|Iconsax","design.dev/free-icons/|Design.dev Free Icons","blush.design/artists/RyUTVuP8G4QeAAEEQgug/pablo-stanley|Blush · Pablo Stanley","craftwork.design|Craftwork","thiings.co/things|Thiings"],
+"Color & Backgrounds":["photogradient.com|PhotoGradient","uicolors.app/generate/1f3b5a|UI Colors","backgrounds.supply/freebies|Backgrounds Supply"],
+"Dither & Generative":["dragoy.net/play-ground/dither-lab/index.html|Dither Lab","dithergarden.com/editor.html|Dither Garden","tooooools.app|Tooooools"],
+"Mockups & Design Tools":["mockuuups.studio|Mockuuups Studio","shots.so|Shots","ray.so/#width=520&theme=wrapped&padding=32|Ray.so","octopus.do|Octopus","magicpattern.design/dashboard|Magic Pattern","flectofy.flecto.io|Flectofy","superdesign.dev|SuperDesign","omma.build|Omma","contentcore.xyz|Content Core","app.endlesstools.io|Endless Tools","toolfolio.io|Toolfolio","toools.design|Toools","uigoodies.com|UI Goodies","freedesigntool.online/baby-track|Free Design Tool","99designs.com|99designs","uncut.wtf|Uncut","overapi.com|OverAPI","rows.gg|Rows"],
+"Play & Misc":["slowroads.io|Slow Roads","oskarstalberg.com/Townscaper/#GSB0RARueC6Snc9E0lO5B|Townscaper","floor796.com/#t0l2,553,513|Floor796","romsfun.com|ROMsFun","fmhy.net|FMHY"],
+"Learning":["developers.google.com/machine-learning|Google ML Courses"],
+"Jobs":["levels.fyi/jobs/company/apple/location/india?offset=30&jobId=0k8fb20u1nytb|Levels.fyi · Apple India","jobs.apple.com/en-in/details/200678614-0321/ux-ui-designer|Apple · UX/UI Designer","uiuxjobsboard.com|UIUX Jobs Board","wixforms.com/f/7367973965257507992|Wix Form","jobs.bytebeam.io/jobs/uiux-design-intern/status?sid=2062a8f4-3705-4f50-9d9d-fb017628b00f|Bytebeam · UI/UX Intern"]
+};
+const TLD=/\.(com|co|io|dev|design|app|so|xyz|net|in|me|studio|wtf|gg|online|build|pro|supply|ooo|fm|app)$/;
+const items=[];
+for(const [cat,arr] of Object.entries(D))for(const s of arr){
+  const [u,n]=s.split("|");const host=u.split(/[\/?#]/)[0];
+  let name=n||host.replace(TLD,"").replace(/^./,c=>c.toUpperCase());
+  items.push({cat,name,host,href:"https://"+u,disp:u.replace(/^www\./,"").replace(/\/$/,"")});
+}
+const $=id=>document.getElementById(id);
+const st={q:"",cat:"All",view:"cards",group:true,fav:false};
+let favs=new Set();
+try{favs=new Set(JSON.parse(localStorage.getItem("drl-fav")||"[]"));
+ st.view=localStorage.getItem("drl-view")||"cards";
+ const th=localStorage.getItem("drl-theme");if(th)document.documentElement.dataset.theme=th;}catch(e){}
+if(!document.documentElement.dataset.theme&&matchMedia("(prefers-color-scheme:dark)").matches)document.documentElement.dataset.theme="dark";
+const save=(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}};
+const esc=s=>s.replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+$("count").textContent=items.length;
+
+function chips(){
+  const cats=["All",...Object.keys(D)];
+  $("chips").innerHTML=cats.map(c=>{
+    const n=c==="All"?items.length:items.filter(i=>i.cat===c).length;
+    return `<button class="chip${st.cat===c?" on":""}" data-c="${esc(c)}">${esc(c)}<b>${n}</b></button>`}).join("");
+}
+function card(i){
+  const f=favs.has(i.href);
+  return `<a class="item" href="${esc(i.href)}" target="_blank" rel="noopener">
+  <div class="fav"><img src="https://www.google.com/s2/favicons?domain=${i.host}&sz=64" alt="" loading="lazy" onerror="this.parentNode.textContent='${esc(i.name[0])}'"></div>
+  <div class="txt"><div class="nm">${esc(i.name)}</div><div class="url">${esc(i.disp)}</div><span class="tag">${esc(i.cat)}</span></div>
+  <button class="star${f?" on":""}" data-h="${esc(i.href)}" title="Save">${f?"★":"☆"}</button></a>`;
+}
+function render(){
+  const q=st.q.toLowerCase();
+  const list=items.filter(i=>(st.cat==="All"||i.cat===st.cat)&&(!st.fav||favs.has(i.href))&&(!q||(i.name+i.disp+i.cat).toLowerCase().includes(q)));
+  const g=v=>`<div class="grid ${st.view}">${v.map(card).join("")}</div>`;
+  let h="";
+  if(!list.length)h=`<div class="empty">No links match.</div>`;
+  else if(st.group&&st.cat==="All"){
+    for(const c of Object.keys(D)){const v=list.filter(i=>i.cat===c);if(v.length)h+=`<h2>${esc(c)} · ${v.length}</h2>`+g(v)}
+  }else h=g(list);
+  $("out").innerHTML=h;
+  document.querySelectorAll("#views button").forEach(b=>b.classList.toggle("on",b.dataset.v===st.view));
+  $("grp").classList.toggle("on",st.group);$("favOnly").classList.toggle("on",st.fav);
+  chips();
+}
+$("q").oninput=e=>{st.q=e.target.value;render()};
+$("views").onclick=e=>{const v=e.target.dataset.v;if(v){st.view=v;save("drl-view",v);render()}};
+$("grp").onclick=()=>{st.group=!st.group;render()};
+$("favOnly").onclick=()=>{st.fav=!st.fav;render()};
+$("theme").onclick=()=>{const r=document.documentElement,t=r.dataset.theme==="dark"?"light":"dark";r.dataset.theme=t;save("drl-theme",t)};
+$("chips").onclick=e=>{const c=e.target.closest(".chip");if(c){st.cat=c.dataset.c;render()}};
+$("out").onclick=e=>{const s=e.target.closest(".star");if(s){e.preventDefault();e.stopPropagation();
+  const h=s.dataset.h;favs.has(h)?favs.delete(h):favs.add(h);save("drl-fav",JSON.stringify([...favs]));
+  s.classList.toggle("on");s.textContent=favs.has(h)?"★":"☆";if(st.fav)render()}};
+addEventListener("keydown",e=>{if(e.key==="/"&&document.activeElement!==$("q")){e.preventDefault();$("q").focus()}});
+render();
+</script>
+</body>
+</html>

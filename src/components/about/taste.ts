@@ -269,6 +269,7 @@ export const games: Game[] = [
     genre: "Outlaw western",
     color: "#a8261b",
     icon: "/about/games/red-dead-redemption-2.avif",
+    why: "I play it for the story, but mostly I just ride around admiring the UI.",
   },
   {
     name: "Call of Duty: Mobile",
@@ -277,6 +278,7 @@ export const games: Game[] = [
     genre: "Multiplayer shooter",
     color: "#4a5160",
     icon: "/about/games/call-of-duty-mobile.jpg",
+    why: "My aim is average. My custom HUD layout, though, is a work of art.",
   },
   {
     name: "Batman: Arkham Knight",
@@ -285,6 +287,7 @@ export const games: Game[] = [
     genre: "Open-world action",
     color: "#27344c",
     icon: "/about/games/batman-arkham-knight.avif",
+    why: "Gotham never sleeps, and neither do I. I glide over it more than I fight crime in it.",
   },
   {
     name: "Stray",
@@ -293,5 +296,6 @@ export const games: Game[] = [
     genre: "Neon cat adventure",
     color: "#c45a24",
     icon: "/about/games/stray.jpg",
+    why: "I came for the cat and stayed because nothing in it needs a tooltip.",
   },
 ];

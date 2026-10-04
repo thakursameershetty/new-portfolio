@@ -19,10 +19,11 @@
 }
 
 /* The two faces, stacked in one grid cell (so the card is as tall as the taller one), and
-   turned over together. */
+   turned over together. It fills the row, so every card in it matches the tallest. */
 .flipper {
   display: grid;
   width: 100%;
+  height: 100%;
   padding: 0;
   border: 0;
   background: none;
@@ -110,53 +111,24 @@
   color: rgba(255, 255, 255, 0.65);
 }
 
-.backHeading {
-  margin-top: 6px;
-  font-family: var(--font-hero), monospace;
-  font-size: 15px;
-  font-weight: 700;
-  text-transform: uppercase;
-}
-
 .why {
+  margin-top: 4px;
   font-family: var(--font-display), sans-serif;
-  font-size: 16px;
-  line-height: 1.45;
-  color: rgba(255, 255, 255, 0.88);
-}
-
-.facts {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin-top: auto;
-  padding-top: 12px;
-}
-
-.fact {
-  display: flex;
-  flex-direction: column;
-  gap: 1px;
-  font-family: var(--font-display), sans-serif;
-  font-size: 15px;
+  font-size: 19px;
   font-weight: 500;
+  line-height: 1.35;
+  text-wrap: pretty;
 }
 
-.factLabel {
+/* Studio and year as one quiet line at the foot, so the quip carries the card. */
+.facts {
+  margin-top: auto;
+  padding-top: 16px;
   font-family: var(--font-hero), monospace;
   font-size: 10px;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: rgba(255, 255, 255, 0.55);
-}
-
-.turn {
-  margin-top: 12px;
-  font-family: var(--font-hero), monospace;
-  font-size: 10px;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.5);
 }
 
 .rank {
@@ -276,7 +248,7 @@
   }
 
   .why {
-    font-size: 14px;
+    font-size: 16px;
   }
 }
 

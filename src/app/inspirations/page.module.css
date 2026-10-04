@@ -1,0 +1,4 @@
+/* The About page's styles do the rest; the header here has no ID card beside it. */
+.header {
+  padding: clamp(40px, 8vh, 96px) 0 clamp(32px, 6vh, 56px);
+}

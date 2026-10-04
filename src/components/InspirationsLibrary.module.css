@@ -1,0 +1,656 @@
+.library {
+  position: relative;
+}
+
+/* The search and the group keys, held at the top while the list scrolls under them. */
+.toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  margin: 0 -24px;
+  padding: 16px 24px 14px;
+  background: color-mix(in srgb, var(--ground) 88%, transparent);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+/* A sunken field, the reverse of the keys: dark, inset, with "/" printed on a keycap. */
+.search {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 52px;
+  padding: 0 10px 0 16px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  background: #121211;
+  box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.6);
+  cursor: text;
+  transition: border-color 150ms ease;
+}
+
+.search:focus-within {
+  border-color: rgba(245, 241, 234, 0.4);
+}
+
+.searchIcon {
+  flex: none;
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: var(--ink-muted);
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+
+.input {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  border: 0;
+  background: none;
+  color: var(--ink);
+  font-family: var(--font-display), sans-serif;
+  font-size: 16px;
+  outline: none;
+}
+
+.input::placeholder {
+  color: var(--ink-muted);
+}
+
+.input::-webkit-search-cancel-button {
+  display: none;
+}
+
+/* How many are showing, at the field's end. */
+.tally {
+  font-family: var(--font-hero), monospace;
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  color: var(--ink-muted);
+  white-space: nowrap;
+}
+
+.kbd {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  background: #1c1c1b;
+  box-shadow: 0 3px 0 #050505;
+  color: var(--ink-muted);
+  font-family: var(--font-hero), monospace;
+  font-size: 13px;
+}
+
+/* The group keys: the site's dark keycaps at their smallest, the picked one cream, in one
+   row that scrolls sideways, fading out at its ends. */
+.filters {
+  display: flex;
+  gap: 10px;
+  margin: 12px -24px 0;
+  padding: 2px 24px 6px;
+  overflow-x: auto;
+  scroll-padding-inline: 24px;
+  scrollbar-width: none;
+  -webkit-mask-image: linear-gradient(
+    90deg,
+    transparent,
+    #000 24px,
+    #000 calc(100% - 48px),
+    transparent
+  );
+  mask-image: linear-gradient(
+    90deg,
+    transparent,
+    #000 24px,
+    #000 calc(100% - 48px),
+    transparent
+  );
+}
+
+.filters::-webkit-scrollbar {
+  display: none;
+}
+
+.filter {
+  --face: #1c1c1b;
+  --skirt: #050505;
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 8px;
+  height: 36px;
+  padding: 0 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 9px;
+  background: var(--face);
+  color: var(--ink);
+  font-family: var(--font-display), sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
+  cursor: pointer;
+  box-shadow: 0 3px 0 var(--skirt);
+  transition:
+    transform 110ms ease,
+    box-shadow 110ms ease;
+}
+
+.filter:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 0 var(--skirt);
+}
+
+.filter:active {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 var(--skirt);
+}
+
+.filter:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 3px;
+}
+
+.filterOn {
+  --face: #f5f1ea;
+  --skirt: #b9ad9c;
+  color: #1a0605;
+}
+
+.filterCount {
+  font-family: var(--font-hero), monospace;
+  font-size: 11px;
+  opacity: 0.55;
+}
+
+.swatch {
+  flex: none;
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  background: var(--tone);
+}
+
+.empty {
+  margin-top: 48px;
+  font-size: clamp(18px, 2vw, 22px);
+  color: var(--ink-muted);
+}
+
+/* A group: its disk and heading on the left, held in view under the toolbar while its
+   rows scroll past, the rows on the right. */
+.shelf {
+  display: grid;
+  grid-template-columns: 150px minmax(0, 1fr);
+  align-items: start;
+  gap: clamp(28px, 4vw, 56px);
+  padding-top: clamp(48px, 7vh, 72px);
+  scroll-margin-top: 160px;
+}
+
+.side {
+  position: sticky;
+  top: 172px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+/* The heading's name is on the disk's label, so on wide screens only the note and count
+   show under it (the name stays for screen readers). */
+.shelfTitle {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.shelfNote {
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--ink-muted);
+}
+
+.shelfCount {
+  margin-top: 8px;
+  font-family: var(--font-hero), monospace;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+
+/* ---- The floppy disk, as on the Work shelf. Sizes inside it are in cqw (percent of the
+   disk's width), so the label and parts scale with the disk. ---- */
+.disk {
+  --lift: cubic-bezier(0.22, 1, 0.36, 1);
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: 4.5%;
+  background:
+    linear-gradient(160deg, rgba(255, 255, 255, 0.14), transparent 38%),
+    linear-gradient(0deg, rgba(0, 0, 0, 0.14), transparent 30%), var(--tone);
+  container-type: inline-size;
+  /* The chamfered top-right corner. */
+  clip-path: polygon(0 0, 91% 0, 100% 9%, 100% 100%, 0 100%);
+  transition: transform 350ms var(--lift);
+}
+
+.disk:hover {
+  transform: translateY(-6px) rotate(-1.5deg);
+}
+
+/* The dark magnetic media, seen through the shell's window once the shutter slides. */
+.media {
+  position: absolute;
+  top: 3.5%;
+  left: 38%;
+  width: 20%;
+  height: 27%;
+  border-radius: 1.5cqw;
+  background: radial-gradient(circle at 40% 35%, #5a4336, #2a1d17 70%);
+}
+
+.hub {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 55%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(circle, #d9dde0 30%, #9aa1a6 72%);
+  transform: translate(-50%, -50%);
+  opacity: 0.35;
+}
+
+/* The brushed-metal shutter. */
+.shutter {
+  position: absolute;
+  top: 0;
+  left: 22%;
+  width: 52%;
+  height: 34%;
+  border-radius: 0 0 1.8cqw 1.8cqw;
+  background: linear-gradient(
+    90deg,
+    #a9afb3,
+    #eef0f1 42%,
+    #c2c7ca 70%,
+    #a4aaae
+  );
+  box-shadow:
+    inset 0 -1px 0 rgba(0, 0, 0, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  transition: transform 380ms var(--lift);
+}
+
+.shutterWindow {
+  position: absolute;
+  top: 16%;
+  left: 12%;
+  width: 20%;
+  height: 64%;
+  border-radius: 1cqw;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.28), rgba(0, 0, 0, 0.12));
+}
+
+.disk:hover .shutter {
+  transform: translateX(44%);
+}
+
+/* The write-protect hole. */
+.protect {
+  position: absolute;
+  right: 5%;
+  bottom: 4%;
+  width: 7%;
+  height: 7%;
+  border-radius: 1cqw;
+  background: rgba(0, 0, 0, 0.55);
+}
+
+/* The paper label, with faint ruled lines, in --u (a hundredth of the disk's width). Where
+   it can, it's laid out on a 400px disk and shrunk to fit, so in-app browsers with a
+   minimum font size don't blow its small type up (as on the Work shelf). */
+.labelPaper {
+  --u: 1cqw;
+  --line: 1px;
+  position: absolute;
+  top: 42%;
+  left: 9%;
+  width: calc(82 * var(--u));
+  height: calc(58 * var(--u));
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border-radius: calc(2 * var(--u)) calc(2 * var(--u)) 0 0;
+  background:
+    repeating-linear-gradient(
+      180deg,
+      transparent 0 calc(8 * var(--u) - var(--line)),
+      rgba(40, 60, 120, 0.12) calc(8 * var(--u) - var(--line))
+        calc(8 * var(--u))
+    ),
+    #f4f0e6;
+  color: #1a1a1a;
+}
+
+@supports (scale: tan(atan2(1px, 1px))) {
+  .labelPaper {
+    --k: tan(atan2(100cqw, 400px));
+    --u: 4px;
+    --line: calc(1px / var(--k));
+    transform-origin: 0 0;
+    scale: var(--k);
+  }
+}
+
+.labelBand {
+  display: flex;
+  justify-content: space-between;
+  padding: calc(2.4 * var(--u)) calc(5 * var(--u));
+  background: var(--tone);
+  color: var(--tone-ink);
+  font-family: var(--font-hero), monospace;
+  font-size: calc(3.6 * var(--u));
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.labelTitle {
+  padding: calc(4 * var(--u)) calc(5 * var(--u)) 0;
+  font-family: var(--font-hero), monospace;
+  font-size: calc(7.2 * var(--u));
+  font-weight: 700;
+  line-height: 1.05;
+  letter-spacing: -0.04em;
+  text-transform: uppercase;
+}
+
+/* ---- The bookmarks, ruled like the Work list: two columns on wide screens. ---- */
+.rows {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
+  column-gap: 32px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 8px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 2px;
+  color: var(--ink);
+  text-decoration: none;
+  transition: background-color 200ms ease;
+}
+
+.row:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.row:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+
+.rowNumber {
+  flex: none;
+  width: 2ch;
+  font-family: var(--font-hero), monospace;
+  font-size: 11px;
+  color: var(--ink-muted);
+}
+
+.favicon {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: #f5f1ea;
+  color: #1a0605;
+  font-family: var(--font-hero), monospace;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.favicon img {
+  width: 18px;
+  height: 18px;
+}
+
+.rowText {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.rowName,
+.rowHost {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/* The name as the Work list sets its titles: Disket Mono, upper case, underlined in the
+   group's tone on hover. */
+.rowName {
+  font-family: var(--font-hero), monospace;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+  text-decoration: underline;
+  text-decoration-color: transparent;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 4px;
+  transition: text-decoration-color 200ms ease;
+}
+
+.row:hover .rowName {
+  text-decoration-color: var(--tone);
+}
+
+.rowHost {
+  font-size: 13px;
+  color: var(--ink-muted);
+}
+
+/* The way out: a small dark keycap with the arrow, lifting on hover and pressed on click. */
+.rowKey {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 9px;
+  background: #1c1c1b;
+  box-shadow: 0 3px 0 #050505;
+  transition:
+    transform 110ms ease,
+    box-shadow 110ms ease,
+    background-color 150ms ease;
+}
+
+.rowKey svg {
+  width: 15px;
+  height: 15px;
+  fill: none;
+  stroke: var(--ink-muted);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: stroke 150ms ease;
+}
+
+.row:hover .rowKey {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 0 #050505;
+  background: #f5f1ea;
+}
+
+.row:hover .rowKey svg {
+  stroke: #1a0605;
+}
+
+.row:active .rowKey {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 #050505;
+}
+
+/* The preview beside the pointer: the site's screenshot in a dark frame, with its address
+   on a strip under it. Only where there's a mouse. */
+.peek {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 20;
+  width: 320px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  background: #121211;
+  box-shadow: 0 28px 60px rgba(0, 0, 0, 0.6);
+  opacity: 0;
+  scale: 0.94;
+  transform-origin: top left;
+  pointer-events: none;
+  transition:
+    opacity 160ms ease,
+    scale 220ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.peekOn {
+  opacity: 1;
+  scale: 1;
+}
+
+.peekShot {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 10;
+  object-fit: cover;
+  background: #1c1c1b;
+}
+
+.peekBar {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 9px 12px;
+  font-family: var(--font-hero), monospace;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+  white-space: nowrap;
+}
+
+.peekHost {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--ink);
+}
+
+@media (hover: none) {
+  .peek {
+    display: none;
+  }
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* Narrow screens: a small disk beside the heading (name, note and count), then the rows.
+   At this size the label's words would be too small to read, so it's just paper. */
+@media (max-width: 760px) {
+  .shelf {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 16px;
+  }
+
+  .side {
+    position: static;
+    flex-direction: row;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .disk {
+    flex: none;
+    width: 64px;
+  }
+
+  .disk:hover {
+    transform: none;
+  }
+
+  .labelBand,
+  .labelTitle {
+    visibility: hidden;
+  }
+
+  .shelfTitle {
+    position: static;
+    width: auto;
+    height: auto;
+    overflow: visible;
+    clip-path: none;
+    white-space: normal;
+    font-family: var(--font-hero), monospace;
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    text-transform: uppercase;
+  }
+
+  .shelfNote {
+    margin-top: 4px;
+  }
+
+  .shelfCount {
+    margin-top: 4px;
+  }
+}
+
+@media (max-width: 600px) {
+  .kbd {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .peek,
+  .disk,
+  .shutter,
+  .row,
+  .rowKey,
+  .filter {
+    transition: none;
+  }
+}

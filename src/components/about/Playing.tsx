@@ -75,24 +75,9 @@ export function Playing() {
                 <span className={styles.backLabel}>
                   #{i + 1} · {game.name}
                 </span>
-                {game.why && (
-                  <>
-                    <span className={styles.backHeading}>Why I play it</span>
-                    <span className={styles.why}>{game.why}</span>
-                  </>
-                )}
+                {game.why && <span className={styles.why}>{game.why}</span>}
                 <span className={styles.facts}>
-                  <span className={styles.fact}>
-                    <span className={styles.factLabel}>Studio</span>
-                    {game.studio}
-                  </span>
-                  <span className={styles.fact}>
-                    <span className={styles.factLabel}>Released</span>
-                    {game.year}
-                  </span>
-                </span>
-                <span aria-hidden="true" className={styles.turn}>
-                  Tap to turn back
+                  {game.studio} · {game.year}
                 </span>
               </span>
             </button>

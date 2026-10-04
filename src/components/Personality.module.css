@@ -1,0 +1,607 @@
+/* A layer under Work, so the preview monitor hanging below its last row stays on top. */
+.personality {
+  /* Windows 98's dialog in the site's own colours: the cream of the Résumé keycap for
+     its face, its skirt for the shading, and the Work red for the title bar and bar. */
+  --win-face: #f5f1ea;
+  --win-light: #fffdf8;
+  --win-soft: #e6dfd3;
+  --win-shade: #b9ad9c;
+  --win-dark: #1a0605;
+  --win-ink: #1a0605;
+  --win-accent: #d63f39;
+  /* Windows 98's bevels, doubled so they read at today's sizes. */
+  --raised:
+    inset -2px -2px var(--win-dark), inset 2px 2px var(--win-light),
+    inset -4px -4px var(--win-shade), inset 4px 4px var(--win-soft);
+  --sunken:
+    inset -2px -2px var(--win-light), inset 2px 2px var(--win-shade),
+    inset -4px -4px var(--win-soft), inset 4px 4px var(--win-dark);
+  position: relative;
+  z-index: 0;
+  width: 100%;
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: clamp(96px, 14vh, 160px) 24px;
+  background: var(--ground);
+}
+
+.label {
+  margin-bottom: 28px;
+  font-family: var(--font-hero), monospace;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+
+/* The line on the left, the dialog on the right; maximised, the dialog takes the row
+   under the line. Stacked on narrow screens. */
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+  align-items: center;
+  gap: clamp(40px, 6vw, 80px);
+  margin-top: 12px;
+}
+
+.wide {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+/* Set like the About statement: full ink, the aside after it muted. */
+.quip {
+  max-width: 20em;
+  font-size: clamp(22px, 2.6vw, 32px);
+  font-weight: 500;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+  text-wrap: pretty;
+}
+
+.muted {
+  color: var(--ink-muted);
+}
+
+/* A word and what's set after it, kept on one line. */
+.together {
+  white-space: nowrap;
+}
+
+/* The owl in the line, about a capital's height, sat on the baseline. Poked, it hops. */
+.pokeOwl {
+  display: inline-grid;
+  font: inherit;
+  margin: 0 0.06em 0 0.18em;
+  padding: 0;
+  border: 0;
+  background: none;
+  vertical-align: -0.12em;
+  cursor: pointer;
+}
+
+.pokeOwl:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+
+.lineOwl {
+  width: 1.05em;
+  height: 1.05em;
+  transition: transform 160ms ease;
+}
+
+.pokeOwl:hover .lineOwl {
+  transform: rotate(-8deg);
+}
+
+.hop {
+  animation: hop 520ms steps(6);
+}
+
+.hop .lids {
+  animation: blink 520ms steps(1);
+}
+
+@keyframes hop {
+  30% {
+    transform: translateY(-0.35em) rotate(6deg);
+  }
+  60% {
+    transform: translateY(0) rotate(-4deg);
+  }
+  80% {
+    transform: translateY(-0.1em);
+  }
+}
+
+/* "click" as a key in the line: the Home key's cream keycap (Keycap.module.css does the
+   face, skirt, lift and press), its word at the line's size, sat on the baseline. Doubled
+   up to outrank the keycap's own size, whichever stylesheet loads last. */
+.lineKey.lineKey {
+  height: 1.3em;
+  margin: 0 0.06em;
+  padding: 0 0.38em;
+  font-size: 1em;
+  vertical-align: -0.1em;
+}
+
+/* Pressed twice, on its own, as the section arrives: the Home key's press. */
+.lineKeyHint {
+  animation: keyHint 900ms 900ms both;
+}
+
+@keyframes keyHint {
+  15%,
+  55% {
+    transform: translateY(3px);
+    box-shadow:
+      0 1px 0 var(--skirt),
+      0 3px 8px rgba(0, 0, 0, 0.4);
+  }
+  35%,
+  75% {
+    transform: none;
+  }
+}
+
+/* The window's frame: where it's dragged to, and its pop as it opens, like a Windows
+   dialog appearing in a few quick steps. */
+.frame {
+  position: relative;
+  z-index: 1;
+  opacity: 0;
+}
+
+.popped {
+  opacity: 1;
+  animation: popOpen 260ms steps(4);
+}
+
+@keyframes popOpen {
+  from {
+    opacity: 0;
+    scale: 0.55;
+  }
+}
+
+.dragging {
+  z-index: 3;
+}
+
+.dragging .window {
+  box-shadow:
+    var(--raised),
+    0 44px 80px rgba(0, 0, 0, 0.6);
+}
+
+.handle {
+  cursor: grab;
+  user-select: none;
+}
+
+.dragging .handle {
+  cursor: grabbing;
+}
+
+/* The dialog: cream, raised, with a red title bar. */
+.window {
+  position: relative;
+  padding: 5px;
+  background: var(--win-face);
+  color: var(--win-ink);
+  box-shadow:
+    var(--raised),
+    0 30px 60px rgba(0, 0, 0, 0.5);
+}
+
+.titleBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 36px;
+  padding: 3px 5px 3px 12px;
+  background: linear-gradient(90deg, #b8302b, #e8645d);
+}
+
+.title {
+  overflow: hidden;
+  font-family: var(--font-hero), monospace;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: #fff;
+}
+
+.controls {
+  display: flex;
+  flex: none;
+  gap: 4px;
+}
+
+/* Windows' push button: raised, sinking when pressed. */
+.button {
+  min-width: 112px;
+  height: 40px;
+  padding: 0 20px;
+  border: 0;
+  border-radius: 0;
+  background: var(--win-face);
+  color: var(--win-ink);
+  font-family: var(--font-hero), monospace;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: var(--raised);
+}
+
+/* Open library: a link dressed as the dialog's default button, with Windows' darker
+   outline round it. */
+.linkButton {
+  display: inline-grid;
+  place-items: center;
+  text-decoration: none;
+  outline: 2px solid var(--win-dark);
+}
+
+.button:active {
+  padding-top: 3px;
+  box-shadow: var(--sunken);
+}
+
+.button:focus-visible {
+  outline: 2px dotted var(--win-ink);
+  outline-offset: -9px;
+}
+
+.control {
+  display: grid;
+  place-items: center;
+  min-width: 0;
+  width: 32px;
+  height: 28px;
+  padding: 0;
+}
+
+.control:active {
+  padding: 2px 0 0 2px;
+}
+
+.glyph {
+  width: 12px;
+  height: 12px;
+  fill: var(--win-ink);
+}
+
+.body {
+  padding: clamp(16px, 2.2vw, 24px);
+}
+
+.statusRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 6px;
+}
+
+.owl {
+  flex: none;
+  width: 36px;
+  height: auto;
+}
+
+.lids {
+  opacity: 0;
+  animation: blink 5.2s steps(1) infinite;
+}
+
+@keyframes blink {
+  0%,
+  94% {
+    opacity: 0;
+  }
+  95%,
+  98% {
+    opacity: 1;
+  }
+}
+
+
+.status,
+.from {
+  font-family: var(--font-hero), monospace;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.barRow {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+/* The sunken white well, filled with chunky blue blocks. */
+.bar {
+  display: grid;
+  flex: 1;
+  grid-template-columns: repeat(20, 1fr);
+  gap: 3px;
+  height: 34px;
+  padding: 6px;
+  background: #fff;
+  box-shadow: var(--sunken);
+}
+
+.blockOn {
+  background: var(--win-accent);
+}
+
+.percent {
+  min-width: 4ch;
+  font-family: var(--font-hero), monospace;
+  font-size: 15px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.eta {
+  margin-top: 10px;
+  font-family: var(--font-hero), monospace;
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  color: rgba(26, 6, 5, 0.65);
+}
+
+.from {
+  margin-top: clamp(16px, 2.4vw, 22px);
+  margin-bottom: 8px;
+}
+
+/* Desktop icons: the art over its file name, the name lit in the accent when it's open. */
+.icons {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.icon {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  padding: 4px;
+  border: 0;
+  background: none;
+  color: var(--win-ink);
+  cursor: pointer;
+}
+
+.iconArt {
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  transition: transform 160ms ease;
+}
+
+.icon:hover .iconArt {
+  transform: translateY(-2px);
+}
+
+.iconImage {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.iconLabel {
+  padding: 1px 4px;
+  font-family: var(--font-hero), monospace;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.iconOpen .iconLabel,
+.icon:focus-visible .iconLabel {
+  background: var(--win-accent);
+  color: #fff;
+  outline: 1px dotted #f0c44c;
+}
+
+.icon:focus-visible {
+  outline: none;
+}
+
+.buttons {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  margin-top: clamp(18px, 2.6vw, 24px);
+}
+
+/* A file's Properties, popped up over the dialog's lower half. */
+.properties {
+  position: absolute;
+  z-index: 2;
+  top: 34%;
+  left: 50%;
+  width: min(420px, calc(100% - 32px));
+  transform: translateX(-50%);
+  animation: pop 160ms steps(3);
+}
+
+@keyframes pop {
+  from {
+    transform: translateX(-50%) scale(0.9);
+    opacity: 0;
+  }
+}
+
+.properties .body {
+  padding: 20px;
+}
+
+.fileHead {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding-bottom: 16px;
+  border-bottom: 2px solid var(--win-shade);
+  box-shadow: 0 2px 0 var(--win-light);
+}
+
+.fileHead .iconArt {
+  width: 44px;
+  height: 44px;
+}
+
+.fileName {
+  font-family: var(--font-hero), monospace;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.fields {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 6px 16px;
+  margin: 16px 0 0;
+  font-family: var(--font-hero), monospace;
+  font-size: 12px;
+}
+
+.fields dd {
+  margin: 0;
+}
+
+.why {
+  margin-top: 16px;
+  font-family: var(--font-display), sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+  text-wrap: pretty;
+}
+
+.properties .buttons {
+  justify-content: flex-end;
+  margin-top: 20px;
+}
+
+/* Minimised: a Windows taskbar, its button bringing the dialog back. */
+.taskbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 6px;
+  background: var(--win-face);
+  box-shadow: inset 0 2px var(--win-light), 0 20px 40px rgba(0, 0, 0, 0.45);
+}
+
+.task {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.taskOwl {
+  flex: none;
+  width: 24px;
+  height: 24px;
+}
+
+.clock {
+  flex: none;
+  min-width: 90px;
+  padding: 10px 14px;
+  font-family: var(--font-hero), monospace;
+  font-size: 13px;
+  text-align: center;
+  color: var(--win-ink);
+  box-shadow: var(--sunken);
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+@media (max-width: 860px) {
+  .layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .bar {
+    gap: 2px;
+    height: 32px;
+    padding: 6px;
+  }
+
+  .body {
+    padding: 20px 16px;
+  }
+
+  /* A two-by-two desktop of icons. */
+  .icons {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    row-gap: 12px;
+  }
+
+  .button {
+    min-width: 0;
+    flex: 1;
+    height: 40px;
+  }
+
+  /* The title bar's name keeps its whole line: no ".exe", smaller buttons. */
+  .title {
+    font-size: 13px;
+  }
+
+  .extension {
+    display: none;
+  }
+
+  .control {
+    width: 26px;
+    height: 24px;
+  }
+
+  .control {
+    flex: none;
+  }
+
+  .properties {
+    top: 20%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .popped,
+  .hop,
+  .lineKeyHint,
+  .lids,
+  .properties {
+    animation: none;
+  }
+
+}
