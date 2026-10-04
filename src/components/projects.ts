@@ -2002,7 +2002,7 @@ export const projects: Project[] = [
             "I designed the first draft carefully, and made it work just like Inshorts, as the client asked, and they still didn't like it: it didn't feel Gen Z. When I took Instagram as the reference instead, reusing most of what I'd already built, they did.",
           ],
           points: [
-            "What I learned: the client isn't always right about what they need, so I ask until the requirements are clear before designing anything",
+            "What I learned: a reference in a brief is a starting point, not the requirement, so I now ask what the client means by it before designing anything",
             "What I'd change: ask for the brand, and what Gen Z means to the client, before the first draft",
             "What I'd do next: once it's live, watch how many readers react, vote or write, since that's what makes it Gen Z",
           ],
@@ -3098,7 +3098,7 @@ export const projects: Project[] = [
           label: "Reflection",
           heading: "What 48 hours taught me",
           paragraphs: [
-            "Nova was my first big personal project, and an experiment. I reimagined a whole app and designed it in 48 hours, which I'd never done before, and along the way I found the techniques and shortcuts in Figma that made me an expert in it.",
+            "Nova was my first big personal project, and an experiment. I reimagined a whole app and designed it in 48 hours, which I'd never done before, and along the way I found the techniques and shortcuts in Figma that let me design at that speed.",
           ],
           points: [
             "What I learned: a tight deadline makes you build a system, because there's no time to draw anything twice",

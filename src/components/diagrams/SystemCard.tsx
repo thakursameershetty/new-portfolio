@@ -101,7 +101,7 @@ interface System {
   source?: Source;
   specimen: CSSProperties;
   faces: Face[];
-  typeNote: string;
+  typeNote?: string;
   pills: Pill[];
   pillFont: string;
   shapeNote: string;
@@ -427,7 +427,6 @@ const MUTINY: System = {
       },
     },
   ],
-  typeNote: "The new face came with the new look and the MutinyX name",
   pills: [
     { label: "Submit Quote", kind: "button", bg: "#facb03", fg: "#000000" },
     {
@@ -738,7 +737,7 @@ function SystemCard({
                   {face.text}
                 </p>
               ))}
-              <p className={card.note}>{system.typeNote}</p>
+              {system.typeNote && <p className={card.note}>{system.typeNote}</p>}
             </div>
           </div>
         </section>
