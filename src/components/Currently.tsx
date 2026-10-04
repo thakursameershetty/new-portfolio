@@ -10,6 +10,7 @@ import { record, timelineItems } from "./record";
 import { useIntro } from "./SiteIntro";
 import { useInView } from "./useInView";
 import { ArrowIcon } from "./icons/ArrowIcon";
+import { ChartBarIncreasingIcon } from "./icons/ChartBarIncreasingIcon";
 import { DocumentIcon } from "./icons/DocumentIcon";
 import { ProfileCardIcon } from "./icons/ProfileCardIcon";
 import type { AnimatedIconHandle } from "./icons/types";
@@ -30,11 +31,9 @@ function YearsSince({ from }: { from?: number }) {
   );
 }
 
-/** First section below the hero: who Thakur is, the work right now, and the record behind it. */
+/** First section below the hero: who Thakur is and the work right now, with the Résumé
+ *  key. The record behind it comes after the work, in TrackRecord. */
 export function Currently() {
-  // The row being hovered, and the entries running at the month being scrubbed to.
-  const [focus, setFocus] = useState<string | null>(null);
-  const [scrubbed, setScrubbed] = useState<string[] | null>(null);
   const [lineOn, setLineOn] = useState(false);
 
   return (
@@ -75,9 +74,28 @@ export function Currently() {
 
       <div className={styles.actions}>
         <ResumeKey />
-        <MoreLink />
+        <TimelineKey />
       </div>
+    </section>
+  );
+}
 
+/** After the work: the record behind it (the timeline and the groups of entries), and the
+ *  key on to the About page for the longer story. */
+export function TrackRecord() {
+  // The row being hovered, and the entries running at the month being scrubbed to.
+  const [focus, setFocus] = useState<string | null>(null);
+  const [scrubbed, setScrubbed] = useState<string[] | null>(null);
+
+  return (
+    <section
+      id="record"
+      className={styles.trackRecord}
+      aria-labelledby="record-heading"
+    >
+      <h2 id="record-heading" className={styles.label}>
+        Track record
+      </h2>
       <div className={styles.record}>
         <section className={styles.group}>
           <h3 className={styles.groupHeading}>Timeline</h3>
@@ -110,7 +128,9 @@ export function Currently() {
                 />
               )}
               {group.heading}
-              {group.years && <YearsSince from={group.entries[0].timeline?.from} />}
+              {group.years && (
+                <YearsSince from={group.entries[0].timeline?.from} />
+              )}
             </h3>
             <ul
               className={clsx(styles.entries, group.compact && styles.compact)}
@@ -121,8 +141,8 @@ export function Currently() {
                   className={clsx(
                     styles.entry,
                     scrubbed &&
-                    !scrubbed.includes(entry.title) &&
-                    styles.entryDim,
+                      !scrubbed.includes(entry.title) &&
+                      styles.entryDim,
                   )}
                   onPointerEnter={
                     entry.timeline ? () => setFocus(entry.title) : undefined
@@ -147,7 +167,44 @@ export function Currently() {
           </section>
         ))}
       </div>
+
+      <div className={styles.actions}>
+        <MoreLink />
+      </div>
     </section>
+  );
+}
+
+// Down to the track record, after the work: the red keycap that pairs with the Résumé key,
+// a rising bar chart before its name (its bars redrawing on hover, like the other keys'
+// icons), and an arrow pointing the way the page goes. The page's smooth scrolling (off
+// with reduced motion) carries it.
+function TimelineKey() {
+  const { playCue } = useIntro();
+  const iconRef = useRef<AnimatedIconHandle>(null);
+  return (
+    <a
+      href="#record"
+      className={clsx(styles.key, styles.keyRed, styles.keyDown)}
+      onMouseEnter={() => {
+        iconRef.current?.startAnimation();
+        playCue("tap");
+      }}
+      onPointerDown={() => playCue("land")}
+    >
+      <ChartBarIncreasingIcon
+        ref={iconRef}
+        size={20}
+        className={styles.keyIcon}
+      />
+      <span>My timeline</span>
+      <ArrowIcon
+        direction="down"
+        size={16}
+        animated={false}
+        className={styles.keyArrow}
+      />
+    </a>
   );
 }
 

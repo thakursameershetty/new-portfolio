@@ -64,6 +64,314 @@
   color: var(--ink-muted);
 }
 
+/* The second thought starts on a line of its own. */
+.nextLine {
+  display: block;
+}
+
+/* The apology, on a line of its own, muted. */
+.apology {
+  display: block;
+  color: var(--ink-muted);
+}
+
+/* ---- "design" and "build", played by the "click" key. Both sit still until it's
+   pressed; everything they add is laid over the words, so the line never moves. ---- */
+.design,
+.build {
+  position: relative;
+  display: inline-block;
+}
+
+.letterI {
+  position: relative;
+}
+
+/* The anchor that takes the place of the "i"'s dot: a cream square with a red edge,
+   big enough to cover the dot, with a Bézier handle out to either side. */
+.anchor {
+  position: absolute;
+  top: 0.3em;
+  left: 50%;
+  width: 0.2em;
+  height: 0.2em;
+  border: 0.045em solid var(--tone-work);
+  background: var(--ink);
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(0);
+}
+
+.bezier {
+  position: absolute;
+  top: 50%;
+  width: 0;
+  height: 0.04em;
+  background: var(--tone-work);
+}
+
+/* The handle's round end. */
+.bezier::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  width: 0.13em;
+  height: 0.13em;
+  border-radius: 50%;
+  background: var(--tone-work);
+  transform: translateY(-50%);
+}
+
+.bezierLeft {
+  right: 100%;
+  transform-origin: right center;
+}
+
+.bezierLeft::after {
+  left: -0.06em;
+}
+
+.bezierRight {
+  left: 100%;
+  transform-origin: left center;
+}
+
+.bezierRight::after {
+  right: -0.06em;
+}
+
+/* The selection box round the word, its four corner handles in the spans. */
+.selection {
+  position: absolute;
+  inset: 0.12em -0.1em 0.02em;
+  border: 0.04em solid var(--tone-work);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.selection > span {
+  position: absolute;
+  width: 0.14em;
+  height: 0.14em;
+  border: 0.03em solid var(--tone-work);
+  background: var(--ink);
+}
+
+.selection > span:nth-child(1) {
+  top: -0.08em;
+  left: -0.08em;
+}
+
+.selection > span:nth-child(2) {
+  top: -0.08em;
+  right: -0.08em;
+}
+
+.selection > span:nth-child(3) {
+  bottom: -0.08em;
+  left: -0.08em;
+}
+
+.selection > span:nth-child(4) {
+  right: -0.08em;
+  bottom: -0.08em;
+}
+
+.designOn .selection {
+  animation: select 1700ms steps(1) both;
+}
+
+.designOn .anchor {
+  animation: anchor 1700ms cubic-bezier(0.34, 1.4, 0.64, 1) both;
+}
+
+.designOn .bezierLeft,
+.designOn .bezierRight {
+  animation: bezier 1700ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes select {
+  0% {
+    opacity: 0;
+  }
+  6%,
+  88% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes anchor {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0);
+  }
+  12%,
+  82% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0);
+  }
+}
+
+@keyframes bezier {
+  0%,
+  14% {
+    width: 0;
+    rotate: 0deg;
+  }
+  34% {
+    width: 0.55em;
+    rotate: -14deg;
+  }
+  56% {
+    width: 0.42em;
+    rotate: 10deg;
+  }
+  76% {
+    width: 0.48em;
+    rotate: -4deg;
+  }
+  92%,
+  100% {
+    width: 0;
+    rotate: 0deg;
+  }
+}
+
+/* The hammer, resting out of sight above "build", its handle's end as the pivot: it
+   lifts, comes down on the word three times (the strikes in Personality.tsx), and goes. */
+.buildText {
+  display: inline-block;
+  transform-origin: 50% 85%;
+}
+
+.hammer {
+  position: absolute;
+  bottom: 68%;
+  left: 18%;
+  width: 1.5em;
+  height: auto;
+  opacity: 0;
+  transform-origin: 100% 50%;
+  pointer-events: none;
+}
+
+.buildOn .hammer {
+  animation: hammer 1300ms both;
+}
+
+.buildOn .buildText {
+  animation: squash 1300ms both;
+}
+
+@keyframes hammer {
+  0% {
+    opacity: 0;
+    transform: rotate(40deg) translateY(-0.2em);
+  }
+  14% {
+    opacity: 1;
+    transform: rotate(40deg);
+  }
+  28% {
+    transform: rotate(38deg);
+  }
+  32% {
+    transform: rotate(-6deg);
+  }
+  44% {
+    transform: rotate(30deg);
+  }
+  55% {
+    transform: rotate(-6deg);
+  }
+  67% {
+    transform: rotate(30deg);
+  }
+  78% {
+    opacity: 1;
+    transform: rotate(-6deg);
+  }
+  90% {
+    opacity: 1;
+    transform: rotate(20deg);
+  }
+  100% {
+    opacity: 0;
+    transform: rotate(40deg) translateY(-0.2em);
+  }
+}
+
+@keyframes squash {
+  0%,
+  31%,
+  38%,
+  54%,
+  61%,
+  77%,
+  86%,
+  100% {
+    transform: none;
+  }
+  33%,
+  56%,
+  79% {
+    transform: scale(1.06, 0.84);
+  }
+}
+
+/* Sparks off the last blow. */
+.sparks {
+  position: absolute;
+  bottom: 78%;
+  left: 22%;
+  pointer-events: none;
+}
+
+.sparks > span {
+  position: absolute;
+  width: 0.09em;
+  height: 0.09em;
+  background: #f0c44c;
+  opacity: 0;
+}
+
+.buildOn .sparks > span {
+  animation: spark 1300ms steps(6) both;
+}
+
+.buildOn .sparks > span:nth-child(1) {
+  --fly: -0.4em -0.35em;
+}
+
+.buildOn .sparks > span:nth-child(2) {
+  --fly: 0.05em -0.5em;
+}
+
+.buildOn .sparks > span:nth-child(3) {
+  --fly: 0.45em -0.3em;
+}
+
+@keyframes spark {
+  0%,
+  78% {
+    opacity: 0;
+    translate: 0 0;
+  }
+  80% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    translate: var(--fly);
+  }
+}
+
 /* A word and what's set after it, kept on one line. */
 .together {
   white-space: nowrap;
@@ -596,6 +904,8 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .designOn *,
+  .buildOn *,
   .popped,
   .hop,
   .lineKeyHint,

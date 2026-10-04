@@ -1,8 +1,9 @@
 import styles from "./page.module.css";
 import { Contact } from "@/components/Contact";
-import { Currently } from "@/components/Currently";
+import { Currently, TrackRecord } from "@/components/Currently";
 import { Hero } from "@/components/Hero";
 import { Personality } from "@/components/Personality";
+import { Playground } from "@/components/Playground";
 import { SiteIntro } from "@/components/SiteIntro";
 import { Work } from "@/components/Work";
 import { homeJsonLd, jsonLd } from "@/components/site";
@@ -18,7 +19,9 @@ export default function Home() {
         <Hero />
         <Currently />
         <Work />
+        <TrackRecord />
         <Personality />
+        <Playground />
         <Contact />
       </main>
     </SiteIntro>

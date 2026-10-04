@@ -1,5 +1,6 @@
 import * as THREE from "three";
 import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
+import { MATERIAL_PATHS } from "./icons/MaterialIcon";
 
 // A clear plastic disk box in three.js: a smoky tray with a hinged hood, holding floppy disks
 // that stand side by side. It only draws while something moves, so an idle box costs nothing.
@@ -15,6 +16,8 @@ export interface BoxDisk {
   number: number;
   disk: string;
   ink: string;
+  /** Wears the "start here" star sticker. */
+  featured?: boolean;
 }
 
 export interface ScreenRect {
@@ -72,7 +75,8 @@ const easeOutBack = (t: number) => {
 // a time: scrolling and the page's other animations keep their frames while it builds.
 const breathe = () =>
   new Promise<void>((resolve) => {
-    if (window.requestIdleCallback) window.requestIdleCallback(() => resolve(), { timeout: 100 });
+    if (window.requestIdleCallback)
+      window.requestIdleCallback(() => resolve(), { timeout: 100 });
     else window.setTimeout(resolve, 16);
   });
 let building: Promise<unknown> = Promise.resolve();
@@ -112,7 +116,11 @@ async function buildDiskBoxScene(
 ): Promise<DiskBoxScene> {
   const fonts = await loadFonts(canvas);
 
-  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+  const renderer = new THREE.WebGLRenderer({
+    canvas,
+    antialias: true,
+    alpha: true,
+  });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.NeutralToneMapping;
@@ -160,7 +168,11 @@ async function buildDiskBoxScene(
   floorPlastic.color.set(0x1c2126);
   floorPlastic.opacity = 0.5;
   const edgeMaterial = keep(
-    new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.22 }),
+    new THREE.LineBasicMaterial({
+      color: 0xffffff,
+      transparent: true,
+      opacity: 0.22,
+    }),
   );
 
   const panel = (
@@ -172,7 +184,12 @@ async function buildDiskBoxScene(
     const geometry = keep(new THREE.BoxGeometry(...size));
     const mesh = new THREE.Mesh(geometry, material);
     mesh.position.set(...at);
-    mesh.add(new THREE.LineSegments(keep(new THREE.EdgesGeometry(geometry)), edgeMaterial));
+    mesh.add(
+      new THREE.LineSegments(
+        keep(new THREE.EdgesGeometry(geometry)),
+        edgeMaterial,
+      ),
+    );
     parent.add(mesh);
     return mesh;
   };
@@ -190,20 +207,34 @@ async function buildDiskBoxScene(
   panel(lid, [width, wall, depth], [0, hoodHeight, depth / 2]);
   panel(lid, [width, hoodHeight, wall], [0, hoodHeight / 2, depth]);
   panel(lid, [width, hoodHeight, wall], [0, hoodHeight / 2, 0]);
-  panel(lid, [wall, hoodHeight, depth], [-width / 2, hoodHeight / 2, depth / 2]);
+  panel(
+    lid,
+    [wall, hoodHeight, depth],
+    [-width / 2, hoodHeight / 2, depth / 2],
+  );
   panel(lid, [wall, hoodHeight, depth], [width / 2, hoodHeight / 2, depth / 2]);
   const latchMaterial = keep(
-    new THREE.MeshStandardMaterial({ color: 0x6f7880, roughness: 0.4, transparent: true, opacity: 0.8 }),
+    new THREE.MeshStandardMaterial({
+      color: 0x6f7880,
+      roughness: 0.4,
+      transparent: true,
+      opacity: 0.8,
+    }),
   );
   panel(lid, [0.34, 0.06, 0.05], [0, 0.02, depth + 0.02], latchMaterial);
 
   // The paper sticker on the front.
-  const stickerTexture = keep(drawSticker(`${label} · ${pad(disks.length)} disks`, fonts));
-  const sticker = new THREE.Mesh(
-    keep(new THREE.PlaneGeometry(1.1, 1.1 / 5.33)),
-    keep(new THREE.MeshStandardMaterial({ map: stickerTexture, roughness: 0.8 })),
+  const stickerTexture = keep(
+    drawSticker(`${label} · ${pad(disks.length)} disks`, fonts),
   );
-  sticker.position.set(0, 0.16, depth / 2 + wall / 2 + 0.002);
+  // Big enough to read at a glance from the page: it's the box's only name.
+  const sticker = new THREE.Mesh(
+    keep(new THREE.PlaneGeometry(2.6, 2.6 / 5.33)),
+    keep(
+      new THREE.MeshStandardMaterial({ map: stickerTexture, roughness: 0.8 }),
+    ),
+  );
+  sticker.position.set(0, 0.32, depth / 2 + wall / 2 + 0.002);
   sticker.rotation.z = -0.015;
   root.add(sticker);
 
@@ -235,7 +266,9 @@ async function buildDiskBoxScene(
     texture.anisotropy = maxAnisotropy;
     const mesh = new THREE.Mesh(diskGeometry, [
       keep(new THREE.MeshStandardMaterial({ map: texture, roughness: 0.55 })),
-      keep(new THREE.MeshStandardMaterial({ color: disk.disk, roughness: 0.6 })),
+      keep(
+        new THREE.MeshStandardMaterial({ color: disk.disk, roughness: 0.6 }),
+      ),
     ]);
     root.add(mesh);
     // Left to right, each a little further forward, so every label's left edge (where its
@@ -347,14 +380,24 @@ async function buildDiskBoxScene(
   const tween = (
     apply: (eased: number) => void,
     duration: number,
-    { delay = 0, ease = easeOutCubic }: { delay?: number; ease?: (t: number) => number } = {},
+    {
+      delay = 0,
+      ease = easeOutCubic,
+    }: { delay?: number; ease?: (t: number) => number } = {},
   ) =>
     new Promise<void>((resolve) => {
-      tweens.push({ start: performance.now() + delay, duration, ease, apply, resolve });
+      tweens.push({
+        start: performance.now() + delay,
+        duration,
+        ease,
+        apply,
+        resolve,
+      });
       wake();
     });
 
-  const lerpTo = (from: number, to: number) => (eased: number) => from + (to - from) * eased;
+  const lerpTo = (from: number, to: number) => (eased: number) =>
+    from + (to - from) * eased;
 
   const settle = (delta: number) => {
     // Hover easing: frame-rate independent, about 150ms to settle.
@@ -412,7 +455,8 @@ async function buildDiskBoxScene(
     ) => {
       for (let step = 0; step < steps; step++) {
         const pull =
-          -(stiffness ** 2) * (motion.value - goal) - 2 * damping * stiffness * motion.velocity;
+          -(stiffness ** 2) * (motion.value - goal) -
+          2 * damping * stiffness * motion.velocity;
         motion.velocity += pull * dt;
         motion.value += motion.velocity * dt;
       }
@@ -421,19 +465,34 @@ async function buildDiskBoxScene(
         motion.value = Math.sign(motion.value) * limit;
         motion.velocity *= -0.35;
       }
-      if (Math.abs(motion.velocity) > 0.002 || Math.abs(motion.value - goal) > 0.0005) {
+      if (
+        Math.abs(motion.velocity) > 0.002 ||
+        Math.abs(motion.value - goal) > 0.0005
+      ) {
         return true;
       }
       motion.value = goal;
       motion.velocity = 0;
       return false;
     };
-    const clamp = (value: number, limit: number) => Math.max(-limit, Math.min(limit, value));
+    const clamp = (value: number, limit: number) =>
+      Math.max(-limit, Math.min(limit, value));
 
-    const inBox = slots.some((slot) => slot.mesh.visible && slot.straighten < 1);
+    const inBox = slots.some(
+      (slot) => slot.mesh.visible && slot.straighten < 1,
+    );
     if (inBox) {
       stackRock.value -= turnedPitch * 0.8;
-      if (spring(stackRock, clamp(pitch * 1.2, limits.rock), limits.rock, 17, 0.2, true)) {
+      if (
+        spring(
+          stackRock,
+          clamp(pitch * 1.2, limits.rock),
+          limits.rock,
+          17,
+          0.2,
+          true,
+        )
+      ) {
         moving = true;
       }
     }
@@ -442,8 +501,20 @@ async function buildDiskBoxScene(
       slot.lean.value -= turnedRoll * 0.8;
       const lean = clamp(roll * 1.3, limits.lean);
       const slide = clamp(-roll * 0.6, limits.slide);
-      if (spring(slot.lean, lean, limits.lean, slot.stiffness, slot.damping, true)) moving = true;
-      if (spring(slot.slide, slide, limits.slide, slot.stiffness, slot.damping, false)) {
+      if (
+        spring(slot.lean, lean, limits.lean, slot.stiffness, slot.damping, true)
+      )
+        moving = true;
+      if (
+        spring(
+          slot.slide,
+          slide,
+          limits.slide,
+          slot.stiffness,
+          slot.damping,
+          false,
+        )
+      ) {
         moving = true;
       }
     }
@@ -459,7 +530,8 @@ async function buildDiskBoxScene(
       let energy = Math.abs(stackRock.velocity) * 0.5;
       for (const slot of slots) {
         if (!slot.mesh.visible || slot.straighten >= 1) continue;
-        energy += Math.abs(slot.lean.velocity) + Math.abs(slot.slide.velocity) * 4;
+        energy +=
+          Math.abs(slot.lean.velocity) + Math.abs(slot.slide.velocity) * 4;
       }
       const intensity = Math.min(energy / 1.5, 1);
       if (energy > 0.12 && now - lastRattle > 150 - 90 * intensity) {
@@ -527,7 +599,9 @@ async function buildDiskBoxScene(
       [0.5, 0.5],
       [-0.5, 0.5],
     ]) {
-      const point = mesh.localToWorld(new THREE.Vector3(x, y, thickness / 2)).project(camera);
+      const point = mesh
+        .localToWorld(new THREE.Vector3(x, y, thickness / 2))
+        .project(camera);
       const px = bounds.left + ((point.x + 1) / 2) * bounds.width;
       const py = bounds.top + ((1 - point.y) / 2) * bounds.height;
       left = Math.min(left, px);
@@ -537,10 +611,16 @@ async function buildDiskBoxScene(
     }
     // The HTML disk is square: centre a square the size of the face's width.
     const size = right - left;
-    return { left, top: (top + bottom) / 2 - size / 2, width: size, height: size };
+    return {
+      left,
+      top: (top + bottom) / 2 - size / 2,
+      width: size,
+      height: size,
+    };
   };
 
-  const wait = (ms: number) => new Promise<void>((resolve) => window.setTimeout(resolve, ms));
+  const wait = (ms: number) =>
+    new Promise<void>((resolve) => window.setTimeout(resolve, ms));
 
   return {
     pointer(x, y) {
@@ -565,9 +645,13 @@ async function buildDiskBoxScene(
       isDealt = true;
       const lidFrom = state.lid - state.peek;
       state.peek = 0;
-      const lidUp = tween((e) => (state.lid = lerpTo(lidFrom, lidOpen)(e)), 380, {
-        ease: easeOutBack,
-      });
+      const lidUp = tween(
+        (e) => (state.lid = lerpTo(lidFrom, lidOpen)(e)),
+        380,
+        {
+          ease: easeOutBack,
+        },
+      );
       const outs = slots.map((slot, index) => {
         const bob = slot.bob;
         const liftAt = 200 + index * 90;
@@ -595,9 +679,12 @@ async function buildDiskBoxScene(
     async returnToFront() {
       busy = true;
       const from = state.rest;
-      await tween((e) => (state.rest = lerpTo(from, 0)(e)), 420, { ease: easeInOutCubic });
+      await tween((e) => (state.rest = lerpTo(from, 0)(e)), 420, {
+        ease: easeInOutCubic,
+      });
       // Let the hover tilt finish settling to level, so lifted spots are measured square on.
-      while (Math.abs(state.tiltX) > 0.002 || Math.abs(state.tiltY) > 0.002) await wait(16);
+      while (Math.abs(state.tiltX) > 0.002 || Math.abs(state.tiltY) > 0.002)
+        await wait(16);
     },
     liftedRect(index) {
       return rectOf(index);
@@ -618,7 +705,9 @@ async function buildDiskBoxScene(
       isDealt = false;
       // Slow enough to match its sound (opening's creak in reverse), falling faster as it
       // goes, so it seats as the catch snaps.
-      await tween((e) => (state.lid = lerpTo(lidOpen, 0)(e)), 580, { ease: easeInQuad });
+      await tween((e) => (state.lid = lerpTo(lidOpen, 0)(e)), 580, {
+        ease: easeInQuad,
+      });
       busy = false;
       wake();
     },
@@ -723,7 +812,11 @@ function drawDisk(disk: BoxDisk, fonts: Fonts) {
   ctx.textAlign = "left";
   ctx.fillText(pad(disk.number), labelX + 5 * u, labelY + bandH / 2);
   ctx.textAlign = "right";
-  ctx.fillText(disk.tag.toUpperCase(), labelX + labelW - 5 * u, labelY + bandH / 2);
+  ctx.fillText(
+    disk.tag.toUpperCase(),
+    labelX + labelW - 5 * u,
+    labelY + bandH / 2,
+  );
 
   // Title, wrapped.
   ctx.textAlign = "left";
@@ -747,29 +840,58 @@ function drawDisk(disk: BoxDisk, fonts: Fonts) {
   ctx.textBaseline = "bottom";
   ctx.fillText(disk.role.toUpperCase(), labelX + 5 * u, size - 4 * u);
 
+  if (disk.featured) drawStarSticker(ctx, u);
+
   const texture = new THREE.CanvasTexture(canvas);
   texture.colorSpace = THREE.SRGBColorSpace;
   return texture;
 }
 
+// The "start here" sticker: a round dark one with a white die-cut edge and a yellow star,
+// slapped over the label's top right corner at a tilt (as on the disks in the rows).
+function drawStarSticker(ctx: CanvasRenderingContext2D, u: number) {
+  ctx.save();
+  ctx.translate(82 * u, 40 * u);
+  ctx.rotate(-0.21);
+  ctx.shadowColor = "rgba(0,0,0,0.3)";
+  ctx.shadowBlur = 2 * u;
+  ctx.shadowOffsetY = 0.6 * u;
+  ctx.fillStyle = "#fffaf0";
+  ctx.beginPath();
+  ctx.arc(0, 0, 12 * u, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.shadowColor = "transparent";
+  ctx.fillStyle = "#1a0605";
+  ctx.beginPath();
+  ctx.arc(0, 0, 10.6 * u, 0, Math.PI * 2);
+  ctx.fill();
+  // Material Symbols Rounded's filled star (a 960-unit box, from y -960), 13u across.
+  ctx.fillStyle = "#f0c44c";
+  ctx.scale((13 * u) / 960, (13 * u) / 960);
+  ctx.translate(-480, 480);
+  ctx.fill(new Path2D(MATERIAL_PATHS.starFill));
+  ctx.restore();
+}
+
+// Drawn at 1.5× the sticker's old 640×120, so its type stays sharp at the bigger size.
 function drawSticker(text: string, fonts: Fonts) {
   const canvas = document.createElement("canvas");
-  canvas.width = 640;
-  canvas.height = 120;
+  canvas.width = 960;
+  canvas.height = 180;
   const ctx = canvas.getContext("2d")!;
   ctx.fillStyle = "#f4f0e6";
-  roundRect(ctx, 0, 0, 640, 120, 8);
+  roundRect(ctx, 0, 0, 960, 180, 12);
   ctx.fillStyle = "#1a1a1a";
   // Shrink the type until the text fits the sticker.
-  setSpacing(ctx, 3);
-  let fontSize = 46;
+  setSpacing(ctx, 4);
+  let fontSize = 72;
   do {
     ctx.font = `700 ${fontSize}px ${fonts.hero}`;
     fontSize -= 2;
-  } while (ctx.measureText(text.toUpperCase()).width > 580 && fontSize > 20);
+  } while (ctx.measureText(text.toUpperCase()).width > 870 && fontSize > 30);
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
-  ctx.fillText(text.toUpperCase(), 320, 62);
+  ctx.fillText(text.toUpperCase(), 480, 93);
   const texture = new THREE.CanvasTexture(canvas);
   texture.colorSpace = THREE.SRGBColorSpace;
   return texture;
@@ -793,7 +915,11 @@ export function setSpacing(ctx: CanvasRenderingContext2D, px: number) {
   if ("letterSpacing" in ctx) ctx.letterSpacing = `${px}px`;
 }
 
-export function wrap(ctx: CanvasRenderingContext2D, text: string, maxWidth: number) {
+export function wrap(
+  ctx: CanvasRenderingContext2D,
+  text: string,
+  maxWidth: number,
+) {
   const lines: string[] = [];
   let line = "";
   for (const word of text.split(/\s+/)) {

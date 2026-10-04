@@ -45,7 +45,7 @@ export default function InspirationsPage() {
         <div aria-hidden="true" className={about.band} />
         <main className={about.page}>
           <nav className={about.top}>
-            <Link href="/#personality" className={key.key} data-feel="land">
+            <Link href="/" className={key.key} data-feel="land">
               <svg
                 aria-hidden="true"
                 width="18"

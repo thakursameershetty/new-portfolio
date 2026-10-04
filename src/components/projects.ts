@@ -110,7 +110,8 @@ export interface CaseSection {
  *  (with an insight line), a reframe if there was one, the solution, the result (big figures,
  *  only real ones) and the learnings. Written only from what the case study already says. */
 /** A part of the TL;DR, which can carry one picture or diagram. */
-export type TldrPart = "overview" | "problem" | "reframe" | "solution" | "result" | "learnings";
+export type TldrPart =
+  "overview" | "problem" | "reframe" | "solution" | "result" | "learnings";
 
 export interface CaseTldr {
   /** At most one or two per project, on the parts they explain best. */
@@ -194,6 +195,17 @@ export interface Project {
   };
   /** Its stage, for a project without a case study brief to read it from. */
   stage?: string;
+  /** A small exploration shown briefly rather than a full write-up: its row's button says
+   *  "Mini project" instead of "Case study". */
+  mini?: boolean;
+  /** Its pictures are phone boards (4:3, on a plain #1e1e1e ground): shown whole on its
+   *  card and monitor rather than cropped to fill them. */
+  boards?: boolean;
+  /** The picture its card leads with, when it isn't the first of its media (a clip's
+   *  poster or the first still). */
+  cover?: string;
+  /** One of the few to start with: a star sticker on its disk, and "Start here" on its row. */
+  featured?: boolean;
   disk: string;
   ink: string;
 }
@@ -213,6 +225,7 @@ export function stageOf(project: Project) {
 export const projects: Project[] = [
   {
     id: "raobahadur",
+    featured: true,
     disciplines: ["design", "development"],
     title: "Rao Bahadur",
     kind: "Fan site for a feature film",
@@ -227,7 +240,15 @@ export const projects: Project[] = [
       "Likes, replies and trending theories that update live",
       "An admin panel for the debate, the critics' videos, users and theories",
     ],
-    stack: ["Next.js", "GSAP", "Postgres", "Railway", "Cloudinary", "UploadThing", "Vercel"],
+    stack: [
+      "Next.js",
+      "GSAP",
+      "Postgres",
+      "Railway",
+      "Cloudinary",
+      "UploadThing",
+      "Vercel",
+    ],
     link: { href: "https://raobahadur.in", label: "raobahadur.in" },
     media: [
       {
@@ -318,7 +339,8 @@ export const projects: Project[] = [
             "It needed word of mouth from the people who had already seen it",
             "Fans of a smaller film won't make an account just to leave a comment",
           ],
-          insight: "Remove every hurdle: a nickname should be enough to join in.",
+          insight:
+            "Remove every hurdle: a nickname should be enough to join in.",
         },
         solution: [
           "No sign-up: your first like, reply or post asks only for a nickname, and a face is drawn from it",
@@ -418,7 +440,8 @@ export const projects: Project[] = [
             type: "diagram",
             diagram: "rao-join",
             alt: "Animated diagram: on a usual fan site, liking a theory opens a sign-up form for an email and a password twice, then asks you to check your inbox; on Rao Bahadur, the first like asks only for a nickname, a face is drawn from it as it's typed, and the like lands",
-            caption: "Liking a theory for the first time, on a usual fan site and on Rao Bahadur.",
+            caption:
+              "Liking a theory for the first time, on a usual fan site and on Rao Bahadur.",
           },
           layout: "pair",
           figures: [
@@ -637,24 +660,32 @@ export const projects: Project[] = [
     ink: "#f5f1ea",
   },
   {
+    boards: true,
     id: "mutiny",
+    featured: true,
     disciplines: ["design", "development"],
     title: "MutinyX",
     kind: "Creator app + website",
     role: "Design + frontend",
     context: "Spotmies",
     summary:
-      "The creator app for MutinyX, an influencer marketing network: designed in Figma twice, six months apart, with the second version's frontend built by me in React Native, plus the Next.js landing pages for its rebrand. My first big project at Spotmies.",
+      "The creator app for MutinyX, an influencer marketing network: designed in Figma twice, six months apart, with much of the second version's frontend built by me in React Native (it's still in production), plus the Next.js landing pages for its rebrand. My first big project at Spotmies.",
     blurb:
       "The creator app for an influencer marketing network, designed twice and rebuilt to match, and its website.",
     highlights: [
-      "Designed the first version, about 35 screens, in three days, and built some of its screens in React Native",
-      "Redesigned it after the rebrand, around a new flow for submitting each deliverable, and built its frontend in React Native",
+      "Designed the first version, about 35 screens, in three days, and built a few of its screens in React Native",
+      "Redesigned it after the rebrand, around a new flow for submitting each deliverable, and built its frontend screens in React Native, about 40% of its development",
       "Designed and built the MutinyX landing pages in Next.js",
     ],
     stack: ["Figma", "React Native", "Next.js", "HTML/CSS/JS"],
     link: { href: "https://www.mutinyx.in", label: "mutinyx.in" },
     media: [
+      {
+        type: "video",
+        src: "/work/mutiny/boards/openings.mp4",
+        poster: "/work/mutiny/boards/openings-poster.jpg",
+        alt: "The two openings side by side: version 1's cluster of creators' faces on yellow, and version 2's MutinyX splash",
+      },
       {
         type: "video",
         src: "/work/mutiny/boards/v2-home.mp4",
@@ -681,7 +712,7 @@ export const projects: Project[] = [
         {
           label: "Role",
           value: "Design + frontend",
-          note: "Designed both; built part of v1 and all of v2's frontend",
+          note: "Designed both in full; built a few of v1's screens and about 40% of v2",
         },
         {
           label: "Team",
@@ -737,7 +768,7 @@ export const projects: Project[] = [
       ],
       tldr: {
         overview: [
-          "Designed both versions of MutinyX's creator app, and built version 2's frontend in React Native",
+          "Designed both versions of MutinyX's creator app in full, and built version 2's frontend screens in React Native",
           "Version 1: about 35 screens in three days; version 2: a redesign in five days, after the rebrand",
           "Rebuilt around the work after a creator says yes: submitting each deliverable",
           "Version 2 is approved and in testing",
@@ -748,7 +779,8 @@ export const projects: Project[] = [
             "A campaign with several pieces still had one timeline and one upload button",
             "By release, version 1's build had drifted from its design",
           ],
-          insight: "Creators complained to the client, and their complaints became version 2's brief.",
+          insight:
+            "Creators complained to the client, and their complaints became version 2's brief.",
         },
         solution: [
           "A tab per deliverable, each with its own steps, each reviewed in turn",
@@ -764,7 +796,7 @@ export const projects: Project[] = [
             },
             {
               value: "1 week",
-              label: "to build version 2's frontend",
+              label: "to build version 2's frontend screens",
             },
           ],
           points: [
@@ -773,7 +805,7 @@ export const projects: Project[] = [
           ],
         },
         learnings: [
-          "A design is only as good as what ships, which is why I built version 2's frontend myself",
+          "A design is only as good as what ships, which is why I built version 2's frontend screens myself",
           "Hear from creators directly, not only through the client",
         ],
         visuals: {
@@ -848,21 +880,19 @@ export const projects: Project[] = [
             "Stop asking creators to guess at a price the brand never set",
             "Get creators in with as little as a phone number",
             "Carry the new MutinyX brand",
-            "Ship what was designed, by building the frontend myself",
+            "Ship what was designed, by building the frontend screens myself",
           ],
         },
         {
           id: "constraints",
           label: "Constraints",
           heading: "The limits I worked inside",
-          paragraphs: [
-            "Every choice below had to fit these:",
-          ],
+          paragraphs: ["Every choice below had to fit these:"],
           points: [
             "Phones only: the app is for creators, while brands work in a separate desktop dashboard",
             "From the client: a user flow, the logo and a few references; the rest of the look was mine to set",
             "It had to feel premium and production-ready, not like a prototype",
-            "Five days to redesign, then about a week to build the frontend",
+            "Five days to redesign, then about a week to build the frontend screens",
             "The React Native architecture was already in place, so new flows had to fit it",
             "Creators' followers and data came from Instagram, so sign-in had to connect to it",
           ],
@@ -872,11 +902,11 @@ export const projects: Project[] = [
           label: "My part",
           heading: "What I owned, and what I didn't",
           paragraphs: [
-            "In version 1, I designed everything and built a few screens; in version 2, I designed and built the whole frontend. Here's where my part ends and the others' begin:",
+            "The design of both versions is all mine. In version 1, I built a few screens, about 5% of the build; in version 2, I built its frontend screens, about 40% of the development, while the Spotmies developers handle the rest (it's still in production). Here's where my part ends and the others' begin:",
           ],
           points: [
-            "Mine: both versions' design in Figma, some of version 1's screens, the submissions flow (which I pitched), the opening animation, and version 2's frontend in React Native",
-            "My team lead's, with the Spotmies developers: the rest of version 1's build and its release, the app's architecture, the Instagram connection, the backend, and the brands' desktop dashboard",
+            "Mine: both versions' design in Figma, some of version 1's screens, the submissions flow (which I pitched), the opening animation, and version 2's frontend screens in React Native",
+            "My team lead's, with the Spotmies developers: the rest of version 1's build and its release, the app's architecture, the Instagram connection, the backend, the brands' desktop dashboard, and version 2's testing and bug fixes",
             "The client's: the user flow, the brand, and sign-off on every step",
             "Decided together: dropping the price slider, and phone-number-only sign-in",
           ],
@@ -895,8 +925,7 @@ export const projects: Project[] = [
             type: "diagram",
             diagram: "submission-flow",
             alt: "Animated diagram: in version 1, two reels and a story all go through one upload button under one timeline, and it's unclear which moved it; in version 2, each has its own track with its own steps",
-            caption:
-              "A campaign with two reels and a story, before and after.",
+            caption: "A campaign with two reels and a story, before and after.",
           },
           // The monitor can't play a diagram, so it shows the Figma prototype instead.
           screen: [
@@ -921,7 +950,8 @@ export const projects: Project[] = [
               type: "image",
               src: "/work/mutiny/boards/v2-submit.jpg",
               alt: "Version 2: deliverable tabs for two reels, with script upload, then work upload, then proof of work",
-              caption: "After: a tab per deliverable, each step reviewed in turn.",
+              caption:
+                "After: a tab per deliverable, each step reviewed in turn.",
             },
           ],
         },
@@ -952,7 +982,8 @@ export const projects: Project[] = [
               type: "image",
               src: "/work/mutiny/boards/v2-quote.jpg",
               alt: "Version 2: a quote of ₹5000, marked above the brand's budget, and the same quote marked within it",
-              caption: "After: your own quote, within the brand's budget or above it.",
+              caption:
+                "After: your own quote, within the brand's budget or above it.",
               label: "Version 2",
             },
           ],
@@ -1054,7 +1085,7 @@ export const projects: Project[] = [
           label: "Outcome",
           heading: "Built as designed, and in testing",
           paragraphs: [
-            "From September 9, I built version 2's frontend in about a week, matching the Figma screens with every animation and interaction tuned. My team lead checked and approved it, and is now connecting the backend.",
+            "From September 9, I built version 2's frontend screens in about a week, matching the Figma screens with every animation and interaction tuned. My team lead checked and approved them; the Spotmies developers are now connecting the backend, testing and fixing bugs, and it's still in production.",
             "Version 2 is in testing and no creators are on it yet, so there are no numbers to share. Once it's live, the first thing to watch is how many creators submit a deliverable on the first try.",
           ],
         },
@@ -1066,7 +1097,7 @@ export const projects: Project[] = [
             "Version 1, my first project, taught me how to turn a rough user flow into a prototype that could actually be built. It also taught me that a design can change on its way through development, and that the real test comes after launch: creators' feedback showed me where my flow was weak, and version 2 is the stronger, smoother flow that came out of it.",
           ],
           points: [
-            "What I learned: a design is only as good as what ships, which is why I built version 2's frontend myself",
+            "What I learned: a design is only as good as what ships, which is why I built version 2's frontend screens myself",
             "What I'd change: hear from creators directly, not only through the client",
             "What I'd do next: once version 2 is live, watch how many creators submit on the first try",
           ],
@@ -1103,7 +1134,7 @@ export const projects: Project[] = [
       ],
     },
     // Its brief has no Stage cell now, so the Work list reads it from here.
-    stage: "0 → 1",
+    stage: "In progress",
     disk: "#facb03",
     ink: "#1a1a1a",
   },
@@ -1369,242 +1400,349 @@ export const projects: Project[] = [
     ink: "#0d2226",
   },
   {
-    id: "amerox",
-    disciplines: ["design", "development"],
-    title: "Amero X",
-    kind: "Crypto trading platform",
-    role: "Design + landing page build",
+    id: "tmn",
+    featured: true,
+    disciplines: ["design"],
+    title: "TMN · Satara Today",
+    kind: "News app + website, in two languages",
+    role: "UI/UX design",
     context: "Spotmies",
     summary:
-      "My first project at Spotmies: refining Amero X, a crypto trading platform whose designs felt cheap, into a black-and-gold product that feels premium and trustworthy. I redesigned it in Figma, then built the landing page to match.",
+      "The app and website for TMN, Today Media Network, and Satara Today, its Marathi sister in Satara: one minimal design that holds English and Marathi alike, with articles readers can react to, vote on and write themselves. Designed in Figma, and built by the Spotmies development team.",
     blurb:
-      "My first project: refining a crypto trading platform into a black-and-gold product that feels premium.",
+      "One minimal news app and website for TMN and Satara Today, in English and in Marathi.",
     highlights: [
-      "Refined the platform's designs in Figma: trading, swap, P2P, wallet and more",
-      "Built the landing page from the approved design, animations and all",
+      "One design for both brands, in English and in Marathi",
+      "Articles with reactions, instant polls and comments",
+      "Readers can write and publish their own articles",
     ],
-    stack: ["Figma", "Frontend"],
-    link: { href: "https://amerox.io", label: "amerox.io" },
+    stack: ["Figma", "Prototyping", "Micro-interactions"],
+    // Add the link once the website launches on its own domain.
     media: [
       {
         type: "video",
-        src: "/work/amerox/site.mp4",
-        poster: "/work/amerox/site.jpg",
-        alt: "The Amero X landing page",
+        src: "/work/tmn-satara/site-tmn.mp4",
+        poster: "/work/tmn-satara/site-tmn.jpg",
+        alt: "The TMN News website",
       },
       {
-        type: "image",
-        src: "/work/amerox/board-trading.jpg",
-        alt: "Amero X trading screens",
+        type: "video",
+        src: "/work/tmn-satara/app-article.mp4",
+        poster: "/work/tmn-satara/app-article.jpg",
+        alt: "The TMN and Satara Today apps side by side",
       },
     ],
     caseStudy: {
-      timeframe: "Dec 2025 – Jan 2026",
-      client: { logo: "/logos/amerox-cropped.png", name: "Amero X" },
-      headline: "Making gold on black feel trustworthy, not cheap",
+      timeframe: "May 2026",
+      client: [
+        { logo: "/logos/tmn-mark.webp", name: "TMN, Today Media Network" },
+        {
+          logo: "/logos/satara-today-mark.webp",
+          name: "Satara Today",
+          height: 48,
+        },
+      ],
+      headline: "A news app in two languages, made for readers who talk back",
       brief: [
         {
           label: "Role",
-          value: "Design + landing page",
-          note: "Refined in Figma, then built",
+          value: "UI/UX design",
+          note: "Every screen and prototype, app and website",
         },
         {
-          label: "Product",
-          value: "Amero X",
-          note: "Crypto trading, swaps and P2P",
-          logo: "/logos/amerox-cropped.png",
-          href: "https://amerox.io",
+          label: "Team",
+          value: "Just me",
+          note: "Briefed by the client through our project manager",
         },
         {
-          label: "Stage",
-          value: "Redesign",
-          note: "My first project at Spotmies: refining existing designs",
+          label: "Timeline",
+          value: "3 days + 1 week",
+          note: "A first draft, then the final design",
         },
         {
-          label: "Window",
-          value: "Dec 2025 – Jan 2026",
-          note: "About six weeks",
+          label: "Problem",
+          value: "A dated website",
+          note: "Mixed fonts and colours, and no motion",
         },
         {
-          label: "Screens",
-          value: "21 in Figma",
-          note: "Trading, swap, P2P, wallet, proposals",
+          label: "Languages",
+          value: "English + Marathi",
+          note: "One design for TMN and Satara Today",
+          logo: "/logos/tmn-mark.webp",
         },
         {
-          label: "Challenge",
-          value: "Gold without cheap",
-          note: "Premium, modern and trustworthy",
+          label: "Outcome",
+          value: "In testing",
+          note: "Being built by the Spotmies developers",
         },
       ],
       reel: [
         {
           type: "video",
-          src: "/work/amerox/site.mp4",
-          poster: "/work/amerox/site.jpg",
-          alt: "The Amero X landing page",
+          src: "/work/tmn-satara/site-tmn.mp4",
+          poster: "/work/tmn-satara/site-tmn.jpg",
+          alt: "The TMN News website",
         },
         {
-          type: "image",
-          src: "/work/amerox/board-trading.jpg",
-          alt: "Dashboard, spot trading, futures and copy trading",
+          type: "video",
+          src: "/work/tmn-satara/app-article.mp4",
+          poster: "/work/tmn-satara/app-article.jpg",
+          alt: "An article in the TMN and Satara Today apps",
         },
         {
-          type: "image",
-          src: "/work/amerox/board-money.jpg",
-          alt: "Swap, wallet, liquidity staking and orders",
+          type: "video",
+          src: "/work/tmn-satara/site-satara.mp4",
+          poster: "/work/tmn-satara/site-satara.jpg",
+          alt: "The Satara Today website, in Marathi",
         },
       ],
       tldr: {
         overview: [
-          "My first project at Spotmies: refining the designs of Amero X, a crypto trading platform",
-          "Black and gold, made to feel premium and trustworthy instead of cheap",
-          "21 screens in Figma, then the landing page built to match",
+          "Designed the app and website for TMN and Satara Today: one design, in English and in Marathi",
+          "A Gen Z news app where readers react, vote and write their own articles",
+          "Approved, and being built by the Spotmies developers",
         ],
         problem: {
           points: [
-            "The designs already existed, but they felt cheap",
-            "In crypto, a cheap look costs trust",
+            "The old website's fonts and colours didn't match, and nothing on it moved",
+            "The client wanted a Gen Z news app, not another generic one",
+            "One design had to hold two brands and two scripts",
           ],
-          insight: "Enough gold to feel premium, never so much that it looks cheap.",
+        },
+        reframe: {
+          from: "Instead of copying Inshorts, as the brief asked,",
+          to: "“Where does Gen Z already read? On Instagram.”",
         },
         solution: [
-          "Gold kept for what matters: the action you're about to take, your balance, the page you're on",
-          "Everything else on near-black and dark panels",
-          "The landing page built to the pixel, animations and all",
+          "A feed that scrolls like Instagram, with reactions, polls and comments",
+          "One layout for both scripts, with cards that grow for longer Marathi headlines",
+          "Red for the news, black for the ink, white for the page",
         ],
         result: {
           points: [
-            "Handed off in January 2026; the developers changed parts of the live site later",
+            "The first draft half landed; the final design, a week later, was approved",
+            "Being built and tested, with no readers on it yet",
           ],
         },
         learnings: [
-          "A premium look comes from restraint",
-          "Write down the rules behind a design at handoff, so whoever changes it keeps what makes it work",
+          "A reference in a brief is a starting point, not the requirement",
+          "Ask what the client means by it before designing anything",
         ],
         visuals: {
+          reframe: {
+            type: "diagram",
+            diagram: "feed-styles",
+            alt: "Animated diagram: the first draft's Inshorts-style feed against the final Instagram-style feed",
+            caption: "The home feed: first draft, then final.",
+          },
           solution: {
-            type: "image",
-            src: "/work/amerox/board-trading.jpg",
-            alt: "Amero X's trading screens in black and gold",
-            caption: "Gold kept for what matters.",
+            type: "video",
+            src: "/work/tmn-satara/app-tour.mp4",
+            poster: "/work/tmn-satara/app-tour.jpg",
+            alt: "The TMN app in English beside the Satara Today app in Marathi",
+            caption: "One design, two languages.",
           },
         },
       },
       sections: [
         {
           id: "brief",
-          act: "The brief",
+          act: "The problem",
           label: "Brief",
-          heading: "My first project",
+          heading: "Two newsrooms, one dated website",
           paragraphs: [
-            "Amero X was the first thing I worked on after joining Spotmies, in December 2025. It's a crypto trading platform: spot and futures trading, copy trading, swaps, P2P deals, staking and a wallet. Its designs already existed, but they felt cheap, and in crypto a cheap look costs trust. My job was to refine them, working with Spotmies' design head and the client.",
+            "TMN, Today Media Network, is an English news platform, and Satara Today, the voice of Satara, brings the same kind of news to readers there in Marathi. Both are for everyone, but tuned for Gen Z.",
+            "They had a website, but its fonts and colours didn't match from page to page, and nothing on it moved. The client wanted a news app that felt Gen Z and modern, like Inshorts, not another generic news app, and a website to go with it.",
           ],
         },
         {
-          id: "gold",
-          act: "The design",
-          label: "Gold",
-          heading: "Gold without looking cheap",
-          paragraphs: [
-            "The client wanted black and gold. My first real struggle as a designer was balancing the two in a modern design language: enough gold to feel premium, never so much that it looked cheap or broke trust.",
-            "Across the platform, gold is kept for what matters: the action you're about to take, your balance, the page you're on. Everything else sits in dark, warm greys, with the gold glowing softly behind it.",
+          id: "constraints",
+          label: "Constraints",
+          heading: "The limits I worked inside",
+          paragraphs: ["Every choice below had to fit these:"],
+          points: [
+            "A one-line brief, passed on by our project manager: a Gen Z news app like Inshorts, with a scrollable home feed, a community, a profile, and readers posting their own articles with images",
+            "Three days for the first draft, with no logo or brand colours yet",
+            "One design for two brands and two scripts, English and Marathi",
+            "Phones and desktop: the app and the website",
           ],
-          layout: "carousel",
+        },
+        {
+          id: "ownership",
+          label: "My part",
+          heading: "What I owned, and what I didn't",
+          paragraphs: [
+            "I was the only designer, and design was my whole part:",
+          ],
+          points: [
+            "Mine: every screen and prototype in Figma, for both drafts, the app and the website",
+            "The client's: the brief, the brand, and the final say on each draft",
+            "Our project manager's: passing on the brief, and feedback on the final design",
+            "The Spotmies developers': building the app and the website",
+          ],
+        },
+        {
+          id: "first-draft",
+          act: "The decisions",
+          label: "First draft",
+          heading: "From Inshorts to Instagram",
+          paragraphs: [
+            "The client asked for an app like Inshorts, in white, black and red, which was already how The Newspaper looked, a news app I'd designed on my own the month before. So I built the first draft on it in three days, about 80% of it from The Newspaper, with a scroll that worked exactly like Inshorts'.",
+            "The client half liked it: it did what Inshorts did, but it didn't feel Gen Z. For the final version I looked at where Gen Z already spends its time, Instagram, and built the home feed on its scroll. This time I asked for the logos and brand colours first, reused most of what I'd already designed, including The Newspaper's community feed, and finished in a week.",
+          ],
+          lead: {
+            type: "diagram",
+            diagram: "feed-styles",
+            alt: "Animated diagram: the first draft's home scrolled like Inshorts, one story filling the screen and snapping to the next; the final home scrolls like Instagram, a feed of stories with likes and comments, one liked as it goes by",
+            caption:
+              "The home feed, first drafted like Inshorts, then like Instagram.",
+          },
+          layout: "pair",
           figures: [
             {
               type: "image",
-              src: "/work/amerox/board-trading.jpg",
-              alt: "Amero X dashboard, spot trading, futures trading and copy trading screens",
-              caption: "Dashboard, spot trading, futures and copy trading.",
-              label: "Trading",
+              src: "/work/the-newspaper/boards/feed.jpg",
+              alt: "The Newspaper, the first draft's starting point: its front page, an article and search, in white, black and red",
+              caption: "The first draft started from The Newspaper.",
+              label: "First draft",
             },
             {
               type: "image",
-              src: "/work/amerox/board-money.jpg",
-              alt: "Amero X swap, wallet, liquidity pool staking and orders screens",
-              caption: "Swap, wallet, liquidity staking and orders.",
-              label: "Money",
-            },
-            {
-              type: "image",
-              src: "/work/amerox/board-p2p.jpg",
-              alt: "Amero X P2P trading, a purchase proposal, incoming proposals and a chat with the buyer",
+              src: "/work/tmn-satara/app-tour.jpg",
+              alt: "The final design: the TMN app in English beside the Satara Today app in Marathi",
               caption:
-                "P2P deals: offers, proposals and a chat with the buyer.",
-              label: "P2P",
+                "The final design, with each brand's own masthead and colours.",
+              label: "Final",
             },
+          ],
+        },
+        {
+          id: "languages",
+          label: "Two scripts",
+          heading: "One layout for both scripts",
+          paragraphs: [
+            "Marathi headlines run longer and sit taller than English ones, so every card, headline and tab had to hold both. Rather than a layout for each, the two apps share one: cards grow to fit a longer headline, and only the words and the masthead change.",
+          ],
+          lead: {
+            type: "diagram",
+            diagram: "two-scripts",
+            alt: "Animated diagram: the same top story in English, with a two-line headline, and in Marathi, where the headline runs to three lines and the card grows to hold it in the same layout",
+            caption: "One story in English and in Marathi, in the same layout.",
+          },
+          figures: [
             {
-              type: "image",
-              src: "/work/amerox/login.jpg",
-              alt: "Amero X login page with a gold coin and wallet",
-              caption: "Signing in.",
-              label: "Login",
+              type: "video",
+              src: "/work/tmn-satara/app-tour.mp4",
+              poster: "/work/tmn-satara/app-tour.jpg",
+              alt: "The TMN app in English beside the Satara Today app in Marathi: the home feed, search, people, the profile and the dark theme",
+              caption:
+                "The TMN app, left, and the Satara Today app, right, prototyped in Figma.",
+            },
+          ],
+        },
+        {
+          id: "article",
+          label: "Articles",
+          heading: "An article you can answer",
+          paragraphs: [
+            "For a Gen Z reader, a story is something to react to, not only read. So an article carries more than the story: a pull quote, a quick reaction in their own words (lit, woke, cap, ded or vibe), an instant poll that shows its results, and comments that open from the bottom, with a box for your hot take.",
+          ],
+          figures: [
+            {
+              type: "video",
+              src: "/work/tmn-satara/app-article.mp4",
+              poster: "/work/tmn-satara/app-article.jpg",
+              alt: "Opening an article in both apps: the story, a pull quote, reactions, an instant poll and the comments",
+              caption:
+                "An article in both apps, from the feed to the comments.",
+            },
+          ],
+        },
+        {
+          id: "writing",
+          label: "Writing",
+          heading: "Readers write too",
+          paragraphs: [
+            "The client wanted readers to post their own articles, so anyone can write. A new article takes a title, tags, the text with its formatting, and images or video, then publishes from the top. Your articles sit on your profile, with your followers, badges like News Hound and Comment Guru, and settings like the dark theme and offline mode.",
+          ],
+          figures: [
+            {
+              type: "video",
+              src: "/work/tmn-satara/app-write.mp4",
+              poster: "/work/tmn-satara/app-write.jpg",
+              alt: "Writing a new article in both apps: title, tags, the text and images, then your articles",
+              caption: "Writing and publishing an article.",
             },
           ],
         },
         {
           id: "design-language",
+          act: "The final design",
           label: "Design language",
-          heading: "Two golds, near-black and a serif",
+          heading: "Three colours, two typefaces, one shape",
           paragraphs: [
-            "The colours come from the logo and the coin. Beside the logo's bright yellow (#FDD303), the product uses a softer gold, #FCDA7B, kept for what matters, and the coin's metal as a gradient from #FCDA7B through #E2B649 to #FDB648. Everything else sits on near-black #050505 and dark #121212 panels. Headings are set in Gambarino, a serif, and the rest in Space Grotesk.",
+            "The client asked for white, black and red, so each got one job. Red is the news: breaking stories, the Trending tag and whatever you've selected, so it always points at something. Black is the ink, and white the page. Headlines are set in Epilogue and everything else in Inter, and every chip, tag and button is fully round.",
           ],
           lead: {
             type: "diagram",
-            diagram: "amero-system",
-            alt: "Amero X's design language, picked from the logo and the coin: the softer gold #FCDA7B for actions, the coin's gradient from #FCDA7B through #E2B649 to #FDB648, the logo's yellow #FDD303, and #050505 for the page with #121212 panels; Gambarino for headings and Space Grotesk for the rest; buttons fully round, cards at 8px",
-            caption: "The colours, type and shape behind the design, as on the live site.",
+            diagram: "tmn-system",
+            alt: "TMN's design language: red #DB0D14 for the news, black #1A1C1C for the ink and white #FFFFFF for the page; Epilogue for headlines and Inter for everything else, with Marathi in the same layout; and one fully round shape for chips, tags and buttons",
+            caption: "The colours, type and shape behind the design.",
           },
         },
         {
-          id: "landing",
-          act: "The build",
-          label: "Landing",
-          heading: "From Figma to code, to the pixel",
+          id: "website",
+          label: "Website",
+          heading: "A briefing, not a feed",
           paragraphs: [
-            "Once the client approved the landing page in Figma, I built it myself, matching the design exactly: the fonts, the effects and every animation. A gold coin spins in to open the page, gold circuits trace the background, the feature cards fan out as a stack, and the footer spells AMERO X in lit dots.",
+            "The app opens on a feed and the website on a briefing, the client's call: Gen Z reads on phones, where a feed fits, while the website is more for a proper catch-up. It opens on your briefing: the date and the local weather, the top stories in a carousel with the most recent beside them, then local stories, sport and your topics. Every category sits in one row under the search, and the fonts, colours and motion are consistent from page to page, which the old website never was.",
           ],
-          lead: {
-            type: "video",
-            src: "/work/amerox/site.mp4",
-            poster: "/work/amerox/site.jpg",
-            alt: "The built Amero X landing page: the coin intro, Swap Instantly. Own Your Crypto., the trading tools, the card stack, stats and the dot-matrix footer",
-            caption: "The landing page as I built it.",
-          },
+          layout: "carousel",
           figures: [
             {
               type: "video",
-              src: "/work/amerox/figma.mp4",
-              poster: "/work/amerox/figma.jpg",
-              alt: "The approved Amero X landing page design, scrolled in Figma",
-              caption: "The approved design, in Figma.",
+              src: "/work/tmn-satara/site-tmn.mp4",
+              poster: "/work/tmn-satara/site-tmn.jpg",
+              alt: "Scrolling through the TMN News website in Figma: the briefing, an article, the profile and writing a new article",
+              caption: "The TMN News website, in English.",
+              label: "TMN",
+            },
+            {
+              type: "video",
+              src: "/work/tmn-satara/site-satara.mp4",
+              poster: "/work/tmn-satara/site-satara.jpg",
+              alt: "Scrolling through the Satara Today website in Figma, in Marathi",
+              caption: "The Satara Today website, in Marathi.",
+              label: "Satara Today",
             },
           ],
         },
         {
-          id: "handoff",
+          id: "status",
           act: "What happened",
-          label: "Handoff",
-          heading: "Handed off",
+          label: "Outcome",
+          heading: "Approved, and being built",
           paragraphs: [
-            "My part ended in January 2026, and the development team took it from there. They changed parts of it later, so the live site at [amerox.io](https://amerox.io) differs from what's shown here: the design and build as I handed them over.",
+            "The client approved the final design, and the Spotmies developers are building the app and the website, both now in testing. No readers are on them yet, so there are no numbers to share.",
           ],
         },
         {
           id: "reflection",
           label: "Reflection",
-          heading: "Restraint is what makes gold premium",
+          heading: "The brief isn't always the answer",
           paragraphs: [
-            "My first project taught me that a premium look comes from restraint. Gold everywhere looked cheap; gold kept for the one thing that matters on each screen made the same palette feel trustworthy. Building the landing page myself, to the pixel, also showed me what survives the move from Figma to code.",
+            "I designed the first draft carefully, and made it work just like Inshorts, as the client asked, and they still didn't like it: it didn't feel Gen Z. When I took Instagram as the reference instead, reusing most of what I'd already built, they did.",
           ],
           points: [
-            "What I'd change: write down the rules behind the design (where gold goes, and why) at handoff, so whoever changes it later keeps what makes it work",
+            "What I learned: a reference in a brief is a starting point, not the requirement, so I now ask what the client means by it before designing anything",
+            "What I'd change: ask for the brand, and what Gen Z means to the client, before the first draft",
+            "What I'd do next: once it's live, watch how many readers react, vote or write, since that's what makes it Gen Z",
           ],
         },
       ],
     },
-    disk: "#b8892a",
-    ink: "#1a1a1a",
+    disk: "#d64541",
+    ink: "#fff8f3",
   },
   {
     id: "peddi",
@@ -1743,9 +1881,7 @@ export const projects: Project[] = [
               label: "likes on it",
             },
           ],
-          points: [
-            "Telugu YouTubers played it on their channels",
-          ],
+          points: ["Telugu YouTubers played it on their channels"],
         },
         learnings: [
           "Picking the tool is a design decision too",
@@ -1999,146 +2135,400 @@ export const projects: Project[] = [
     ink: "#1a1a1a",
   },
   {
-    id: "tmn",
-    disciplines: ["design"],
-    title: "TMN · Satara Today",
-    kind: "News app + website, in two languages",
-    role: "UI/UX design",
+    id: "amerox",
+    disciplines: ["design", "development"],
+    title: "Amero X",
+    kind: "Crypto trading platform",
+    role: "Design + landing page build",
     context: "Spotmies",
     summary:
-      "The app and website for TMN, Today Media Network, and Satara Today, its Marathi sister in Satara: one minimal design that holds English and Marathi alike, with articles readers can react to, vote on and write themselves. Designed in Figma, and built by the Spotmies development team.",
+      "My first project at Spotmies: refining Amero X, a crypto trading platform whose designs felt cheap, into a black-and-gold product that feels premium and trustworthy. I redesigned it in Figma, then built the landing page to match.",
     blurb:
-      "One minimal news app and website for TMN and Satara Today, in English and in Marathi.",
+      "My first project: refining a crypto trading platform into a black-and-gold product that feels premium.",
     highlights: [
-      "One design for both brands, in English and in Marathi",
-      "Articles with reactions, instant polls and comments",
-      "Readers can write and publish their own articles",
+      "Refined the platform's designs in Figma: trading, swap, P2P, wallet and more",
+      "Built the landing page from the approved design, animations and all",
     ],
-    stack: ["Figma", "Prototyping", "Micro-interactions"],
-    // Add the link once the website launches on its own domain.
+    stack: ["Figma", "Frontend"],
+    link: { href: "https://amerox.io", label: "amerox.io" },
     media: [
       {
         type: "video",
-        src: "/work/tmn-satara/site-tmn.mp4",
-        poster: "/work/tmn-satara/site-tmn.jpg",
-        alt: "The TMN News website",
+        src: "/work/amerox/site.mp4",
+        poster: "/work/amerox/site-poster.jpg",
+        alt: "The Amero X landing page",
       },
       {
-        type: "video",
-        src: "/work/tmn-satara/app-article.mp4",
-        poster: "/work/tmn-satara/app-article.jpg",
-        alt: "The TMN and Satara Today apps side by side",
+        type: "image",
+        src: "/work/amerox/board-trading.jpg",
+        alt: "Amero X trading screens",
       },
     ],
     caseStudy: {
-      timeframe: "May 2026",
-      client: [
-        { logo: "/logos/tmn-mark.webp", name: "TMN, Today Media Network" },
-        {
-          logo: "/logos/satara-today-mark.webp",
-          name: "Satara Today",
-          height: 48,
-        },
-      ],
-      headline: "A news app in two languages, made for readers who talk back",
+      timeframe: "Dec 2025 – Jan 2026",
+      client: { logo: "/logos/amerox-cropped.png", name: "Amero X" },
+      headline: "Making gold on black feel trustworthy, not cheap",
       brief: [
         {
           label: "Role",
-          value: "UI/UX design",
-          note: "Every screen and prototype, app and website",
+          value: "Design + landing page",
+          note: "Refined in Figma, then built",
         },
         {
-          label: "Team",
-          value: "Just me",
-          note: "Briefed by the client through our project manager",
+          label: "Product",
+          value: "Amero X",
+          note: "Crypto trading, swaps and P2P",
+          logo: "/logos/amerox-cropped.png",
+          href: "https://amerox.io",
         },
         {
-          label: "Timeline",
-          value: "3 days + 1 week",
-          note: "A first draft, then the final design",
+          label: "Stage",
+          value: "Redesign",
+          note: "My first project at Spotmies: refining existing designs",
         },
         {
-          label: "Problem",
-          value: "A dated website",
-          note: "Mixed fonts and colours, and no motion",
+          label: "Window",
+          value: "Dec 2025 – Jan 2026",
+          note: "About six weeks",
         },
         {
-          label: "Languages",
-          value: "English + Marathi",
-          note: "One design for TMN and Satara Today",
-          logo: "/logos/tmn-mark.webp",
+          label: "Screens",
+          value: "21 in Figma",
+          note: "Trading, swap, P2P, wallet, proposals",
         },
         {
-          label: "Outcome",
-          value: "In testing",
-          note: "Being built by the Spotmies developers",
+          label: "Challenge",
+          value: "Gold without cheap",
+          note: "Premium, modern and trustworthy",
         },
       ],
       reel: [
         {
           type: "video",
-          src: "/work/tmn-satara/site-tmn.mp4",
-          poster: "/work/tmn-satara/site-tmn.jpg",
-          alt: "The TMN News website",
+          src: "/work/amerox/site.mp4",
+          poster: "/work/amerox/site-poster.jpg",
+          alt: "The Amero X landing page",
         },
         {
-          type: "video",
-          src: "/work/tmn-satara/app-article.mp4",
-          poster: "/work/tmn-satara/app-article.jpg",
-          alt: "An article in the TMN and Satara Today apps",
+          type: "image",
+          src: "/work/amerox/board-trading.jpg",
+          alt: "Dashboard, spot trading, futures and copy trading",
         },
         {
-          type: "video",
-          src: "/work/tmn-satara/site-satara.mp4",
-          poster: "/work/tmn-satara/site-satara.jpg",
-          alt: "The Satara Today website, in Marathi",
+          type: "image",
+          src: "/work/amerox/board-money.jpg",
+          alt: "Swap, wallet, liquidity staking and orders",
         },
       ],
       tldr: {
         overview: [
-          "Designed the app and website for TMN and Satara Today: one design, in English and in Marathi",
-          "A Gen Z news app where readers react, vote and write their own articles",
-          "Approved, and being built by the Spotmies developers",
+          "My first project at Spotmies: refining the designs of Amero X, a crypto trading platform",
+          "Black and gold, made to feel premium and trustworthy instead of cheap",
+          "21 screens in Figma, then the landing page built to match",
         ],
         problem: {
           points: [
-            "The old website's fonts and colours didn't match, and nothing on it moved",
-            "The client wanted a Gen Z news app, not another generic one",
-            "One design had to hold two brands and two scripts",
+            "The designs already existed, but they felt cheap",
+            "In crypto, a cheap look costs trust",
           ],
-        },
-        reframe: {
-          from: "Instead of copying Inshorts, as the brief asked,",
-          to: "“Where does Gen Z already read? On Instagram.”",
+          insight:
+            "Enough gold to feel premium, never so much that it looks cheap.",
         },
         solution: [
-          "A feed that scrolls like Instagram, with reactions, polls and comments",
-          "One layout for both scripts, with cards that grow for longer Marathi headlines",
-          "Red for the news, black for the ink, white for the page",
+          "Gold kept for what matters: the action you're about to take, your balance, the page you're on",
+          "Everything else on near-black and dark panels",
+          "The landing page built to the pixel, animations and all",
         ],
         result: {
           points: [
-            "The first draft half landed; the final design, a week later, was approved",
-            "Being built and tested, with no readers on it yet",
+            "Handed off in January 2026; the developers changed parts of the live site later",
           ],
         },
         learnings: [
-          "A reference in a brief is a starting point, not the requirement",
-          "Ask what the client means by it before designing anything",
+          "A premium look comes from restraint",
+          "Write down the rules behind a design at handoff, so whoever changes it keeps what makes it work",
         ],
         visuals: {
-          reframe: {
-            type: "diagram",
-            diagram: "feed-styles",
-            alt: "Animated diagram: the first draft's Inshorts-style feed against the final Instagram-style feed",
-            caption: "The home feed: first draft, then final.",
-          },
           solution: {
+            type: "image",
+            src: "/work/amerox/board-trading.jpg",
+            alt: "Amero X's trading screens in black and gold",
+            caption: "Gold kept for what matters.",
+          },
+        },
+      },
+      sections: [
+        {
+          id: "brief",
+          act: "The brief",
+          label: "Brief",
+          heading: "My first project",
+          paragraphs: [
+            "Amero X was the first thing I worked on after joining Spotmies, in December 2025. It's a crypto trading platform: spot and futures trading, copy trading, swaps, P2P deals, staking and a wallet. Its designs already existed, but they felt cheap, and in crypto a cheap look costs trust. My job was to refine them, working with Spotmies' design head and the client.",
+          ],
+        },
+        {
+          id: "gold",
+          act: "The design",
+          label: "Gold",
+          heading: "Gold without looking cheap",
+          paragraphs: [
+            "The client wanted black and gold. My first real struggle as a designer was balancing the two in a modern design language: enough gold to feel premium, never so much that it looked cheap or broke trust.",
+            "Across the platform, gold is kept for what matters: the action you're about to take, your balance, the page you're on. Everything else sits in dark, warm greys, with the gold glowing softly behind it.",
+          ],
+          layout: "carousel",
+          figures: [
+            {
+              type: "image",
+              src: "/work/amerox/board-trading.jpg",
+              alt: "Amero X dashboard, spot trading, futures trading and copy trading screens",
+              caption: "Dashboard, spot trading, futures and copy trading.",
+              label: "Trading",
+            },
+            {
+              type: "image",
+              src: "/work/amerox/board-money.jpg",
+              alt: "Amero X swap, wallet, liquidity pool staking and orders screens",
+              caption: "Swap, wallet, liquidity staking and orders.",
+              label: "Money",
+            },
+            {
+              type: "image",
+              src: "/work/amerox/board-p2p.jpg",
+              alt: "Amero X P2P trading, a purchase proposal, incoming proposals and a chat with the buyer",
+              caption:
+                "P2P deals: offers, proposals and a chat with the buyer.",
+              label: "P2P",
+            },
+            {
+              type: "image",
+              src: "/work/amerox/login.jpg",
+              alt: "Amero X login page with a gold coin and wallet",
+              caption: "Signing in.",
+              label: "Login",
+            },
+          ],
+        },
+        {
+          id: "design-language",
+          label: "Design language",
+          heading: "Two golds, near-black and a serif",
+          paragraphs: [
+            "The colours come from the logo and the coin. Beside the logo's bright yellow (#FDD303), the product uses a softer gold, #FCDA7B, kept for what matters, and the coin's metal as a gradient from #FCDA7B through #E2B649 to #FDB648. Everything else sits on near-black #050505 and dark #121212 panels. Headings are set in Gambarino, a serif, and the rest in Space Grotesk.",
+          ],
+          lead: {
+            type: "diagram",
+            diagram: "amero-system",
+            alt: "Amero X's design language, picked from the logo and the coin: the softer gold #FCDA7B for actions, the coin's gradient from #FCDA7B through #E2B649 to #FDB648, the logo's yellow #FDD303, and #050505 for the page with #121212 panels; Gambarino for headings and Space Grotesk for the rest; buttons fully round, cards at 8px",
+            caption:
+              "The colours, type and shape behind the design, as on the live site.",
+          },
+        },
+        {
+          id: "landing",
+          act: "The build",
+          label: "Landing",
+          heading: "From Figma to code, to the pixel",
+          paragraphs: [
+            "Once the client approved the landing page in Figma, I built it myself, matching the design exactly: the fonts, the effects and every animation. A gold coin spins in to open the page, gold circuits trace the background, the feature cards fan out as a stack, and the footer spells AMERO X in lit dots.",
+          ],
+          lead: {
             type: "video",
-            src: "/work/tmn-satara/app-tour.mp4",
-            poster: "/work/tmn-satara/app-tour.jpg",
-            alt: "The TMN app in English beside the Satara Today app in Marathi",
-            caption: "One design, two languages.",
+            src: "/work/amerox/site.mp4",
+            poster: "/work/amerox/site-poster.jpg",
+            alt: "The built Amero X landing page: the coin intro, Swap Instantly. Own Your Crypto., the trading tools, the card stack, stats and the dot-matrix footer",
+            caption: "The landing page as I built it.",
+          },
+          figures: [
+            {
+              type: "video",
+              src: "/work/amerox/figma.mp4",
+              poster: "/work/amerox/figma.jpg",
+              alt: "The approved Amero X landing page design, scrolled in Figma",
+              caption: "The approved design, in Figma.",
+            },
+          ],
+        },
+        {
+          id: "handoff",
+          act: "What happened",
+          label: "Handoff",
+          heading: "Handed off",
+          paragraphs: [
+            "My part ended in January 2026, and the development team took it from there. They changed parts of it later, so the live site at [amerox.io](https://amerox.io) differs from what's shown here: the design and build as I handed them over.",
+          ],
+        },
+        {
+          id: "reflection",
+          label: "Reflection",
+          heading: "Restraint is what makes gold premium",
+          paragraphs: [
+            "My first project taught me that a premium look comes from restraint. Gold everywhere looked cheap; gold kept for the one thing that matters on each screen made the same palette feel trustworthy. Building the landing page myself, to the pixel, also showed me what survives the move from Figma to code.",
+          ],
+          points: [
+            "What I'd change: write down the rules behind the design (where gold goes, and why) at handoff, so whoever changes it later keeps what makes it work",
+          ],
+        },
+      ],
+    },
+    disk: "#b8892a",
+    ink: "#1a1a1a",
+  },
+  {
+    id: "nova",
+    featured: true,
+    disciplines: ["design"],
+    title: "Nova UPI",
+    kind: "UPI payments app",
+    role: "Solo: design",
+    context: "Project",
+    summary:
+      "The design for Nova, a UPI payments app, made in 48 hours as a challenge to myself: wireframes, a design system drawn from iOS 26's glass, then signing in, cards that arrive from your phone number, a home screen with your balance and quick sends, and paying by QR with a swipe. About fifty screens in Figma, prototyped end to end with Smart Animate so each screen morphs into the next.",
+    blurb:
+      "A UPI payments app designed in 48 hours: wireframes, a design system and fifty screens that morph.",
+    highlights: [
+      "Cards fetched from your phone number, added with a pull",
+      "Scan a UPI QR, pick a card and swipe to pay",
+      "Screens that morph into each other, prototyped with Figma's Smart Animate",
+      "A full design system and prototype in 48 hours, a challenge I set myself",
+      "The project that got me hired at Spotmies",
+    ],
+    stack: ["Figma", "Smart Animate", "Design system", "Prototyping"],
+    media: [
+      {
+        type: "image",
+        src: "/work/nova-upi/boards/mockup-card.jpg",
+        alt: "Nova's opening screen on an iPhone, held beside a card",
+      },
+      {
+        type: "video",
+        src: "/work/nova-upi/boards/flow-home.mp4",
+        poster: "/work/nova-upi/boards/flow-home.jpg",
+        alt: "Nova's home screen, prototyped in Figma",
+      },
+      {
+        type: "image",
+        src: "/work/nova-upi/boards/home.jpg",
+        alt: "Nova: home, quick send and stats",
+      },
+      {
+        type: "image",
+        src: "/work/nova-upi/boards/pay.jpg",
+        alt: "Nova: scanning a QR, swiping to pay, and the payment done",
+      },
+    ],
+    caseStudy: {
+      // Its own app icon, credited above the title like a client's logo.
+      client: { logo: "/logos/nova-logo.png", name: "Nova UPI", height: 44 },
+      timeframe: "48-hour sprint",
+      headline: "Your money, upgraded: a calmer UPI app, designed in 48 hours",
+      brief: [
+        {
+          label: "Role",
+          value: "Solo design",
+          note: "Research, wireframes, system and every screen",
+        },
+        {
+          label: "Timeline",
+          value: "48 hours",
+          note: "A sprint I set myself",
+        },
+        {
+          label: "Problem",
+          value: "Cluttered UPI apps",
+          note: "Ads first, the balance hidden, hard to read",
+        },
+        {
+          label: "Stage",
+          value: "Concept",
+          note: "Prototyped end to end, not built",
+        },
+        {
+          label: "Screens",
+          value: "About 50",
+          note: "With Smart Animate between them",
+        },
+        {
+          label: "Outcome",
+          value: "Got me hired",
+          note: "The project Spotmies hired me on",
+        },
+      ],
+      reel: [
+        {
+          type: "image",
+          src: "/work/nova-upi/boards/mockup-card.jpg",
+          alt: "Nova on an iPhone, beside a card",
+        },
+        {
+          type: "video",
+          src: "/work/nova-upi/boards/flow-home.mp4",
+          poster: "/work/nova-upi/boards/flow-home.jpg",
+          alt: "Nova's home screen",
+        },
+        {
+          type: "image",
+          src: "/work/nova-upi/boards/signin.jpg",
+          alt: "Signing in",
+        },
+        {
+          type: "image",
+          src: "/work/nova-upi/boards/cards.jpg",
+          alt: "Adding cards",
+        },
+        {
+          type: "image",
+          src: "/work/nova-upi/boards/pay.jpg",
+          alt: "Paying by QR",
+        },
+      ],
+      tldr: {
+        overview: [
+          "A UPI payments app I designed in 48 hours, a sprint I set myself",
+          "About 50 screens, a design system, and a prototype that morphs from screen to screen",
+          "The project that got me hired at Spotmies",
+        ],
+        problem: {
+          points: [
+            "Home screens crowded with ads and insurance offers",
+            "Checking your balance hidden behind several taps",
+            "Colours that don't match, and low-contrast text that's hard to read outdoors",
+          ],
+        },
+        solution: [
+          "Your balance first, with no ads in the way",
+          "Your cards fetched from your phone number, and pulled down to add (a concept)",
+          "Swipe to pay instead of tapping, so you mean it",
+        ],
+        result: {
+          metrics: [
+            {
+              value: "48 hrs",
+              label: "from research to a prototype you can click through",
+            },
+            {
+              value: "~50",
+              label: "screens",
+            },
+          ],
+          points: ["It got me hired at Spotmies"],
+        },
+        learnings: [
+          "A tight deadline makes you build a system",
+          "Even for a concept, show the prototype to people who pay by UPI every day",
+        ],
+        visuals: {
+          problem: {
+            type: "diagram",
+            diagram: "nova-home",
+            alt: "Animated diagram: a typical UPI app's cluttered home against Nova's, balance first",
+            caption: "Home, in a typical UPI app and in Nova.",
+          },
+          result: {
+            type: "image",
+            src: "/work/nova-upi/boards/mockup-hand.jpg",
+            alt: "Nova's opening screen on an iPhone held over a laptop",
+            caption: "Nova, in the hand.",
           },
         },
       },
@@ -2147,10 +2537,14 @@ export const projects: Project[] = [
           id: "brief",
           act: "The problem",
           label: "Brief",
-          heading: "Two newsrooms, one dated website",
+          heading: "Paying shouldn't start with an ad",
           paragraphs: [
-            "TMN, Today Media Network, is an English news platform, and Satara Today, the voice of Satara, brings the same kind of news to readers there in Marathi. Both are for everyone, but tuned for Gen Z.",
-            "They had a website, but its fonts and colours didn't match from page to page, and nothing on it moved. The client wanted a news app that felt Gen Z and modern, like Inshorts, not another generic news app, and a website to go with it.",
+            "Nova is a UPI payments app I designed in 48 hours, a sprint I set myself to try a new kind of product: finance. Before drawing anything, I went through the apps most people in India pay with, PhonePe, Google Pay and Paytm, and kept running into the same three problems:",
+          ],
+          points: [
+            "Clutter: the home screen is crowded with ads and insurance offers",
+            "Poor hierarchy: everyday tasks like checking your balance hide behind several taps",
+            "Visual noise: colours that don't match, and low-contrast text that's hard to read outdoors",
           ],
         },
         {
@@ -2159,155 +2553,231 @@ export const projects: Project[] = [
           heading: "The limits I worked inside",
           paragraphs: ["Every choice below had to fit these:"],
           points: [
-            "A one-line brief, passed on by our project manager: a Gen Z news app like Inshorts, with a scrollable home feed, a community, a profile, and readers posting their own articles with images",
-            "Three days for the first draft, with no logo or brand colours yet",
-            "One design for two brands and two scripts, English and Marathi",
-            "Phones and desktop: the app and the website",
+            "48 hours, on my own, from research to a prototype you can click through",
+            "A concept, not a build: some ideas would take real work with banks to ship",
+            "UPI's own steps stay UPI's: entering your UPI PIN is handed over, not redrawn",
+            "References from Pinterest, Dribbble and Behance, and iOS 26's glass for the look",
           ],
         },
         {
-          id: "ownership",
-          label: "My part",
-          heading: "What I owned, and what I didn't",
-          paragraphs: ["I was the only designer, and design was my whole part:"],
-          points: [
-            "Mine: every screen and prototype in Figma, for both drafts, the app and the website",
-            "The client's: the brief, the brand, and the final say on each draft",
-            "Our project manager's: passing on the brief, and feedback on the final design",
-            "The Spotmies developers': building the app and the website",
+          id: "wireframes",
+          act: "The groundwork",
+          label: "Wireframes",
+          heading: "The flow, in grey first",
+          paragraphs: [
+            "Before any colour, I laid the app out as low-fidelity wireframes, with the user flow drawn between them: from the landing page to home, then two ways to pay, by scanning a QR code or through quick send to a friend, both meeting at swipe to pay and the payment done.",
+            "The very last step, entering your UPI PIN, belongs to UPI itself, so the design hands over to it there instead of redrawing it.",
+          ],
+          figures: [
+            {
+              type: "image",
+              src: "/work/nova-upi/boards/wireframes.jpg",
+              alt: "Low-fidelity wireframes with the user flow: landing page, home, paying by QR or by quick send, swipe to pay, and the payment done",
+              caption: "The wireframes, and the two ways to pay.",
+            },
           ],
         },
         {
-          id: "first-draft",
+          id: "home",
           act: "The decisions",
-          label: "First draft",
-          heading: "From Inshorts to Instagram",
+          label: "Home",
+          heading: "Your balance first",
           paragraphs: [
-            "The client asked for an app like Inshorts, in white, black and red, which was already how The Newspaper looked, a news app I'd designed on my own the month before. So I built the first draft on it in three days, about 80% of it from The Newspaper, with a scroll that worked exactly like Inshorts'.",
-            "The client half liked it: it did what Inshorts did, but it didn't feel Gen Z. For the final version I looked at where Gen Z already spends its time, Instagram, and built the home feed on its scroll. This time I asked for the logos and brand colours first, reused most of what I'd already designed, including The Newspaper's community feed, and finished in a week.",
+            "The answer to clutter and hidden balances was to open on what's yours. Home puts your balance and your cards at the top, then the people you pay most for a quick send, and your latest transactions, with no ads or offers in the way. Stats shows your savings month by month.",
           ],
           lead: {
             type: "diagram",
-            diagram: "feed-styles",
-            alt: "Animated diagram: the first draft's home scrolled like Inshorts, one story filling the screen and snapping to the next; the final home scrolls like Instagram, a feed of stories with likes and comments, one liked as it goes by",
-            caption: "The home feed, first drafted like Inshorts, then like Instagram.",
+            diagram: "nova-home",
+            alt: "Animated diagram: a typical UPI app's home shows ads, offers and a grid of services first, and the balance only after tapping Check balance and entering the UPI PIN; Nova's home opens on the balance, the card and quick send",
+            caption: "Home in a typical UPI app, and in Nova.",
           },
-          layout: "pair",
+          layout: "carousel",
           figures: [
+            {
+              type: "video",
+              src: "/work/nova-upi/boards/flow-home.mp4",
+              poster: "/work/nova-upi/boards/flow-home.jpg",
+              alt: "The home screen in the prototype: the cards, quick send, transactions and stats",
+              caption: "Home, quick send, transactions and stats, prototyped.",
+              label: "Flow",
+            },
             {
               type: "image",
-              src: "/work/the-newspaper/boards/feed.jpg",
-              alt: "The Newspaper, the first draft's starting point: its front page, an article and search, in white, black and red",
-              caption: "The first draft started from The Newspaper.",
-              label: "First draft",
+              src: "/work/nova-upi/boards/home.jpg",
+              alt: "Home, the full quick send list, and stats",
+              caption: "Home, everyone to quick send to, and stats.",
+              label: "Screens",
+            },
+          ],
+        },
+        {
+          id: "cards",
+          label: "Cards",
+          heading: "Your cards find you",
+          paragraphs: [
+            "UPI apps already look up your bank accounts from your phone number, but they still have you find your bank in a list and pick your account. Nova reimagines that: once your number is in, every card linked to it is fetched and appears one at a time, and you pull a card down to add it. A new card is typed straight onto the card itself, which flips over for the CVV.",
+            "It's a concept: fetching every linked card at once would take real work with banks to build. But it cuts the steps between signing up and paying to almost none.",
+          ],
+          lead: {
+            type: "diagram",
+            diagram: "nova-cards",
+            alt: "Animated diagram: a typical UPI app takes your number, then has you scroll a list to find your bank and pick your account; Nova fetches every card linked to the number and you pull one down to add it",
+            caption: "Adding your money, in a typical UPI app and in Nova.",
+          },
+          layout: "carousel",
+          figures: [
+            {
+              type: "video",
+              src: "/work/nova-upi/boards/flow-cards.mp4",
+              poster: "/work/nova-upi/boards/flow-cards.jpg",
+              alt: "Adding cards in the prototype: connecting a bank account, the fetched cards pulled in one by one, then a new card typed and flipped for the CVV",
+              caption:
+                "Pulling in the fetched cards, then adding a new one, prototyped.",
+              label: "Flow",
             },
             {
               type: "image",
-              src: "/work/tmn-satara/app-tour.jpg",
-              alt: "The final design: the TMN app in English beside the Satara Today app in Marathi",
-              caption: "The final design, with each brand's own masthead and colours.",
-              label: "Final",
-            },
-          ],
-        },
-        {
-          id: "languages",
-          label: "Two scripts",
-          heading: "One layout for both scripts",
-          paragraphs: [
-            "Marathi headlines run longer and sit taller than English ones, so every card, headline and tab had to hold both. Rather than a layout for each, the two apps share one: cards grow to fit a longer headline, and only the words and the masthead change.",
-          ],
-          lead: {
-            type: "diagram",
-            diagram: "two-scripts",
-            alt: "Animated diagram: the same top story in English, with a two-line headline, and in Marathi, where the headline runs to three lines and the card grows to hold it in the same layout",
-            caption: "One story in English and in Marathi, in the same layout.",
-          },
-          figures: [
-            {
-              type: "video",
-              src: "/work/tmn-satara/app-tour.mp4",
-              poster: "/work/tmn-satara/app-tour.jpg",
-              alt: "The TMN app in English beside the Satara Today app in Marathi: the home feed, search, people, the profile and the dark theme",
+              src: "/work/nova-upi/boards/cards.jpg",
+              alt: "A card fetched from the phone number, a new card's number typed onto it, and the card flipped for the CVV",
               caption:
-                "The TMN app, left, and the Satara Today app, right, prototyped in Figma.",
+                "A fetched card to pull in, and a new one typed onto the card, front and back.",
+              label: "Screens",
             },
           ],
         },
         {
-          id: "article",
-          label: "Articles",
-          heading: "An article you can answer",
+          id: "pay",
+          label: "Paying",
+          heading: "Swipe to pay, so you mean it",
           paragraphs: [
-            "For a Gen Z reader, a story is something to react to, not only read. So an article carries more than the story: a pull quote, a quick reaction in their own words (lit, woke, cap, ded or vibe), an instant poll that shows its results, and comments that open from the bottom, with a box for your hot take.",
-          ],
-          figures: [
-            {
-              type: "video",
-              src: "/work/tmn-satara/app-article.mp4",
-              poster: "/work/tmn-satara/app-article.jpg",
-              alt: "Opening an article in both apps: the story, a pull quote, reactions, an instant poll and the comments",
-              caption:
-                "An article in both apps, from the feed to the comments.",
-            },
-          ],
-        },
-        {
-          id: "writing",
-          label: "Writing",
-          heading: "Readers write too",
-          paragraphs: [
-            "The client wanted readers to post their own articles, so anyone can write. A new article takes a title, tags, the text with its formatting, and images or video, then publishes from the top. Your articles sit on your profile, with your followers, badges like News Hound and Comment Guru, and settings like the dark theme and offline mode.",
-          ],
-          figures: [
-            {
-              type: "video",
-              src: "/work/tmn-satara/app-write.mp4",
-              poster: "/work/tmn-satara/app-write.jpg",
-              alt: "Writing a new article in both apps: title, tags, the text and images, then your articles",
-              caption: "Writing and publishing an article.",
-            },
-          ],
-        },
-        {
-          id: "design-language",
-          act: "The final design",
-          label: "Design language",
-          heading: "Three colours, two typefaces, one shape",
-          paragraphs: [
-            "The client asked for white, black and red, so each got one job. Red is the news: breaking stories, the Trending tag and whatever you've selected, so it always points at something. Black is the ink, and white the page. Headlines are set in Epilogue and everything else in Inter, and every chip, tag and button is fully round.",
-          ],
-          lead: {
-            type: "diagram",
-            diagram: "tmn-system",
-            alt: "TMN's design language: red #DB0D14 for the news, black #1A1C1C for the ink and white #FFFFFF for the page; Epilogue for headlines and Inter for everything else, with Marathi in the same layout; and one fully round shape for chips, tags and buttons",
-            caption: "The colours, type and shape behind the design.",
-          },
-        },
-        {
-          id: "website",
-          label: "Website",
-          heading: "A briefing, not a feed",
-          paragraphs: [
-            "The app opens on a feed and the website on a briefing, the client's call: Gen Z reads on phones, where a feed fits, while the website is more for a proper catch-up. It opens on your briefing: the date and the local weather, the top stories in a carousel with the most recent beside them, then local stories, sport and your topics. Every category sits in one row under the search, and the fonts, colours and motion are consistent from page to page, which the old website never was.",
+            "Paying starts with the camera on a UPI QR code. Type the amount, pick the card to pay from, and swipe to pay instead of tapping. A tap is easy to make by accident; a swipe takes a moment, so you know you're paying and think before you do. The tick, the amount and who it went to come up at once, and the balance changes with it.",
           ],
           layout: "carousel",
           figures: [
             {
               type: "video",
-              src: "/work/tmn-satara/site-tmn.mp4",
-              poster: "/work/tmn-satara/site-tmn.jpg",
-              alt: "Scrolling through the TMN News website in Figma: the briefing, an article, the profile and writing a new article",
-              caption: "The TMN News website, in English.",
-              label: "TMN",
+              src: "/work/nova-upi/boards/flow-pay.mp4",
+              poster: "/work/nova-upi/boards/flow-pay.jpg",
+              alt: "Paying in the prototype: scanning a BHIM UPI QR code, the amount, choosing a card, swiping to pay and the success screen",
+              caption: "A payment from the QR code to the tick, prototyped.",
+              label: "Flow",
+            },
+            {
+              type: "image",
+              src: "/work/nova-upi/boards/pay.jpg",
+              alt: "Scanning a QR code, choosing a card and swiping to pay, then Payment of ₹100 successful",
+              caption: "Scan, pick a card and swipe, then the payment done.",
+              label: "Screens",
+            },
+          ],
+        },
+        {
+          id: "system",
+          act: "The craft",
+          label: "System",
+          heading: "Glass, blue and one typeface",
+          paragraphs: [
+            "Against the visual noise, one calm look throughout. It starts from iOS 26 and its glass: a blue gradient background with soft blobs of colour, and frosted panels floating over it, in white (#FFFFFF), a light blue (#92D5FF) and a deep blue (#0171FF), with black for text. The whole app is set in Product Sans (Google Sans); the style guide lists SF Pro Display and Plus Jakarta Sans as close alternatives. Buttons, chips and panels are fully round, and the app icon is a pinwheel of blue petals, which opens the screens too.",
+          ],
+          lead: {
+            type: "diagram",
+            diagram: "nova-system",
+            alt: "Nova's design language: #0171FF for buttons and links, #92D5FF for the gradient's light end, #FFFFFF for the glass and #000000 for text; Product Sans throughout; and one fully round shape for buttons, chips and the tab bar",
+            caption: "The colours, type and shape behind Nova.",
+          },
+          figures: [
+            {
+              type: "image",
+              src: "/work/nova-upi/boards/system.jpg",
+              alt: "Nova's design system: the blue gradient and its three colours, glassmorphism inspired by iOS 26, the app icon, and the fonts SF Pro Display, Plus Jakarta Sans and Product Sans",
+              caption: "Colours, glass, the icon and the type.",
+            },
+          ],
+        },
+        {
+          id: "getting-in",
+          label: "Getting in",
+          heading: "In with a glance",
+          paragraphs: [
+            "The app opens on what it's for, “Your money, upgraded”, with save, spend, invest and pay turning over above it. You continue with Google or Apple, confirm with Face ID, then add your phone number and its OTP.",
+          ],
+          layout: "carousel",
+          figures: [
+            {
+              type: "video",
+              src: "/work/nova-upi/boards/flow-start.mp4",
+              poster: "/work/nova-upi/boards/flow-start.jpg",
+              alt: "The prototype from the first screen: signing in with Google, then the phone number and OTP",
+              caption:
+                "From opening the app to adding your number, prototyped in Figma.",
+              label: "Flow",
+            },
+            {
+              type: "image",
+              src: "/work/nova-upi/boards/signin.jpg",
+              alt: "The opening screen, signing in with Apple and Face ID, and the OTP",
+              caption: "The opening, signing in with Apple, and the OTP.",
+              label: "Screens",
+            },
+          ],
+        },
+        {
+          id: "motion",
+          label: "Motion",
+          heading: "Screens that morph",
+          paragraphs: [
+            "What makes it feel finished is how it moves. I prototyped it with Figma's Smart Animate, matching layers from one screen to the next so they morph instead of cutting: the words on the opening turn over, a fetched card slides into place as you pull it, a new card flips over for its CVV, and the balance and cards carry through from home into paying.",
+            "Getting a morph right means the same layer, with the same name, on both screens, so I built the screens to share their parts. That discipline is also what kept fifty screens consistent in 48 hours.",
+          ],
+          layout: "carousel",
+          figures: [
+            {
+              type: "video",
+              src: "/work/nova-upi/boards/flow-cards.mp4",
+              poster: "/work/nova-upi/boards/flow-cards.jpg",
+              alt: "Cards sliding in as they're pulled, then a new card flipping over for its CVV",
+              caption: "Cards slide in as you pull them, and flip for the CVV.",
+              label: "Cards",
             },
             {
               type: "video",
-              src: "/work/tmn-satara/site-satara.mp4",
-              poster: "/work/tmn-satara/site-satara.jpg",
-              alt: "Scrolling through the Satara Today website in Figma, in Marathi",
-              caption: "The Satara Today website, in Marathi.",
-              label: "Satara Today",
+              src: "/work/nova-upi/boards/flow-pay.mp4",
+              poster: "/work/nova-upi/boards/flow-pay.jpg",
+              alt: "The balance and cards carrying through from scanning a QR code to the payment done",
+              caption: "The balance and cards carry through a payment.",
+              label: "Paying",
+            },
+          ],
+        },
+        {
+          id: "mockups",
+          label: "Mockups",
+          heading: "In the hand",
+          paragraphs: [
+            "To see it the way people would, I placed the finished screens into photo mockups: in the hand beside a card, on a desk, and over a laptop.",
+          ],
+          layout: "carousel",
+          figures: [
+            {
+              type: "image",
+              src: "/work/nova-upi/boards/mockup-card.jpg",
+              alt: "Nova's opening screen on an iPhone, held beside a Visa card",
+              caption: "The opening, beside a card. Mockups from Mockuuups.",
+              label: "Card",
+            },
+            {
+              type: "image",
+              src: "/work/nova-upi/boards/mockup-desk.jpg",
+              alt: "Nova's home screen on an iPhone lying on a desk beside a mouse and earphones",
+              caption: "Home, on the desk. Mockups from Mockuuups.",
+              label: "Desk",
+            },
+            {
+              type: "image",
+              src: "/work/nova-upi/boards/mockup-hand.jpg",
+              alt: "Nova's opening screen on an iPhone held over a laptop",
+              caption: "The opening, over a laptop. Mockups from Mockuuups.",
+              label: "Hand",
             },
           ],
         },
@@ -2315,30 +2785,30 @@ export const projects: Project[] = [
           id: "status",
           act: "What happened",
           label: "Outcome",
-          heading: "Approved, and being built",
+          heading: "The project that got me hired",
           paragraphs: [
-            "The client approved the final design, and the Spotmies developers are building the app and the website, both now in testing. No readers are on them yet, so there are no numbers to share.",
+            "Nova was never built, but it did its job: it's the project that got me hired at Spotmies, who liked it enough to bring me on.",
           ],
         },
         {
           id: "reflection",
           label: "Reflection",
-          heading: "The brief isn't always the answer",
+          heading: "What 48 hours taught me",
           paragraphs: [
-            "I designed the first draft carefully, and made it work just like Inshorts, as the client asked, and they still didn't like it: it didn't feel Gen Z. When I took Instagram as the reference instead, reusing most of what I'd already built, they did.",
+            "Nova was my first big personal project, and an experiment. I reimagined a whole app and designed it in 48 hours, which I'd never done before, and along the way I found the techniques and shortcuts in Figma that let me design at that speed.",
           ],
           points: [
-            "What I learned: a reference in a brief is a starting point, not the requirement, so I now ask what the client means by it before designing anything",
-            "What I'd change: ask for the brand, and what Gen Z means to the client, before the first draft",
-            "What I'd do next: once it's live, watch how many readers react, vote or write, since that's what makes it Gen Z",
+            "What I learned: a tight deadline makes you build a system, because there's no time to draw anything twice",
+            "What I'd change: even for a concept, show the prototype to a few people who pay by UPI every day, to check it really feels quicker to them",
           ],
         },
       ],
     },
-    disk: "#d64541",
-    ink: "#fff8f3",
+    disk: "#3d8bd6",
+    ink: "#f5f1ea",
   },
   {
+    boards: true,
     id: "the-newspaper",
     disciplines: ["design"],
     title: "The Newspaper",
@@ -2697,9 +3167,7 @@ export const projects: Project[] = [
               label: "attack scenarios, run live against the swarm",
             },
           ],
-          points: [
-            "A demo, a paper, and a talk at GITAM's Quantumisers club",
-          ],
+          points: ["A demo, a paper, and a talk at GITAM's Quantumisers club"],
         },
         learnings: [
           "Mapping real things into a simulated world: phones in my hands became drones, live",
@@ -2923,14 +3391,16 @@ export const projects: Project[] = [
               type: "image",
               src: "/work/samudragupt/key-failure.jpg",
               alt: "A system breach alert: decryption failed for a node with a missing quantum key, which is marked as hacked",
-              caption: "A packet with its key stripped: the node's traffic is blocked.",
+              caption:
+                "A packet with its key stripped: the node's traffic is blocked.",
               label: "Stripped key",
             },
             {
               type: "image",
               src: "/work/samudragupt/rogue-node.jpg",
               alt: "An unknown node among the swarm, marked in red, with its traffic blocked",
-              caption: "A rogue node with a spoofed MAC address shows up as unknown.",
+              caption:
+                "A rogue node with a spoofed MAC address shows up as unknown.",
               label: "Rogue node",
             },
             {
@@ -2986,6 +3456,8 @@ export const projects: Project[] = [
   },
   {
     id: "gesture",
+    cover: "/work/guesture-shop/shop-hands-cover.jpg",
+    mini: true,
     disciplines: ["design", "development", "3d"],
     title: "Gesture Shop · Aura",
     kind: "Touchless web interfaces",
@@ -3041,7 +3513,7 @@ export const projects: Project[] = [
         },
         {
           label: "Stage",
-          value: "0 → 1, personal",
+          value: "Exploration, personal",
           note: "Both built and live on Vercel",
         },
         {
@@ -3198,441 +3670,9 @@ export const projects: Project[] = [
     ink: "#f5f1ea",
   },
   {
-    id: "nova",
-    disciplines: ["design"],
-    title: "Nova UPI",
-    kind: "UPI payments app",
-    role: "Solo: design",
-    context: "Project",
-    summary:
-      "The design for Nova, a UPI payments app, made in 48 hours as a challenge to myself: wireframes, a design system drawn from iOS 26's glass, then signing in, cards that arrive from your phone number, a home screen with your balance and quick sends, and paying by QR with a swipe. About fifty screens in Figma, prototyped end to end with Smart Animate so each screen morphs into the next.",
-    blurb:
-      "A UPI payments app designed in 48 hours: wireframes, a design system and fifty screens that morph.",
-    highlights: [
-      "Cards fetched from your phone number, added with a pull",
-      "Scan a UPI QR, pick a card and swipe to pay",
-      "Screens that morph into each other, prototyped with Figma's Smart Animate",
-      "A full design system and prototype in 48 hours, a challenge I set myself",
-      "The project that got me hired at Spotmies",
-    ],
-    stack: ["Figma", "Smart Animate", "Design system", "Prototyping"],
-    media: [
-      {
-        type: "image",
-        src: "/work/nova-upi/boards/mockup-card.jpg",
-        alt: "Nova's opening screen on an iPhone, held beside a card",
-      },
-      {
-        type: "video",
-        src: "/work/nova-upi/boards/flow-home.mp4",
-        poster: "/work/nova-upi/boards/flow-home.jpg",
-        alt: "Nova's home screen, prototyped in Figma",
-      },
-      {
-        type: "image",
-        src: "/work/nova-upi/boards/home.jpg",
-        alt: "Nova: home, quick send and stats",
-      },
-      {
-        type: "image",
-        src: "/work/nova-upi/boards/pay.jpg",
-        alt: "Nova: scanning a QR, swiping to pay, and the payment done",
-      },
-    ],
-    caseStudy: {
-      // Its own app icon, credited above the title like a client's logo.
-      client: { logo: "/logos/nova-logo.png", name: "Nova UPI", height: 44 },
-      timeframe: "48-hour sprint",
-      headline: "Your money, upgraded: a calmer UPI app, designed in 48 hours",
-      brief: [
-        {
-          label: "Role",
-          value: "Solo design",
-          note: "Research, wireframes, system and every screen",
-        },
-        {
-          label: "Timeline",
-          value: "48 hours",
-          note: "A sprint I set myself",
-        },
-        {
-          label: "Problem",
-          value: "Cluttered UPI apps",
-          note: "Ads first, the balance hidden, hard to read",
-        },
-        {
-          label: "Stage",
-          value: "Concept",
-          note: "Prototyped end to end, not built",
-        },
-        {
-          label: "Screens",
-          value: "About 50",
-          note: "With Smart Animate between them",
-        },
-        {
-          label: "Outcome",
-          value: "Got me hired",
-          note: "The project Spotmies hired me on",
-        },
-      ],
-      reel: [
-        {
-          type: "image",
-          src: "/work/nova-upi/boards/mockup-card.jpg",
-          alt: "Nova on an iPhone, beside a card",
-        },
-        {
-          type: "video",
-          src: "/work/nova-upi/boards/flow-home.mp4",
-          poster: "/work/nova-upi/boards/flow-home.jpg",
-          alt: "Nova's home screen",
-        },
-        {
-          type: "image",
-          src: "/work/nova-upi/boards/signin.jpg",
-          alt: "Signing in",
-        },
-        {
-          type: "image",
-          src: "/work/nova-upi/boards/cards.jpg",
-          alt: "Adding cards",
-        },
-        {
-          type: "image",
-          src: "/work/nova-upi/boards/pay.jpg",
-          alt: "Paying by QR",
-        },
-      ],
-      tldr: {
-        overview: [
-          "A UPI payments app I designed in 48 hours, a sprint I set myself",
-          "About 50 screens, a design system, and a prototype that morphs from screen to screen",
-          "The project that got me hired at Spotmies",
-        ],
-        problem: {
-          points: [
-            "Home screens crowded with ads and insurance offers",
-            "Checking your balance hidden behind several taps",
-            "Colours that don't match, and low-contrast text that's hard to read outdoors",
-          ],
-        },
-        solution: [
-          "Your balance first, with no ads in the way",
-          "Your cards fetched from your phone number, and pulled down to add (a concept)",
-          "Swipe to pay instead of tapping, so you mean it",
-        ],
-        result: {
-          metrics: [
-            {
-              value: "48 hrs",
-              label: "from research to a prototype you can click through",
-            },
-            {
-              value: "~50",
-              label: "screens",
-            },
-          ],
-          points: [
-            "It got me hired at Spotmies",
-          ],
-        },
-        learnings: [
-          "A tight deadline makes you build a system",
-          "Even for a concept, show the prototype to people who pay by UPI every day",
-        ],
-        visuals: {
-          problem: {
-            type: "diagram",
-            diagram: "nova-home",
-            alt: "Animated diagram: a typical UPI app's cluttered home against Nova's, balance first",
-            caption: "Home, in a typical UPI app and in Nova.",
-          },
-          result: {
-            type: "image",
-            src: "/work/nova-upi/boards/mockup-hand.jpg",
-            alt: "Nova's opening screen on an iPhone held over a laptop",
-            caption: "Nova, in the hand.",
-          },
-        },
-      },
-      sections: [
-        {
-          id: "brief",
-          act: "The problem",
-          label: "Brief",
-          heading: "Paying shouldn't start with an ad",
-          paragraphs: [
-            "Nova is a UPI payments app I designed in 48 hours, a sprint I set myself to try a new kind of product: finance. Before drawing anything, I went through the apps most people in India pay with, PhonePe, Google Pay and Paytm, and kept running into the same three problems:",
-          ],
-          points: [
-            "Clutter: the home screen is crowded with ads and insurance offers",
-            "Poor hierarchy: everyday tasks like checking your balance hide behind several taps",
-            "Visual noise: colours that don't match, and low-contrast text that's hard to read outdoors",
-          ],
-        },
-        {
-          id: "constraints",
-          label: "Constraints",
-          heading: "The limits I worked inside",
-          paragraphs: ["Every choice below had to fit these:"],
-          points: [
-            "48 hours, on my own, from research to a prototype you can click through",
-            "A concept, not a build: some ideas would take real work with banks to ship",
-            "UPI's own steps stay UPI's: entering your UPI PIN is handed over, not redrawn",
-            "References from Pinterest, Dribbble and Behance, and iOS 26's glass for the look",
-          ],
-        },
-        {
-          id: "wireframes",
-          act: "The groundwork",
-          label: "Wireframes",
-          heading: "The flow, in grey first",
-          paragraphs: [
-            "Before any colour, I laid the app out as low-fidelity wireframes, with the user flow drawn between them: from the landing page to home, then two ways to pay, by scanning a QR code or through quick send to a friend, both meeting at swipe to pay and the payment done.",
-            "The very last step, entering your UPI PIN, belongs to UPI itself, so the design hands over to it there instead of redrawing it.",
-          ],
-          figures: [
-            {
-              type: "image",
-              src: "/work/nova-upi/boards/wireframes.jpg",
-              alt: "Low-fidelity wireframes with the user flow: landing page, home, paying by QR or by quick send, swipe to pay, and the payment done",
-              caption: "The wireframes, and the two ways to pay.",
-            },
-          ],
-        },
-        {
-          id: "home",
-          act: "The decisions",
-          label: "Home",
-          heading: "Your balance first",
-          paragraphs: [
-            "The answer to clutter and hidden balances was to open on what's yours. Home puts your balance and your cards at the top, then the people you pay most for a quick send, and your latest transactions, with no ads or offers in the way. Stats shows your savings month by month.",
-          ],
-          lead: {
-            type: "diagram",
-            diagram: "nova-home",
-            alt: "Animated diagram: a typical UPI app's home shows ads, offers and a grid of services first, and the balance only after tapping Check balance and entering the UPI PIN; Nova's home opens on the balance, the card and quick send",
-            caption: "Home in a typical UPI app, and in Nova.",
-          },
-          layout: "carousel",
-          figures: [
-            {
-              type: "video",
-              src: "/work/nova-upi/boards/flow-home.mp4",
-              poster: "/work/nova-upi/boards/flow-home.jpg",
-              alt: "The home screen in the prototype: the cards, quick send, transactions and stats",
-              caption: "Home, quick send, transactions and stats, prototyped.",
-              label: "Flow",
-            },
-            {
-              type: "image",
-              src: "/work/nova-upi/boards/home.jpg",
-              alt: "Home, the full quick send list, and stats",
-              caption: "Home, everyone to quick send to, and stats.",
-              label: "Screens",
-            },
-          ],
-        },
-        {
-          id: "cards",
-          label: "Cards",
-          heading: "Your cards find you",
-          paragraphs: [
-            "UPI apps already look up your bank accounts from your phone number, but they still have you find your bank in a list and pick your account. Nova reimagines that: once your number is in, every card linked to it is fetched and appears one at a time, and you pull a card down to add it. A new card is typed straight onto the card itself, which flips over for the CVV.",
-            "It's a concept: fetching every linked card at once would take real work with banks to build. But it cuts the steps between signing up and paying to almost none.",
-          ],
-          lead: {
-            type: "diagram",
-            diagram: "nova-cards",
-            alt: "Animated diagram: a typical UPI app takes your number, then has you scroll a list to find your bank and pick your account; Nova fetches every card linked to the number and you pull one down to add it",
-            caption: "Adding your money, in a typical UPI app and in Nova.",
-          },
-          layout: "carousel",
-          figures: [
-            {
-              type: "video",
-              src: "/work/nova-upi/boards/flow-cards.mp4",
-              poster: "/work/nova-upi/boards/flow-cards.jpg",
-              alt: "Adding cards in the prototype: connecting a bank account, the fetched cards pulled in one by one, then a new card typed and flipped for the CVV",
-              caption:
-                "Pulling in the fetched cards, then adding a new one, prototyped.",
-              label: "Flow",
-            },
-            {
-              type: "image",
-              src: "/work/nova-upi/boards/cards.jpg",
-              alt: "A card fetched from the phone number, a new card's number typed onto it, and the card flipped for the CVV",
-              caption:
-                "A fetched card to pull in, and a new one typed onto the card, front and back.",
-              label: "Screens",
-            },
-          ],
-        },
-        {
-          id: "pay",
-          label: "Paying",
-          heading: "Swipe to pay, so you mean it",
-          paragraphs: [
-            "Paying starts with the camera on a UPI QR code. Type the amount, pick the card to pay from, and swipe to pay instead of tapping. A tap is easy to make by accident; a swipe takes a moment, so you know you're paying and think before you do. The tick, the amount and who it went to come up at once, and the balance changes with it.",
-          ],
-          layout: "carousel",
-          figures: [
-            {
-              type: "video",
-              src: "/work/nova-upi/boards/flow-pay.mp4",
-              poster: "/work/nova-upi/boards/flow-pay.jpg",
-              alt: "Paying in the prototype: scanning a BHIM UPI QR code, the amount, choosing a card, swiping to pay and the success screen",
-              caption: "A payment from the QR code to the tick, prototyped.",
-              label: "Flow",
-            },
-            {
-              type: "image",
-              src: "/work/nova-upi/boards/pay.jpg",
-              alt: "Scanning a QR code, choosing a card and swiping to pay, then Payment of ₹100 successful",
-              caption: "Scan, pick a card and swipe, then the payment done.",
-              label: "Screens",
-            },
-          ],
-        },
-        {
-          id: "system",
-          act: "The craft",
-          label: "System",
-          heading: "Glass, blue and one typeface",
-          paragraphs: [
-            "Against the visual noise, one calm look throughout. It starts from iOS 26 and its glass: a blue gradient background with soft blobs of colour, and frosted panels floating over it, in white (#FFFFFF), a light blue (#92D5FF) and a deep blue (#0171FF), with black for text. The whole app is set in Product Sans (Google Sans); the style guide lists SF Pro Display and Plus Jakarta Sans as close alternatives. Buttons, chips and panels are fully round, and the app icon is a pinwheel of blue petals, which opens the screens too.",
-          ],
-          lead: {
-            type: "diagram",
-            diagram: "nova-system",
-            alt: "Nova's design language: #0171FF for buttons and links, #92D5FF for the gradient's light end, #FFFFFF for the glass and #000000 for text; Product Sans throughout; and one fully round shape for buttons, chips and the tab bar",
-            caption: "The colours, type and shape behind Nova.",
-          },
-          figures: [
-            {
-              type: "image",
-              src: "/work/nova-upi/boards/system.jpg",
-              alt: "Nova's design system: the blue gradient and its three colours, glassmorphism inspired by iOS 26, the app icon, and the fonts SF Pro Display, Plus Jakarta Sans and Product Sans",
-              caption: "Colours, glass, the icon and the type.",
-            },
-          ],
-        },
-        {
-          id: "getting-in",
-          label: "Getting in",
-          heading: "In with a glance",
-          paragraphs: [
-            "The app opens on what it's for, “Your money, upgraded”, with save, spend, invest and pay turning over above it. You continue with Google or Apple, confirm with Face ID, then add your phone number and its OTP.",
-          ],
-          layout: "carousel",
-          figures: [
-            {
-              type: "video",
-              src: "/work/nova-upi/boards/flow-start.mp4",
-              poster: "/work/nova-upi/boards/flow-start.jpg",
-              alt: "The prototype from the first screen: signing in with Google, then the phone number and OTP",
-              caption:
-                "From opening the app to adding your number, prototyped in Figma.",
-              label: "Flow",
-            },
-            {
-              type: "image",
-              src: "/work/nova-upi/boards/signin.jpg",
-              alt: "The opening screen, signing in with Apple and Face ID, and the OTP",
-              caption: "The opening, signing in with Apple, and the OTP.",
-              label: "Screens",
-            },
-          ],
-        },
-        {
-          id: "motion",
-          label: "Motion",
-          heading: "Screens that morph",
-          paragraphs: [
-            "What makes it feel finished is how it moves. I prototyped it with Figma's Smart Animate, matching layers from one screen to the next so they morph instead of cutting: the words on the opening turn over, a fetched card slides into place as you pull it, a new card flips over for its CVV, and the balance and cards carry through from home into paying.",
-            "Getting a morph right means the same layer, with the same name, on both screens, so I built the screens to share their parts. That discipline is also what kept fifty screens consistent in 48 hours.",
-          ],
-          layout: "carousel",
-          figures: [
-            {
-              type: "video",
-              src: "/work/nova-upi/boards/flow-cards.mp4",
-              poster: "/work/nova-upi/boards/flow-cards.jpg",
-              alt: "Cards sliding in as they're pulled, then a new card flipping over for its CVV",
-              caption: "Cards slide in as you pull them, and flip for the CVV.",
-              label: "Cards",
-            },
-            {
-              type: "video",
-              src: "/work/nova-upi/boards/flow-pay.mp4",
-              poster: "/work/nova-upi/boards/flow-pay.jpg",
-              alt: "The balance and cards carrying through from scanning a QR code to the payment done",
-              caption: "The balance and cards carry through a payment.",
-              label: "Paying",
-            },
-          ],
-        },
-        {
-          id: "mockups",
-          label: "Mockups",
-          heading: "In the hand",
-          paragraphs: [
-            "To see it the way people would, I placed the finished screens into photo mockups: in the hand beside a card, on a desk, and over a laptop.",
-          ],
-          layout: "carousel",
-          figures: [
-            {
-              type: "image",
-              src: "/work/nova-upi/boards/mockup-card.jpg",
-              alt: "Nova's opening screen on an iPhone, held beside a Visa card",
-              caption: "The opening, beside a card. Mockups from Mockuuups.",
-              label: "Card",
-            },
-            {
-              type: "image",
-              src: "/work/nova-upi/boards/mockup-desk.jpg",
-              alt: "Nova's home screen on an iPhone lying on a desk beside a mouse and earphones",
-              caption: "Home, on the desk. Mockups from Mockuuups.",
-              label: "Desk",
-            },
-            {
-              type: "image",
-              src: "/work/nova-upi/boards/mockup-hand.jpg",
-              alt: "Nova's opening screen on an iPhone held over a laptop",
-              caption: "The opening, over a laptop. Mockups from Mockuuups.",
-              label: "Hand",
-            },
-          ],
-        },
-        {
-          id: "status",
-          act: "What happened",
-          label: "Outcome",
-          heading: "The project that got me hired",
-          paragraphs: [
-            "Nova was never built, but it did its job: it's the project that got me hired at Spotmies, who liked it enough to bring me on.",
-          ],
-        },
-        {
-          id: "reflection",
-          label: "Reflection",
-          heading: "What 48 hours taught me",
-          paragraphs: [
-            "Nova was my first big personal project, and an experiment. I reimagined a whole app and designed it in 48 hours, which I'd never done before, and along the way I found the techniques and shortcuts in Figma that let me design at that speed.",
-          ],
-          points: [
-            "What I learned: a tight deadline makes you build a system, because there's no time to draw anything twice",
-            "What I'd change: even for a concept, show the prototype to a few people who pay by UPI every day, to check it really feels quicker to them",
-          ],
-        },
-      ],
-    },
-    disk: "#3d8bd6",
-    ink: "#f5f1ea",
-  },
-  {
     id: "gym",
+    cover: "/work/gym-trainer/dashboard.jpg",
+    mini: true,
     disciplines: ["development"],
     title: "AI Gym Trainer",
     kind: "Computer vision app",
@@ -3677,7 +3717,7 @@ export const projects: Project[] = [
         },
         {
           label: "Stage",
-          value: "0 → 1, personal",
+          value: "Exploration, personal",
           note: "A working prototype on my own webcam",
         },
         {
@@ -3752,7 +3792,8 @@ export const projects: Project[] = [
               src: "/work/gym-trainer/demo.mp4",
               poster: "/work/gym-trainer/demo.jpg",
               alt: "The FitPro dashboard counting bicep curls live: the camera feed with a pose skeleton, the stage turning from down to up, and the count rising from 0 to 6",
-              caption: "Six curls, counted live: the stage flips from down to up with each one.",
+              caption:
+                "Six curls, counted live: the stage flips from down to up with each one.",
             },
           ],
         },
@@ -3789,7 +3830,8 @@ export const projects: Project[] = [
               type: "image",
               src: "/work/gym-trainer/dashboard.jpg",
               alt: "The FitPro dashboard: the live camera feed with a pose skeleton and a rep counter reading 4, an April calendar, and charts for calories, training and sleep",
-              caption: "The dashboard, with the tracked camera feed counting reps.",
+              caption:
+                "The dashboard, with the tracked camera feed counting reps.",
             },
           ],
         },
@@ -3874,7 +3916,13 @@ export function caseChannels(project: Project): CaseChannel[] {
     // pictures shows its title on a card.
     const screen = pictures.length
       ? pictures
-      : [{ type: "card" as const, title: section.heading, note: section.label }];
+      : [
+          {
+            type: "card" as const,
+            title: section.heading,
+            note: section.label,
+          },
+        ];
     channels.push({ label: section.label, screen, part });
   });
   return channels;

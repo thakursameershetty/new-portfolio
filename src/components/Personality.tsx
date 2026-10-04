@@ -69,6 +69,8 @@ export function Personality() {
   const [minimized, setMinimized] = useState(false);
   const [maximized, setMaximized] = useState(false);
   const [open, setOpen] = useState<File | null>(null);
+  // How many times "click" has been pressed: each press plays "design" and "build" again.
+  const [plays, setPlays] = useState(0);
   const iconRefs = useRef<Partial<Record<File, HTMLButtonElement | null>>>({});
   const frameRef = useRef<HTMLDivElement>(null);
   // Where the window's been dragged to, from its place in the layout.
@@ -198,12 +200,18 @@ export function Personality() {
             owl
             <PokeOwl />,
           </span>{" "}
-          so my best ideas hoot after midnight&hellip; and my bugs do too. I
-          started in electrical engineering, so I still want every button to{" "}
-          <ClickKey hint={sectionInView} /> like a real one&hellip;{" "}
-          <span className={styles.muted}>
-            which is why this site has more sound effects than it probably
-            needs.
+          my best ideas hoot after midnight.
+          <span className={styles.nextLine}>
+            I <DesignWord play={plays} /> and <BuildWord play={plays} />, so I
+            get to make every button{" "}
+            <ClickKey
+              hint={sectionInView}
+              onPress={() => setPlays((count) => count + 1)}
+            />
+            .
+            <span className={styles.apology}>
+              Sorry about all the sound effects.
+            </span>
           </span>
         </p>
 
@@ -401,13 +409,14 @@ function PokeOwl() {
  *  pressing the same way with the same sounds (the hover tick, the landing on press; the
  *  home page doesn't listen for data-feel, so they're played here). It nudges down once
  *  when the section comes into view, so it reads as something to press. */
-function ClickKey({ hint }: { hint: boolean }) {
+function ClickKey({ hint, onPress }: { hint: boolean; onPress: () => void }) {
   const { playCue } = useIntro();
   return (
     <button
       type="button"
       onMouseEnter={() => playCue("tap")}
       onPointerDown={() => playCue("land")}
+      onClick={onPress}
       className={clsx(
         key.key,
         key.cream,
@@ -419,6 +428,128 @@ function ClickKey({ hint }: { hint: boolean }) {
     </button>
   );
 }
+
+/**
+ * "design", pressed into action by the "click" key: a selection box with corner handles
+ * snaps round it, and the dot of its "i" turns into a vector anchor, Bézier handles
+ * stretching out either side, before it all settles back into the word.
+ */
+function DesignWord({ play }: { play: number }) {
+  const { playCue } = useIntro();
+  const reduceMotion = useReducedMotion();
+
+  useEffect(() => {
+    if (!play || reduceMotion) return;
+    const timer = setTimeout(() => playCue("detent"), 120);
+    return () => clearTimeout(timer);
+  }, [play, reduceMotion, playCue]);
+
+  return (
+    <span
+      key={play}
+      className={clsx(
+        styles.design,
+        play > 0 && !reduceMotion && styles.designOn,
+      )}
+    >
+      des
+      <span className={styles.letterI}>
+        i
+        <span aria-hidden="true" className={styles.anchor}>
+          <span className={clsx(styles.bezier, styles.bezierLeft)} />
+          <span className={clsx(styles.bezier, styles.bezierRight)} />
+        </span>
+      </span>
+      gn
+      <span aria-hidden="true" className={styles.selection}>
+        <span />
+        <span />
+        <span />
+        <span />
+      </span>
+    </span>
+  );
+}
+
+// The hammer's strikes, in ms after the press: each one clinks and squashes the word.
+const strikes = [420, 720, 1020];
+
+/**
+ * "build", pressed into action by the "click" key: a pixel hammer (drawn like the owl)
+ * swings down on it three times, squashing the word with each blow, and knocks a few
+ * sparks off the last.
+ */
+function BuildWord({ play }: { play: number }) {
+  const { playCue } = useIntro();
+  const reduceMotion = useReducedMotion();
+
+  useEffect(() => {
+    if (!play || reduceMotion) return;
+    const timers = strikes.map((at) => setTimeout(() => playCue("clink"), at));
+    return () => timers.forEach(clearTimeout);
+  }, [play, reduceMotion, playCue]);
+
+  return (
+    <span
+      key={play}
+      className={clsx(
+        styles.build,
+        play > 0 && !reduceMotion && styles.buildOn,
+      )}
+    >
+      <span className={styles.buildText}>build</span>
+      <svg
+        aria-hidden="true"
+        viewBox="0 0 16 10"
+        shapeRendering="crispEdges"
+        className={styles.hammer}
+      >
+        {hammerPixels.map(({ ink, x, y }) => (
+          <rect
+            key={`${x}-${y}`}
+            x={x}
+            y={y}
+            width="1"
+            height="1"
+            fill={hammerInk[ink]}
+          />
+        ))}
+      </svg>
+      <span aria-hidden="true" className={styles.sparks}>
+        <span />
+        <span />
+        <span />
+      </span>
+    </span>
+  );
+}
+
+// A 16×10 pixel hammer lying on its side, head on the left: D outline, M the steel head,
+// S its shine, H the wooden handle, G the grip.
+const hammerRows = [
+  "DDDDD...........",
+  "DSSMD...........",
+  "DSMMD...........",
+  "DMMMDDDDDDDDDDD.",
+  "DMMMHHHHHHHGGGGD",
+  "DMMMHHHHHHHGGGGD",
+  "DMMMDDDDDDDDDDD.",
+  "DMMMD...........",
+  "DMMMD...........",
+  "DDDDD...........",
+];
+const hammerInk: Record<string, string> = {
+  D: "#1a0605",
+  M: "#9aa1a6",
+  S: "#eef0f1",
+  H: "#a0673a",
+  G: "#d63f39",
+};
+const hammerPixels = hammerRows.flatMap((row, y) =>
+  Array.from(row)
+    .map((ink, x) => ({ ink, x, y }))
+    .filter((pixel) => pixel.ink !== "."),
+);
 
 /** A file's Properties: a smaller window over the dialog, with why it's on the desktop. */
 function Properties({

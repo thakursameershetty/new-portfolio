@@ -90,14 +90,18 @@ export function CrtPreview({
       const style = getComputedStyle(element);
       const from = { transform: style.transform, opacity: style.opacity };
       state.slide?.cancel();
-      const animation = element.animate([from, ...keyframes], { ...timing, fill: "forwards" });
+      const animation = element.animate([from, ...keyframes], {
+        ...timing,
+        fill: "forwards",
+      });
       state.slide = animation;
       return animation.finished.then(
         () => true,
         () => false,
       );
     };
-    const wait = (ms: number) => new Promise((done) => window.setTimeout(done, ms));
+    const wait = (ms: number) =>
+      new Promise((done) => window.setTimeout(done, ms));
     const at = (y: number) => `translateY(${y}px)`;
 
     const run = async () => {
@@ -107,11 +111,17 @@ export function CrtPreview({
       try {
         // Out of the effect first: flushSync (to swap the disk's face) can't run inside one.
         await Promise.resolve();
-        while (current() && state.target && state.inDrive?.project !== state.target.project) {
+        while (
+          current() &&
+          state.target &&
+          state.inDrive?.project !== state.target.project
+        ) {
           if (state.inDrive) {
             playCue("driveEject");
             if (reduceMotion) {
-              await slide([{ transform: at(diskOut), opacity: 0 }], { duration: 0 });
+              await slide([{ transform: at(diskOut), opacity: 0 }], {
+                duration: 0,
+              });
             } else {
               await slide(
                 [
@@ -129,11 +139,23 @@ export function CrtPreview({
           flushSync(() => setDisk(next));
           state.inserting = true;
           const seated = reduceMotion
-            ? await slide([{ transform: at(diskSeated), opacity: 1 }], { duration: 0 })
+            ? await slide([{ transform: at(diskSeated), opacity: 1 }], {
+                duration: 0,
+              })
             : await slide(
                 [
-                  { transform: at(diskOut - 14), opacity: 0, offset: 0, easing: "ease-out" },
-                  { transform: at(diskOut), opacity: 1, offset: 0.25, easing: "cubic-bezier(0.5, 0, 0.9, 0.6)" },
+                  {
+                    transform: at(diskOut - 14),
+                    opacity: 0,
+                    offset: 0,
+                    easing: "ease-out",
+                  },
+                  {
+                    transform: at(diskOut),
+                    opacity: 1,
+                    offset: 0.25,
+                    easing: "cubic-bezier(0.5, 0, 0.9, 0.6)",
+                  },
                   { transform: at(diskSeated), opacity: 1 },
                 ],
                 insert,
@@ -143,7 +165,8 @@ export function CrtPreview({
           if (!seated || !current()) continue;
           playCue("driveLoad");
           await wait(reduceMotion ? 0 : seekMs);
-          if (current() && state.target?.project === next.project) setLoaded(next);
+          if (current() && state.target?.project === next.project)
+            setLoaded(next);
         }
       } finally {
         if (current()) state.running = false;
@@ -188,8 +211,12 @@ export function CrtPreview({
     const place = () => {
       const { x, y } = pointerRef.current;
       const height = monitor.offsetHeight;
-      const left = x + gap + width > window.innerWidth - 12 ? x - gap - width : x + gap;
-      const top = Math.min(Math.max(y - height * 0.35, 12), window.innerHeight - height - 12);
+      const left =
+        x + gap + width > window.innerWidth - 12 ? x - gap - width : x + gap;
+      const top = Math.min(
+        Math.max(y - height * 0.35, 12),
+        window.innerHeight - height - 12,
+      );
       return { left, top };
     };
 
@@ -220,7 +247,10 @@ export function CrtPreview({
         left: position.left + moveX,
         top: position.top + (goal.top - position.top) * k,
       };
-      const leanGoal = Math.max(-7, Math.min(7, (moveX / Math.max(delta, 1)) * 2.4));
+      const leanGoal = Math.max(
+        -7,
+        Math.min(7, (moveX / Math.max(delta, 1)) * 2.4),
+      );
       lean += (leanGoal - lean) * (1 - Math.exp(-delta / 120));
       render();
       frame = requestAnimationFrame(tick);
@@ -239,10 +269,16 @@ export function CrtPreview({
     >
       {/* Behind the body, so the monitor's top hides whatever is inside the drive. */}
       <div className={styles.drive}>
-        <div ref={diskRef} className={styles.disk} style={disk ? diskColors(disk.project) : undefined}>
+        <div
+          ref={diskRef}
+          className={styles.disk}
+          style={disk ? diskColors(disk.project) : undefined}
+        >
           <span className={styles.diskShutter} />
           <span className={styles.diskLabel}>
-            <span className={styles.diskBand}>{String(disk?.number ?? 0).padStart(2, "0")}</span>
+            <span className={styles.diskBand}>
+              {String(disk?.number ?? 0).padStart(2, "0")}
+            </span>
             <span className={styles.diskTitle}>{disk?.project.title}</span>
           </span>
         </div>
@@ -251,7 +287,10 @@ export function CrtPreview({
         <span className={styles.slot} />
         <div className={styles.screen}>
           {loaded && !loading && (
-            <Reel key={`reel-${loaded.project.id}`} media={loaded.project.media ?? []} />
+            <Reel
+              key={`reel-${loaded.project.id}`}
+              media={loaded.project.media ?? []}
+            />
           )}
           {loaded && !loading && !loaded.project.media?.length && (
             <span className={styles.noSignal}>No signal</span>
@@ -261,14 +300,19 @@ export function CrtPreview({
           {loading ? (
             <span className={styles.snow} />
           ) : (
-            <span key={`static-${loaded?.project.id}`} className={styles.static} />
+            <span
+              key={`static-${loaded?.project.id}`}
+              className={styles.static}
+            />
           )}
           <span className={styles.scanlines} />
           <span className={styles.glass} />
         </div>
         <div className={styles.chin}>
           <span className={styles.channel}>
-            {loading ? "LOAD" : `CH ${String(loaded?.number ?? 0).padStart(2, "0")}`}
+            {loading
+              ? "LOAD"
+              : `CH ${String(loaded?.number ?? 0).padStart(2, "0")}`}
           </span>
           <span className={styles.title}>{(disk ?? shown)?.project.title}</span>
           <span className={styles.activity} />
@@ -276,7 +320,10 @@ export function CrtPreview({
         </div>
       </div>
       <div className={styles.stand} />
-      <p className={styles.hint}>Click to open the case study</p>
+      <p className={styles.hint}>
+        Click to open the{" "}
+        {(disk ?? shown)?.project.mini ? "mini project" : "case study"}
+      </p>
     </div>
   );
 }
@@ -284,10 +331,20 @@ export function CrtPreview({
 const diskColors = (project: Project) =>
   ({ "--disk": project.disk, "--disk-ink": project.ink }) as CSSProperties;
 
-// Plays a project's media in turn: clips to their end, stills for a moment each.
-function Reel({ media }: { media: ProjectMedia[] }) {
+// Plays a project's media in turn: clips to their end, stills for a moment each. Also the
+// Work cards' screens, when a card is hovered and turns into a monitor.
+export function Reel({
+  media,
+  sizes = `${width}px`,
+}: {
+  media: ProjectMedia[];
+  /** The screen's width in an image's `sizes`: the cards pass their own, so a still they
+   *  already show is the same file, straight from the cache. */
+  sizes?: string;
+}) {
   const [index, setIndex] = useState(0);
   const current = media[index];
+  const upNext = media.length > 1 ? media[(index + 1) % media.length] : null;
   const next = () => setIndex((value) => (value + 1) % media.length);
 
   useEffect(() => {
@@ -300,26 +357,53 @@ function Reel({ media }: { media: ProjectMedia[] }) {
   }, [current, media.length]);
 
   if (!current) return null;
-  return current.type === "video" ? (
-    <video
-      key={current.src}
-      className={styles.media}
-      src={current.src}
-      poster={current.poster}
-      muted
-      autoPlay
-      playsInline
-      loop={media.length < 2}
-      onEnded={next}
-    />
-  ) : (
-    <Image
-      key={current.src}
-      className={styles.media}
-      src={current.src}
-      alt=""
-      fill
-      sizes={`${width}px`}
-    />
+  return (
+    <>
+      {current.type === "video" ? (
+        <video
+          key={current.src}
+          className={styles.media}
+          src={current.src}
+          poster={current.poster}
+          muted
+          autoPlay
+          playsInline
+          preload="auto"
+          loop={media.length < 2}
+          onEnded={next}
+        />
+      ) : (
+        <Image
+          key={current.src}
+          className={styles.media}
+          src={current.src}
+          alt=""
+          fill
+          sizes={sizes}
+        />
+      )}
+      {/* What plays next, fetched out of sight while this one shows, so it comes up at once. */}
+      {upNext && upNext.src !== current.src && (
+        <span aria-hidden="true" className={styles.upNext}>
+          {upNext.type === "video" ? (
+            <video
+              key={`next-${upNext.src}`}
+              src={upNext.src}
+              muted
+              playsInline
+              preload="auto"
+            />
+          ) : (
+            <Image
+              key={`next-${upNext.src}`}
+              src={upNext.src}
+              alt=""
+              fill
+              sizes={sizes}
+            />
+          )}
+        </span>
+      )}
+    </>
   );
 }

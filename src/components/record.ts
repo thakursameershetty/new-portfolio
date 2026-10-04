@@ -111,7 +111,7 @@ export const record: {
             // Learning until then; fluent (and still practising) after.
             settles: monthOf(2022, 2),
             logo: "figma",
-            href: "/practice",
+            href: "/playground",
           },
         },
       ],

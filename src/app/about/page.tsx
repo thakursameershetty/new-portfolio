@@ -57,7 +57,7 @@ export default function AboutPage() {
         <div aria-hidden="true" className={styles.band} />
         <main className={styles.page}>
           <nav className={styles.top}>
-            <Link href="/#about" className={key.key} data-feel="land">
+            <Link href="/" className={key.key} data-feel="land">
               <svg
                 aria-hidden="true"
                 width="18"

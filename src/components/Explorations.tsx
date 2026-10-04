@@ -12,7 +12,12 @@ import styles from "./Explorations.module.css";
 // Figma prototypes from teaching myself to design, recorded and cut down in
 // public/work/figma, favourites first. `fit` is how a clip sits in its 4:3 frame: the 4:3
 // recordings fill it; square and phone ones stand in it, on `ground`, their own background.
-const clips: { id: string; name: string; fit?: "contain"; ground?: string }[] = [
+export const clips: {
+  id: string;
+  name: string;
+  fit?: "contain";
+  ground?: string;
+}[] = [
   { id: "note", name: "New note", fit: "contain", ground: "#000" },
   { id: "gallery", name: "Gallery expand" },
   { id: "music", name: "Music app landing", fit: "contain", ground: "#000" },
@@ -100,7 +105,9 @@ function Shot({
         />
       </div>
       <p className={styles.name}>
-        <span className={styles.index}>{String(index + 1).padStart(2, "0")}</span>
+        <span className={styles.index}>
+          {String(index + 1).padStart(2, "0")}
+        </span>
         {clip.name}
       </p>
     </li>
@@ -108,7 +115,7 @@ function Shot({
 }
 
 /**
- * The way to /practice, the same wherever it's offered (the home page's list, the About
+ * The way to /playground, the same wherever it's offered (the home page's list, the About
  * page's milestones): mono capitals and the lavender arrow of the Figma practice line.
  */
 export function PrototypesLink({ className }: { className?: string }) {
@@ -117,12 +124,12 @@ export function PrototypesLink({ className }: { className?: string }) {
   const { playCue } = useIntro();
   return (
     <Link
-      href="/practice"
+      href="/playground"
       className={clsx(key.key, key.cream, styles.prototypesLink, className)}
       onMouseEnter={() => playCue("tap")}
       onPointerDown={() => playCue("land")}
     >
-      See the prototypes
+      Go to my playground
       <PracticeArrow size={14} />
     </Link>
   );

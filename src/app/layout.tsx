@@ -115,8 +115,12 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
+    // data-scroll-behavior: the page glides to its sections (globals.css), but Next.js turns
+    // that off while it sets a new page's scroll, so a page opens at its top rather than
+    // scrolling up to it from where the last one was left (Next.js 16 asks for this).
     <html
       lang="en"
+      data-scroll-behavior="smooth"
       className={`${sans.variable} ${display.variable} ${hero.variable} ${script.variable}`}
       suppressHydrationWarning
     >

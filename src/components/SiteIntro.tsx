@@ -47,6 +47,9 @@ const introStartDelayMs = 300;
 // for the session, so a fresh visit plays it again. Whether sound was left on is kept for
 // good.
 const seenKey = "intro-seen";
+// Where the home page was last scrolled to in this tab, so coming back to it (the browser's
+// back button, or another page's Home key) lands where it was left.
+const scrollKey = "home-scroll";
 
 // Haptic taps to go with the physical sounds (on phones that support them), each as
 // [delay, length] in ms, timed to the sound's hits: the lid's thock lands 0.4s into its
@@ -464,10 +467,12 @@ export function SiteIntro({ children }: SiteIntroProps) {
   }, []);
 
   // No scrolling until the intro has played: the intro type flies to positions measured with
-  // the page at the top.
+  // the page at the top. Coming back once it's been seen, there's no intro to wait for, so
+  // the page is left where it is (and put back where it was, below).
   useEffect(() => {
     const root = document.documentElement;
     if (!entered) {
+      if (readStorage(seenKey, "session") === "1") return;
       window.scrollTo(0, 0);
       root.style.overflow = "hidden";
       return;
@@ -485,6 +490,25 @@ export function SiteIntro({ children }: SiteIntroProps) {
       root.style.removeProperty("overflow");
     };
   }, [entered, instant]);
+
+  // Keeps a note of how far down the page is, once the intro's done with it.
+  useEffect(() => {
+    if (!introDone) return;
+    let frame = 0;
+    const note = () => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => {
+        // Not the jump to the top that opens the next page, while this one's on its way out.
+        if (window.location.pathname !== "/") return;
+        writeStorage(scrollKey, String(Math.round(window.scrollY)), "session");
+      });
+    };
+    window.addEventListener("scroll", note, { passive: true });
+    return () => {
+      cancelAnimationFrame(frame);
+      window.removeEventListener("scroll", note);
+    };
+  }, [introDone]);
 
   // Sounds only while the audio is actually running (a suspended one would queue them and
   // play them all at once on resume); on the home page the haptics go with the sound.
@@ -588,6 +612,12 @@ export function SiteIntro({ children }: SiteIntroProps) {
         setIntroDone(true);
         enterRef.current();
         revealEndsAtRef.current = 0;
+        // Back where it was left, unless the link asked for a section (/#work).
+        const saved = Number(readStorage(scrollKey, "session"));
+        if (!window.location.hash && saved > 0)
+          frame = requestAnimationFrame(() =>
+            window.scrollTo({ top: saved, behavior: "instant" }),
+          );
       });
     } else {
       // Once the fonts are in (the intro type is measured in them), and a beat after the

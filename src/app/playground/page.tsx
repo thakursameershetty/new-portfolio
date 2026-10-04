@@ -18,33 +18,34 @@ const preview = {
 };
 
 export const metadata: Metadata = {
-  title: "Figma practice",
+  title: "Playground",
   description,
-  alternates: { canonical: "/practice" },
+  alternates: { canonical: "/playground" },
   openGraph: {
-    url: "/practice",
-    title: "Figma practice — Thakur Sameer Shetty",
+    url: "/playground",
+    title: "Playground — Thakur Sameer Shetty",
     description,
     images: [preview],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Figma practice — Thakur Sameer Shetty",
+    title: "Playground — Thakur Sameer Shetty",
     description,
     images: [preview.url],
   },
 };
 
-// Where the timeline's Figma practice line leads: the About page's frame (the red band,
+// The playground (it was /practice, which redirects here), where the timeline's Figma
+// practice line and the home page's Playground section lead: the About page's frame (the red band,
 // the keys, the statement and the footer) around the board of prototypes.
-export default function PracticePage() {
+export default function PlaygroundPage() {
   return (
     <PageSound>
       <div className={about.shell}>
         <div aria-hidden="true" className={about.band} />
         <main className={about.page}>
           <nav className={about.top}>
-            <Link href="/#about" className={key.key} data-feel="land">
+            <Link href="/" className={key.key} data-feel="land">
               <svg
                 aria-hidden="true"
                 width="18"
@@ -68,7 +69,7 @@ export default function PracticePage() {
           <header className={styles.header}>
             <p className={`${about.label} ${styles.label}`}>
               <FigmaLogo size={16} />
-              Practice
+              Playground
             </p>
             <h1 className={about.statement}>
               <span className={about.statementLine}>

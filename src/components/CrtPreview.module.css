@@ -160,6 +160,19 @@
   }
 }
 
+/* The reel's next item, loading out of sight. */
+.upNext {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.upNext video {
+  width: 1px;
+  height: 1px;
+}
+
 .noSignal {
   position: absolute;
   inset: 0;

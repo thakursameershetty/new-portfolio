@@ -8,20 +8,11 @@
   background: var(--ground);
 }
 
-.label {
-  margin-bottom: 28px;
-  font-family: var(--font-hero), monospace;
-  font-size: 14px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--ink-muted);
-}
-
-/* "SELECTED WORK" is about 8.3em wide in Disket Mono; this keeps it on one line. */
+/* "SELECTED WORK" is about 8.3em wide in Disket Mono; this keeps it on one line, at a size
+   that heads the section without taking a screen to itself. */
 .heading {
   font-family: var(--font-hero), monospace;
-  font-size: min(84px, calc((100vw - 48px) / 8.6));
+  font-size: min(56px, calc((100vw - 48px) / 8.6));
   font-weight: 700;
   line-height: 0.92;
   letter-spacing: -0.05em;
@@ -32,56 +23,159 @@
   white-space: pre;
 }
 
-/* ---- The two disk boxes, side by side (stacked on phones). Each box's disks deal out
-   below both boxes, full width. Scroll anchoring is off here, so the page doesn't jump
-   while the grids appear. ---- */
+/* Under the heading: where to begin, for someone with only a minute. */
+.startLine {
+  margin-top: 18px;
+  font-size: clamp(16px, 1.6vw, 19px);
+  color: var(--ink-muted);
+}
+
+.startStar {
+  width: 1em;
+  height: 1em;
+  vertical-align: -0.14em;
+  fill: var(--tone-event);
+}
+
+.star {
+  display: inline-block;
+  flex: none;
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* ---- The two shelves, one after the other: each box with its name and what's inside
+   beside it, then its own disks dealt out under it, and a rule before the next shelf, so a
+   box's projects never sit under the other's. Scroll anchoring is off here, so the page
+   doesn't jump while the grids appear. ---- */
 .shelves {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  column-gap: clamp(24px, 4vw, 48px);
-  margin-top: 64px;
+  display: flex;
+  flex-direction: column;
+  margin-top: 40px;
   overflow-anchor: none;
 }
 
-/* The shelf wrapper only groups a box with its grid; both lay out in .shelves' grid. */
 .shelf {
-  display: contents;
+  display: block;
 }
 
-.shelf[data-place="0"] .shelfCell {
-  grid-row: 1;
-  grid-column: 1;
-}
-
-.shelf[data-place="1"] .shelfCell {
-  grid-row: 1;
-  grid-column: 2;
+.shelf + .shelf {
+  margin-top: clamp(56px, 8vh, 88px);
+  border-top: 1px solid rgba(245, 241, 234, 0.1);
 }
 
 .dealt {
-  grid-column: 1 / -1;
-  margin-top: 56px;
+  margin-top: 40px;
 }
 
-.shelf[data-place="0"] .dealt {
-  grid-row: 2;
-}
-
-.shelf[data-place="1"] .dealt {
-  grid-row: 3;
-}
-
+/* The box on the left; its name, caption and contents beside it, centred on it. */
 .shelfCell {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: minmax(0, 460px) minmax(0, 1fr);
+  grid-template-rows: 1fr auto auto auto 1fr;
+  grid-template-areas:
+    "box ."
+    "box title"
+    "box note"
+    "box index"
+    "box .";
+  column-gap: clamp(32px, 5vw, 64px);
+}
+
+/* The room above the box (for its lid and rising disks) goes on the shelf, not the box, so
+   the words beside it centre on the box itself. */
+.shelfCell {
+  padding-top: clamp(56px, 7vw, 88px);
+}
+
+.shelfCell > .box {
+  grid-area: box;
+  margin-top: 0;
 }
 
 .shelfTitle {
+  grid-area: title;
   font-family: var(--font-hero), monospace;
-  font-size: clamp(22px, 2.6vw, 30px);
+  font-size: clamp(22px, 2.4vw, 30px);
   font-weight: 700;
   letter-spacing: -0.03em;
   text-transform: uppercase;
+}
+
+.shelfCell > .shelfNote {
+  grid-area: note;
+}
+
+/* The shelf's number, like a chapter's, before its name. */
+.shelfNumber {
+  margin-right: 0.4em;
+  color: var(--ink-muted);
+}
+
+/* The pinned tag naming the box whose cards are scrolling by: taking no room of its own,
+   it rides at the top left beside the nav, until its shelf's list has gone past. */
+.shelfTag {
+  position: sticky;
+  top: 24px;
+  z-index: 6;
+  height: 0;
+  pointer-events: none;
+}
+
+.shelfTagInner {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 36px;
+  padding: 0 12px;
+  border: 1px solid rgba(245, 241, 234, 0.12);
+  border-radius: 10px;
+  background: rgba(16, 16, 15, 0.82);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  color: var(--ink);
+  font-family: var(--font-hero), monospace;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+/* A little disk box: a clear tray with a lid line. */
+.shelfTagBox {
+  width: 16px;
+  height: 11px;
+  border: 1.5px solid currentColor;
+  border-radius: 2px;
+  box-shadow: inset 0 3px 0 -1.5px currentColor;
+  opacity: 0.8;
+}
+
+.shelfTagCount {
+  color: var(--ink-muted);
+}
+
+/* Phones: under the nav, which sits across the top there. */
+@media (max-width: 720px) {
+  .shelfTag {
+    top: 72px;
+  }
+
+  .shelfTagCount {
+    display: none;
+  }
+}
+
+.shelfCell > .shelfIndex {
+  grid-area: index;
 }
 
 .shelfNote,
@@ -104,7 +198,7 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-end;
   gap: 10px 24px;
 }
 
@@ -127,16 +221,38 @@
 }
 
 /* The list of what's inside, so it reads without opening the box. */
+/* Under the box: what it holds, and how to use it, on one line. */
+.shelfCell > .shelfNote {
+  margin-top: 16px;
+}
+
 .shelfIndex {
-  margin-top: 20px;
+  display: grid;
+  grid-auto-flow: column;
+  grid-template-rows: repeat(3, auto);
+  justify-content: start;
+  gap: 4px 36px;
+  margin: 14px 0 0;
+  padding: 0;
+  list-style: none;
   font-size: 15px;
-  line-height: 1.55;
+  line-height: 1.5;
+}
+
+.shelfIndex li {
+  white-space: nowrap;
+}
+
+.shelfIndexNumber {
+  margin-right: 10px;
+  font-family: var(--font-hero), monospace;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  color: var(--ink-muted);
 }
 
 .shelfHint {
-  margin-top: 6px;
-  font-size: 14px;
-  color: var(--ink-muted);
+  opacity: 0.7;
 }
 
 /* The box itself. It's the button; the 3D canvas inside runs taller and a little wider than
@@ -288,40 +404,29 @@
   z-index: 1;
   display: flex;
   gap: 2cqw;
-  padding: 0.5cqw 1.4cqw;
+  padding: 1.1cqw 3cqw;
   white-space: nowrap;
-  border-radius: 0.4cqw;
+  border-radius: 0.6cqw;
   background: #f4f0e6;
   color: #1a1a1a;
   font-family: var(--font-hero), monospace;
-  font-size: 2.2cqw;
+  font-size: 4.6cqw;
   font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
   transform: translateX(-50%) rotate(-1deg);
 }
 
+/* Phones: the name, then the box, then its caption and contents, stacked. */
 @media (max-width: 720px) {
-  .shelves {
-    grid-template-columns: minmax(0, 1fr);
+  .shelfCell {
+    display: flex;
+    flex-direction: column;
+    padding-top: 0;
   }
 
-  .shelf[data-place="0"] .shelfCell,
-  .shelf[data-place="1"] .shelfCell {
-    grid-column: 1;
-  }
-
-  .shelf[data-place="0"] .dealt {
-    grid-row: 2;
-  }
-
-  .shelf[data-place="1"] .shelfCell {
-    grid-row: 3;
-    margin-top: 72px;
-  }
-
-  .shelf[data-place="1"] .dealt {
-    grid-row: 4;
+  .shelfCell > .box {
+    margin-top: clamp(56px, 7vw, 88px);
   }
 }
 
@@ -483,6 +588,37 @@
   text-transform: uppercase;
   white-space: nowrap;
   color: var(--ink);
+}
+
+.entryTags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 8px;
+  margin-top: 8px;
+}
+
+/* A pick to start with: the stage tag's shape, in the timeline's yellow, with its star. */
+.entryFeatured {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 7px 2px 5px;
+  border-radius: 4px;
+  background: var(--tone-event);
+  color: #1a0605;
+  font-family: var(--font-hero), monospace;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.3;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.entryFeatured .star {
+  width: 11px;
+  height: 11px;
+  fill: currentColor;
 }
 
 /* Two lines at most, so every row keeps the same rhythm; each project's blurb is written to
@@ -803,6 +939,31 @@
   transform: translateX(44%);
 }
 
+/* The "start here" sticker on a featured disk: a round dark one with a white die-cut edge
+   and the timeline's yellow star (dark, so it shows on every disk colour, yellow included), slapped over the label's top right corner at a tilt (drawn the same on
+   the 3D disks, in diskBox3d). */
+.starSticker {
+  position: absolute;
+  z-index: 2;
+  top: 28%;
+  left: 70%;
+  display: grid;
+  place-items: center;
+  width: 24%;
+  aspect-ratio: 1;
+  border: 1.4cqw solid #fffaf0;
+  border-radius: 50%;
+  background: #1a0605;
+  box-shadow: 0 0.6cqw 2cqw rgba(0, 0, 0, 0.3);
+  rotate: -12deg;
+}
+
+.starSticker .star {
+  width: 62%;
+  height: 62%;
+  fill: var(--tone-event);
+}
+
 /* The write-protect hole. */
 .protect {
   position: absolute;
@@ -951,6 +1112,426 @@
 .window .panel {
   position: relative;
   z-index: 1;
+}
+
+/* ---- The list as cards: each project's cover leads, its disk resting on the cover's
+   bottom left corner (the disk is still where it flies to and from the box), then its name,
+   what it is, its tags and the key into its story. The blurb, role, stack and disciplines
+   are left to the case study. Two to a row; one on phones. ---- */
+.entries {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  /* Roomy: each disk stands 22px proud of its cover's top, so the rows need more than
+     that between them to breathe. */
+  gap: clamp(80px, 10vh, 104px) clamp(36px, 4.5vw, 56px);
+  margin-top: 56px;
+  border-top: 0;
+}
+
+.entry {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0;
+  padding: 0;
+  border-bottom: 0;
+  container-type: inline-size;
+}
+
+.entry::before {
+  inset: -12px;
+  border-radius: 26px;
+}
+
+.entryCover {
+  position: relative;
+  z-index: 1;
+  aspect-ratio: 16 / 10;
+  border: 1px solid rgba(245, 241, 234, 0.08);
+  border-radius: 18px;
+  background: #121211;
+  transition:
+    transform 350ms cubic-bezier(0.22, 1, 0.36, 1),
+    background-color 260ms ease,
+    border-color 260ms ease,
+    box-shadow 260ms ease;
+}
+
+/* The picture's own frame: the whole cover, until the card turns into a monitor and it
+   draws in to become the screen. */
+.entryScreen {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  border-radius: 17px;
+  background: #0b0d0c;
+  transition:
+    inset 320ms cubic-bezier(0.22, 1, 0.36, 1),
+    border-radius 320ms cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 320ms ease;
+}
+
+/* ---- Hovered: the card is the old monitor, at its own proportions (320 wide: a 14px
+   bezel, a 16:10 screen, a 36px chin, then the stand), built around the picture: the cover
+   is its screen (292 of its pixels wide, so --u is one of them), and the body, chin and
+   stand grow out around it. ---- */
+/* One of the monitor's pixels, for the cover and the note under it alike. */
+.entry {
+  --u: calc(100cqw / 292);
+}
+
+/* The hovered card rises over its neighbours, so its monitor and note can overlap them. */
+.entry[data-playing] {
+  z-index: 4;
+}
+
+.entry[data-playing] .entryCover {
+  border-color: transparent;
+  background-color: transparent;
+}
+
+.crtBody,
+.crtStand {
+  position: absolute;
+  left: calc(-14 * var(--u));
+  opacity: 0;
+  transform: scale(0.96);
+  transform-origin: 50% 0;
+  transition:
+    opacity 200ms ease,
+    transform 300ms cubic-bezier(0.22, 1, 0.36, 1);
+  pointer-events: none;
+}
+
+.crtBody {
+  top: calc(-14 * var(--u));
+  z-index: 1;
+  width: calc(320 * var(--u));
+  height: calc(232.5 * var(--u));
+  border-radius: 18px 18px 12px 12px;
+  background:
+    linear-gradient(160deg, rgba(255, 255, 255, 0.35), transparent 40%),
+    linear-gradient(0deg, rgba(0, 0, 0, 0.12), transparent 35%),
+    #d8d0bf;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.6),
+    inset 0 -2px 0 rgba(0, 0, 0, 0.15),
+    0 24px 50px rgba(0, 0, 0, 0.6);
+}
+
+.crtStand {
+  top: calc(218.5 * var(--u));
+  left: calc(50% - 60.8 * var(--u));
+  width: calc(121.6 * var(--u));
+  height: calc(12 * var(--u));
+  border-radius: 0 0 10px 10px;
+  background: linear-gradient(180deg, #bdb4a2, #a39a88);
+}
+
+.entry[data-playing] .crtBody,
+.entry[data-playing] .crtStand {
+  opacity: 1;
+  transform: none;
+}
+
+/* The drive, behind the body: the monitor's own little disk, upside down, slides from out
+   of sight down into the slot (Work.tsx), its label end left out. */
+.crtDrive {
+  position: absolute;
+  top: calc(-14 * var(--u));
+  left: calc(-14 * var(--u));
+  z-index: 0;
+  width: calc(320 * var(--u));
+  height: 0;
+}
+
+.miniDisk.miniDisk {
+  width: calc(84 * var(--u));
+  transform: translateY(calc(-92 * var(--u)));
+}
+
+.crtSlot {
+  position: absolute;
+  top: 0;
+  left: calc(58% - 6 * var(--u));
+  width: calc(96 * var(--u));
+  height: max(4px, calc(5 * var(--u)));
+  border-radius: 0 0 3px 3px;
+  background: linear-gradient(180deg, #1c1a17, #3a3631);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.45);
+}
+
+.crtChin {
+  position: absolute;
+  right: calc(18 * var(--u));
+  bottom: 0;
+  left: calc(18 * var(--u));
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: calc(36 * var(--u));
+  color: #3a3631;
+}
+
+/* The picture's frame becomes the monitor's screen: inside the bezel, rounder, inset. */
+.entry[data-playing] .entryScreen {
+  z-index: 2;
+  border-radius: calc(14 * var(--u)) / calc(18 * var(--u));
+  box-shadow:
+    inset 0 0 0 3px #2b2926,
+    0 0 0 2px rgba(0, 0, 0, 0.25);
+}
+
+/* The reel, loading under the snow until the disk has seated. */
+.reel {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+}
+
+.reelOn {
+  opacity: 1;
+}
+
+.crtLayer {
+  opacity: 0;
+  transition: opacity 260ms ease;
+}
+
+.entry[data-playing] .crtLayer {
+  opacity: 1;
+}
+
+/* The "start here" sticker on a featured project's chin, by the lights: the disks' dark
+   round sticker with the yellow star, slapped on at a tilt as the monitor comes on. */
+.chinStar {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: max(18px, calc(20 * var(--u)));
+  aspect-ratio: 1;
+  border: max(1.5px, calc(1.6 * var(--u))) solid #fffaf0;
+  border-radius: 50%;
+  background: #1a0605;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
+  rotate: -14deg;
+  scale: 0;
+  transition: scale 360ms cubic-bezier(0.34, 1.6, 0.64, 1) 380ms;
+}
+
+.chinStar .star {
+  width: 62%;
+  height: 62%;
+  fill: var(--tone-event);
+}
+
+.entry[data-playing] .chinStar {
+  scale: 1;
+}
+
+/* The drive's light while the disk loads: flickering amber. */
+.driveBusy {
+  background: #ffb347;
+  box-shadow: 0 0 6px #ffb347;
+  animation: driveBusy 80ms steps(2) infinite;
+}
+
+@keyframes driveBusy {
+  50% {
+    opacity: 0.45;
+  }
+}
+
+/* The disk on its way into the drive: straightened (Work.tsx slides it, and drops it behind
+   the bezel once it's over the slot). */
+.entryDisk[data-lift] > * {
+  rotate: 0deg;
+}
+
+/* ---- The note that stands in for the card's text while it's a monitor. ---- */
+.entryCopy {
+  transition: opacity 200ms ease;
+}
+
+.entry[data-playing] .entryCopy {
+  opacity: 0;
+}
+
+.entryNote {
+  position: absolute;
+  top: calc(230.5 * var(--u) + 14px);
+  right: 0;
+  left: 0;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border-radius: 6px;
+  background:
+    repeating-linear-gradient(
+      180deg,
+      transparent 0 21px,
+      rgba(40, 60, 120, 0.12) 21px 22px
+    ),
+    #f4f0e6;
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.5);
+  color: #1a1a1a;
+  opacity: 0;
+  transform: translateY(-6px);
+  pointer-events: none;
+  transition:
+    opacity 200ms ease,
+    transform 260ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.entry[data-playing] .entryNote {
+  opacity: 1;
+  transform: none;
+  transition-delay: 120ms;
+}
+
+.noteBand {
+  padding: 6px 12px;
+  background: var(--disk);
+  color: var(--disk-ink);
+  font-family: var(--font-hero), monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.noteText {
+  padding: 8px 12px 0;
+  font-size: 14px;
+  line-height: 22px;
+}
+
+.noteStack {
+  padding: 0 12px;
+  font-size: 12px;
+  line-height: 22px;
+  color: rgba(26, 26, 26, 0.6);
+}
+
+.noteOpen {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px 8px;
+  font-family: var(--font-hero), monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* A project of phone boards: each shown whole, on the boards' own ground, so the phones
+   keep their tops and bottoms (on the card and on its monitor alike). */
+.boards {
+  background: #1e1e1e;
+}
+
+.boards img,
+.boards video {
+  object-fit: contain !important;
+}
+
+.entryCoverImage {
+  object-fit: cover;
+  transition: scale 600ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.entry:hover .entryCover {
+  transform: translateY(-4px);
+}
+
+.entry:hover .entryCoverImage {
+  scale: 1.03;
+}
+
+/* The disk, tossed over the cover's top left corner, half on it and half off: straight
+   while it flies (so it lands where the box measured it), then settling into a tilt. */
+.entryDisk {
+  position: absolute;
+  top: -20px;
+  left: -16px;
+  width: 80px;
+}
+
+.entryDisk {
+  transition: filter 350ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.entryDisk > * {
+  transition: rotate 420ms cubic-bezier(0.34, 1.4, 0.64, 1);
+}
+
+.entry:not([data-flying]) .entryDisk > * {
+  rotate: -8deg;
+}
+
+/* The cells the cover comes up through as its disk lands (Work.tsx): the hero's grid, in
+   the card's dark, with faint lines; out of sight until a disk is on its way. */
+.cells {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  grid-template-rows: repeat(5, 1fr);
+  pointer-events: none;
+}
+
+.cell {
+  background: #121211;
+  box-shadow: inset 0 0 0 0.5px rgba(245, 241, 234, 0.06);
+  opacity: 0;
+}
+
+.entryCover[data-covered] .cell {
+  opacity: 1;
+}
+
+
+.entryCopy {
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 16px;
+  align-items: start;
+  margin-top: 18px;
+}
+
+.entryMain {
+  grid-column: auto;
+}
+
+.entryTitle {
+  font-size: clamp(18px, 1.8vw, 22px);
+}
+
+.entrySummary,
+.entrySide {
+  display: none;
+}
+
+@media (max-width: 720px) {
+  .entries {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 64px;
+  }
+
+  .entryDisk {
+    top: -14px;
+    left: -9px;
+    width: 62px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .entryDisk,
+  .entryDisk > * {
+    transition: none;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
