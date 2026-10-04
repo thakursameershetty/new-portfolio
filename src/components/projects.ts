@@ -49,7 +49,9 @@ export type DiagramId =
   | "rao-join"
   | "rao-system"
   | "spotmies-system"
-  | "mutiny-system";
+  | "mutiny-system"
+  | "curl-count"
+  | "amero-system";
 
 /** An animated diagram in the story and the closer look. The monitor can't play one (its
  *  screen is a WebGL texture), so a part with a diagram gives the monitor a `screen`. */
@@ -1330,6 +1332,20 @@ export const projects: Project[] = [
           ],
         },
         {
+          id: "design-language",
+          label: "Design language",
+          heading: "Two golds, near-black and a serif",
+          paragraphs: [
+            "The colours come from the logo and the coin. Beside the logo's bright yellow (#FDD303), the product uses a softer gold, #FCDA7B, kept for what matters, and the coin's metal as a gradient from #FCDA7B through #E2B649 to #FDB648. Everything else sits on near-black #050505 and dark #121212 panels. Headings are set in Gambarino, a serif, and the rest in Space Grotesk.",
+          ],
+          lead: {
+            type: "diagram",
+            diagram: "amero-system",
+            alt: "Amero X's design language, picked from the logo and the coin: the softer gold #FCDA7B for actions, the coin's gradient from #FCDA7B through #E2B649 to #FDB648, the logo's yellow #FDD303, and #050505 for the page with #121212 panels; Gambarino for headings and Space Grotesk for the rest; buttons fully round, cards at 8px",
+            caption: "The colours, type and shape behind the design, as on the live site.",
+          },
+        },
+        {
           id: "landing",
           act: "The build",
           label: "Landing",
@@ -2567,6 +2583,14 @@ export const projects: Project[] = [
             "I demonstrated it to the judges and wrote it up as a paper. GITAM's Quantumisers club liked it enough to have me present it to them, so their members could see how ideas like these are actually built.",
           ],
         },
+        {
+          id: "reflection",
+          label: "Reflection",
+          heading: "Three layers, live at once",
+          paragraphs: [
+            "SamudraGupt-Q was where I first mapped real things into a simulated world: phones moving in my hands became drones in a live 3D scene, sending real data, with every calculation made in real time. Working with quantum frameworks, with three layers running continuously at the same time, was the part I enjoyed most.",
+          ],
+        },
       ],
     },
     // Built from nothing; no brief yet to say so.
@@ -2608,8 +2632,7 @@ export const projects: Project[] = [
       },
     ],
     caseStudy: {
-      // Confirm: when each was made.
-      timeframe: "Hand-tracking experiments",
+      timeframe: "From Nov 2025",
       headline:
         "Putting the mouse down: a shop and a music player you use with your hand",
       brief: [
@@ -2643,7 +2666,7 @@ export const projects: Project[] = [
         {
           label: "Order",
           value: "Gesture Shop first",
-          note: "My first experiment with MediaPipe",
+          note: "Started Nov 29, 2025, my first with MediaPipe",
         },
       ],
       reel: [
@@ -2667,7 +2690,7 @@ export const projects: Project[] = [
           label: "Idea",
           heading: "What if you didn't need a mouse?",
           paragraphs: [
-            "These started as experiments with MediaPipe and the idea of the web as something you reach into. Both follow your hand through the webcam, right in the browser, and turn what it does into clicks, drags and scrolls.",
+            "I was exploring OpenCV when the idea came, almost by accident: what if you could control the web with the camera instead of the mouse? Gesture Shop, started on November 29, 2025, was the first answer, and Aura followed. Both follow your hand through the webcam, right in the browser, and turn what it does into clicks, drags and scrolls.",
           ],
         },
         {
@@ -2723,6 +2746,26 @@ export const projects: Project[] = [
           heading: "Three heavy things at once",
           paragraphs: [
             "Tracking a hand, analysing the audio and running full-screen shaders all at once is a lot for a laptop. Drawing the effects into smaller buffers and keeping the shaders lean keeps it running smoothly.",
+          ],
+        },
+        {
+          id: "outcome",
+          act: "What happened",
+          label: "Outcome",
+          heading: "Shown to friends, not posted",
+          paragraphs: [
+            "I haven't posted either of them online. I showed them to friends instead, who were amazed to shop and play music without touching anything. Both are live on Vercel, linked above.",
+          ],
+        },
+        {
+          id: "reflection",
+          label: "Reflection",
+          heading: "An interface can be a gesture",
+          paragraphs: [
+            "These taught me that an interface isn't only what you tap or click: sometimes it's how you move.",
+          ],
+          points: [
+            "What I learned: designing for a hand in the air means designing for imprecision, with a cursor that doesn't shake, a clear sign of what your hand is holding, and a way back to the mouse",
           ],
         },
       ],
@@ -3133,14 +3176,123 @@ export const projects: Project[] = [
     },
     media: [
       {
+        type: "video",
+        src: "/work/gym-trainer/demo.mp4",
+        poster: "/work/gym-trainer/demo.jpg",
+        alt: "The FitPro dashboard counting bicep curls live: the camera feed with a pose skeleton, the stage turning from down to up, and the count rising from 0 to 6",
+      },
+      {
         type: "image",
         src: "/work/gym-trainer/dashboard.jpg",
         alt: "The FitPro dashboard: the live camera feed with a pose skeleton and a rep counter reading 4, an April calendar, and charts for calories, training and sleep",
         caption: "The dashboard, with the tracked camera feed counting reps.",
       },
     ],
-    // Built from nothing; no brief yet to say so.
-    stage: "0 → 1",
+    caseStudy: {
+      timeframe: "April 2025",
+      headline: "A trainer that counts your curls from the angle of your elbow",
+      brief: [
+        {
+          label: "Role",
+          value: "Solo, end to end",
+          note: "The dashboard, the Flask backend and the tracking",
+        },
+        {
+          label: "Stage",
+          value: "0 → 1, personal",
+          note: "A working prototype on my own webcam",
+        },
+        {
+          label: "Counts",
+          value: "Bicep curls",
+          note: "From the elbow's angle, with MediaPipe",
+        },
+        {
+          label: "Stack",
+          value: "Flask + MediaPipe",
+          note: "OpenCV for the camera, Chart.js for the charts",
+        },
+      ],
+      reel: [
+        {
+          type: "video",
+          src: "/work/gym-trainer/demo.mp4",
+          poster: "/work/gym-trainer/demo.jpg",
+          alt: "The dashboard counting curls live, from 0 to 6",
+        },
+        {
+          type: "image",
+          src: "/work/gym-trainer/dashboard.jpg",
+          alt: "The FitPro dashboard",
+        },
+      ],
+      sections: [
+        {
+          id: "brief",
+          act: "The idea",
+          label: "Brief",
+          heading: "A trainer that watches you",
+          paragraphs: [
+            "FitPro is a fitness dashboard with a trainer built in: your webcam watches your arm and counts your bicep curls as you do them. I designed and built it on my own in April 2025, with Flask streaming the tracked camera feed straight into the page.",
+          ],
+          figures: [
+            {
+              type: "video",
+              src: "/work/gym-trainer/demo.mp4",
+              poster: "/work/gym-trainer/demo.jpg",
+              alt: "The FitPro dashboard counting bicep curls live: the camera feed with a pose skeleton, the stage turning from down to up, and the count rising from 0 to 6",
+              caption: "Six curls, counted live: the stage flips from down to up with each one.",
+            },
+          ],
+        },
+        {
+          id: "counting",
+          act: "How it works",
+          label: "Counting",
+          heading: "Two angles, one rep",
+          paragraphs: [
+            "MediaPipe finds the shoulder, the elbow and the wrist in each frame. The app takes the angle at the elbow, between the line up to the shoulder and the line out to the wrist, and reads it against two thresholds instead of one.",
+          ],
+          lead: {
+            type: "diagram",
+            diagram: "curl-count",
+            alt: "Animated diagram: an arm seen side on, the angle at the elbow between the vectors to the shoulder and the wrist read out live; over 160° the stage turns down, under 30° it turns up and counts a rep; in a half rep the arm only straightens to 120°, so the next curl isn't counted",
+            caption: "The angle at the elbow, a full rep and a half one.",
+          },
+          points: [
+            "Down: over 160°, the angle is obtuse and the arm is straight, so the stage resets to down",
+            "Up: under 30°, the angle is acute and the arm is curled; if the stage was down, it turns up and counts one rep",
+            "Why two: a curl only counts after the arm has straightened again, so a half rep, or a wobble around one threshold, never counts twice",
+          ],
+        },
+        {
+          id: "dashboard",
+          act: "Around it",
+          label: "Dashboard",
+          heading: "A pastel dashboard",
+          paragraphs: [
+            "Around the camera is a dashboard: a workout calendar, and charts for calories, training and sleep. The charts are still on sample data; the counting is the part that's real.",
+          ],
+          figures: [
+            {
+              type: "image",
+              src: "/work/gym-trainer/dashboard.jpg",
+              alt: "The FitPro dashboard: the live camera feed with a pose skeleton and a rep counter reading 4, an April calendar, and charts for calories, training and sleep",
+              caption: "The dashboard, with the tracked camera feed counting reps.",
+            },
+          ],
+        },
+        {
+          id: "limits",
+          act: "What's real",
+          label: "Limits",
+          heading: "What it does, and doesn't yet",
+          paragraphs: [
+            "It counts one exercise, bicep curls, on one arm. The angle comes from each point's position in the picture, not in depth, so it's the angle the camera sees rather than the arm's true one.",
+          ],
+        },
+      ],
+    },
     disk: "#ef7d3c",
     ink: "#1a1a1a",
   },

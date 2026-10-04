@@ -40,6 +40,17 @@ const generalSans = localFont({
   weight: "200 700",
   variable: "--font-general",
 });
+// Amero X's Gambarino (Fontshare) and Space Grotesk (OFL), self-hosted the same way.
+const gambarino = localFont({
+  src: "../../fonts/gambarino.woff2",
+  weight: "400",
+  variable: "--font-gambarino",
+});
+const spaceGrotesk = localFont({
+  src: "../../fonts/space-grotesk-latin.woff2",
+  weight: "300 700",
+  variable: "--font-space-grotesk",
+});
 const outfit = localFont({
   src: "../../fonts/outfit-latin.woff2",
   weight: "300 700",
@@ -448,6 +459,76 @@ export function MutinySystem(props: {
   onOpen?: () => void;
 }) {
   return <SystemCard system={MUTINY} {...props} />;
+}
+
+const AMERO: System = {
+  colours: [
+    {
+      name: "The gold",
+      hex: "#FCDA7B",
+      use: "The action you're about to take, your balance, the page you're on",
+      ink: "#050505",
+    },
+    {
+      name: "The coin",
+      hex: "#FCDA7B → #E2B649 → #FDB648",
+      use: "The gradient on buttons and highlights, from the coin's metal",
+      ink: "#050505",
+      fill: "linear-gradient(135deg, #fcda7b, #e2b649, #fdb648)",
+    },
+    { name: "The mark", hex: "#FDD303", use: "The logo's own yellow", ink: "#050505" },
+    {
+      name: "The night",
+      hex: "#050505",
+      use: "The page, with panels at #121212 and text at #EDEDED",
+      ink: "#ededed",
+    },
+  ],
+  source: {
+    label: "Picked from the logo and the coin",
+    backdrop: "#050505",
+    pictures: [
+      {
+        src: "/logos/amerox-cropped.png",
+        alt: "The Amero X logo, in yellow",
+        width: 1060,
+        height: 150,
+        // The A's stroke: the logo is one yellow.
+        picks: [null, null, { x: 11.5, y: 45 }, null],
+      },
+      {
+        src: "/work/amerox/coin.png",
+        alt: "The Amero X coin: a gold AMX coin with a circuit-traced A over a world map",
+        width: 512,
+        height: 512,
+        // Measured on the coin: its bright upper rim, and its face's gold.
+        picks: [{ x: 58.6, y: 9.4 }, { x: 39.1, y: 11.7 }, null, null],
+      },
+    ],
+  },
+  specimen: { fontFamily: "var(--font-gambarino), serif", fontWeight: 400 },
+  faces: [
+    {
+      text: "Gambarino, for headings",
+      style: { fontFamily: "var(--font-gambarino), serif", fontSize: 24 },
+    },
+    {
+      text: "Space Grotesk, for everything else",
+      style: { fontFamily: "var(--font-space-grotesk), sans-serif", fontSize: 17, opacity: 0.8 },
+    },
+  ],
+  pills: [
+    { label: "Buy ETH", kind: "button", bg: "#fcda7b", fg: "#050505" },
+    { label: "Refresh", kind: "chip", bg: "transparent", fg: "#fcda7b", border: "#fcda7b" },
+    { label: "Follow", kind: "chip", bg: "#fcda7b", fg: "#050505" },
+  ],
+  pillFont: "var(--font-space-grotesk), sans-serif",
+  shapeNote: "Buttons fully round; cards at 8px",
+  fonts: `${gambarino.variable} ${spaceGrotesk.variable}`,
+};
+
+export function AmeroSystem(props: { className?: string; onOpen?: () => void }) {
+  return <SystemCard system={AMERO} {...props} />;
 }
 
 const SPOTMIES: System = {

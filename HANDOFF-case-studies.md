@@ -45,11 +45,19 @@ rendered by `ProjectView.tsx`.
   doesn't run through the parts in between.
 - **Widget diagrams are capped at 680px** (`figureCompact`, `isCompactDiagram` in
   `diagrams/Diagram.tsx`); the three older lab diagrams keep full width.
+- **Brief grid:** `data-count` makes 4 cells 2 × 2 and 5 cells 3 + 2 (two wider) on wide screens.
 
 ### Diagram kit (`src/components/diagrams/`)
-- `widget.tsx`: `VersionWidget` (the card, Before/After switch on top, play/replay/look closer
-  under it, `tabs` and `accent` per product) and helpers `pill`, `button`, `badge`, `typed`,
-  `glyph` (Material Symbols paths). `Widget.module.css` holds its type and controls.
+- `widget.tsx`: `VersionWidget` (Before/After switch on top, play/replay/look closer under it,
+  `tabs` and `accent` per product; header icon optional, no chevron) and helpers `pill`,
+  `button`, `badge`, `typed`, `glyph` (Material Symbols paths), `touch` (a fingertip tap:
+  disc + ripple) and `hold` (a fingertip held while dragging). `Widget.module.css` holds its type
+  and controls, plus the `p*` classes for real app sizes.
+- **`phone` mode (the owner's ask: realistic sizes):** app diagrams draw on a 360 × 740pt phone
+  screen in a bezel, with status bar, island and home indicator, at real app sizes (16pt body,
+  52–56pt buttons/fields, 60pt rows, 20pt margins). Wide: stats as three tall tiles beside the
+  phone; narrow: a row below. Every app diagram uses it and is laid out from the real screens;
+  `curl-count` (gym) stays in the card layout. Every tap shows `touch`.
 - `SystemCard.tsx` + `.module.css`: the **design language card** (colour swatches named by job,
   type specimen in the real fonts, shapes). Colours are **picked from a source picture**: dots
   land on each colour (logo, poster or style guide), then fly into their swatches. Several
@@ -65,17 +73,17 @@ rendered by `ProjectView.tsx`.
 ### Per project
 | Project | Diagrams / cards | State |
 |---|---|---|
-| MutinyX | `submission-flow`, `quote-flow` (green/red budget chip), `sign-in-flow`, `mutiny-system` | Full template, owner's answers in |
+| MutinyX | `submission-flow`, `quote-flow` (green/red budget panel), `sign-in-flow`, `mutiny-system` | Full template, owner's answers in |
 | TMN · Satara Today | `feed-styles` (Inshorts → Instagram), `two-scripts`, `tmn-system` (both logos) | Full template |
 | Nova UPI | `nova-home`, `nova-cards`, `nova-system` (from the style guide panel) | Full template |
 | Rao Bahadur | `rao-join` (real FaceHash), `rao-system` (from the film poster), stats table | Full template |
 | Spotmies site | `spotmies-system` (values read from the live site's CSS) | Slim, done |
-| Amero X | none yet (design card waiting on Figma values) | Slim, done |
+| Amero X | `amero-system` (from amerox.io's CSS, picked from the logo and the coin `public/work/amerox/coin.png`) | Slim, done |
 | Peddi | stats table | Slim, done |
 | The Newspaper | none (TMN covers it) | Slim, done |
-| SamudraGupt-Q | three older lab diagrams, brief grid added | Slim; reflection missing |
-| Gesture Shop · Aura | none | Not restructured |
-| AI Gym Trainer | none | No case study |
+| SamudraGupt-Q | three older lab diagrams, brief grid added | Slim, done |
+| Gesture Shop · Aura | none | Slim, done (outcome + reflection) |
+| AI Gym Trainer | `curl-count` (the elbow-angle rule from its `app.py`), demo video | Slim; no reflection (owner's choice) |
 
 ## Facts settled with the owner (don't re-ask)
 
@@ -102,9 +110,16 @@ rendered by `ProjectView.tsx`.
   was cut by the client.
 - **SamudraGupt-Q:** built solo; three teammates only pitched. Demo, paper, and a talk at GITAM's
   Quantumisers club (LinkedIn post linked in the brief).
+- **Amero X:** owner worked with Spotmies' design head; the client chose black and gold. Card
+  values from amerox.io (gold `#FCDA7B`, the coin's gradient `#FCDA7B → #E2B649 → #FDB648` as the site's
+  Tailwind stops use it, logo `#FDD303`, `#050505`, `#121212`, Gambarino +
+  Space Grotesk; Gambarino for headings, confirmed by the owner).
+- **Gesture Shop · Aura:** Gesture Shop started Nov 29, 2025 (Aura's date unknown), from
+  exploring OpenCV; never posted, shown to friends.
+- **Gym trainer:** source repo `~/Documents/Projects/personal-gym-trainer`; the original video is
+  on the owner's Desktop, the web copy in `public/work/gym-trainer/`.
 
 ## Still open
 
-See the owner-facing list in the last message of the session; in short: Amero X's Figma values,
-SamudraGupt-Q's reflection, Gesture Shop · Aura and the gym trainer questions, a few drafted
-lines to confirm, a browser pass, and the final commit (excluding nothing but `.DS_Store`).
+Everything is answered and the owner has checked it in the browser. Left: the final commit,
+all files including both handoffs.

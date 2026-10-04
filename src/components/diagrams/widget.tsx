@@ -39,7 +39,13 @@ export interface Frame {
   y: number;
   uid: string;
   t: number;
+  /** The screen's height, when drawn on a phone. */
+  h?: number;
 }
+
+/** A phone's screen in points, as on an iPhone: everything on it is drawn at real app sizes. */
+export const SCREEN_W = 360;
+export const SCREEN_H = 740;
 
 /** A number and what it counts, in the card under the main one; `accent` marks what changed. */
 export type Stat = [value: string, label: string, accent: boolean];
@@ -55,12 +61,13 @@ export function VersionWidget({
   draw,
   tabs = ["Before", "After"],
   accent = YELLOW,
+  phone = false,
 }: {
   className?: string;
   onOpen?: () => void;
   title: string;
   /** Drawn around (0, 0), in a 26px circle. */
-  icon: ReactNode;
+  icon?: ReactNode;
   /** Seconds each version plays for. */
   length: number;
   /** What each version shows, for screen readers. */
@@ -71,6 +78,8 @@ export function VersionWidget({
   tabs?: [string, string];
   /** The product's one colour, for what changed and how far it's played. */
   accent?: string;
+  /** Draw on a phone screen at real app sizes (360 × 740 points), not in a wide card. */
+  phone?: boolean;
 }) {
   const rootRef = useRef<HTMLDivElement>(null);
   const { wide, onScreen } = useDiagramBox(rootRef);
@@ -111,11 +120,26 @@ export function VersionWidget({
   };
 
   const W = wide ? 760 : 420;
-  const H = 568;
+  // The main card: its content sits 28px under the header (as at the sides) and ends about
+  // 40px above its foot; both cards share one corner radius.
+  const shift = 12;
+  const mainH = 428;
+  const radius = 40;
   const cw = wide ? 560 : 380;
   const cx = (W - cw) / 2;
-  const mainH = 392;
   const statsY = 24 + mainH + 16;
+
+  // On a phone: the screen in a thin bezel; the stats beside it when wide, under it when not.
+  const bezel = 8;
+  const px = wide ? 56 : (W - SCREEN_W) / 2;
+  const py = 24 + bezel;
+  const phoneBottom = py + SCREEN_H + bezel;
+  const sideX = px + SCREEN_W + bezel + 32;
+  const H = phone
+    ? wide
+      ? phoneBottom + 24
+      : phoneBottom + 16 + 112 + 24
+    : 24 + mainH + 16 + 112 + 24;
 
   const appear = clamp(t / 0.4);
 
@@ -155,13 +179,46 @@ export function VersionWidget({
           </filter>
         </defs>
         <rect width={W} height={H} fill={STAGE} />
-        <g opacity={appear}>
-          <rect x={cx} y={24} width={cw} height={mainH} rx={44} fill={CARD} />
-          {header(cx, 24, cw, title, icon)}
-          {draw(version, { cx, cw, y: 24, uid, t })}
-          <rect x={cx} y={statsY} width={cw} height={112} rx={44} fill={CARD} />
-          {statRow(stats[version], cx, statsY, cw, t, accent)}
-        </g>
+        {phone ? (
+          <g opacity={appear}>
+            <defs>
+              <clipPath id={`${uid}-screen`}>
+                <rect x={px} y={py} width={SCREEN_W} height={SCREEN_H} rx={48} />
+              </clipPath>
+            </defs>
+            <rect
+              x={px - bezel}
+              y={py - bezel}
+              width={SCREEN_W + bezel * 2}
+              height={SCREEN_H + bezel * 2}
+              rx={56}
+              fill="#0b0a09"
+            />
+            <g clipPath={`url(#${uid}-screen)`}>
+              <rect x={px} y={py} width={SCREEN_W} height={SCREEN_H} fill={CARD} />
+              {draw(version, { cx: px, cw: SCREEN_W, y: py, uid, t, h: SCREEN_H })}
+            </g>
+            {statusBar(px, py)}
+            {wide
+              ? statColumn(stats[version], sideX, py, W - 48 - sideX, SCREEN_H, t, accent, radius)
+              : (
+                <>
+                  <rect x={px} y={phoneBottom + 16} width={SCREEN_W} height={112} rx={radius} fill={CARD} />
+                  {statRow(stats[version], px, phoneBottom + 16, SCREEN_W, t, accent)}
+                </>
+              )}
+          </g>
+        ) : (
+          <g opacity={appear}>
+            <rect x={cx} y={24} width={cw} height={mainH} rx={radius} fill={CARD} />
+            {header(cx, 24, cw, title, icon)}
+            <g transform={`translate(0 ${shift})`}>
+              {draw(version, { cx, cw, y: 24, uid, t })}
+            </g>
+            <rect x={cx} y={statsY} width={cw} height={112} rx={radius} fill={CARD} />
+            {statRow(stats[version], cx, statsY, cw, t, accent)}
+          </g>
+        )}
       </svg>
 
       <div className={`${styles.controls} ${type_.controls}`}>
@@ -206,38 +263,100 @@ export function VersionWidget({
   );
 }
 
-/** The card's top row: an icon, its name, and the chevron. */
+/** The card's top row: an icon (if any) and its name. (No chevron: nothing here opens.) */
 function header(
   cx: number,
   y: number,
   cw: number,
   title: string,
-  icon: ReactNode,
+  icon?: ReactNode,
 ): ReactNode {
   return (
     <g>
-      <circle cx={cx + 56} cy={y + 56} r={26} fill={RAISED} />
-      <g
-        transform={`translate(${cx + 56} ${y + 56})`}
-        fill="none"
-        stroke={INK}
-        strokeWidth={2.2}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      >
-        {icon}
-      </g>
-      <text x={cx + 98} y={y + 64} className={type_.title} fill={MUTED}>
+      {/* An icon is optional: without one, the name starts at the card's edge. */}
+      {icon && (
+        <>
+          <circle cx={cx + 56} cy={y + 56} r={26} fill={RAISED} />
+          <g
+            transform={`translate(${cx + 56} ${y + 56})`}
+            fill="none"
+            stroke={INK}
+            strokeWidth={2.2}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            {icon}
+          </g>
+        </>
+      )}
+      <text x={cx + (icon ? 98 : 28)} y={y + 64} className={type_.title} fill={MUTED}>
         {title}
       </text>
-      <path
-        d={`M${cx + cw - 52} ${y + 46} l10 10 -10 10`}
-        fill="none"
-        stroke={MUTED}
-        strokeWidth={2.4}
-        strokeLinecap="round"
-        strokeLinejoin="round"
+    </g>
+  );
+}
+
+/** A phone's status bar (the time and the island) and its home indicator. */
+function statusBar(x: number, y: number): ReactNode {
+  return (
+    <g>
+      <text x={x + 40} y={y + 34} className={type_.pStatus} fill={INK}>
+        9:41
+      </text>
+      <rect x={x + SCREEN_W / 2 - 56} y={y + 12} width={112} height={32} rx={16} fill="#000000" />
+      <rect x={x + SCREEN_W - 66} y={y + 25} width={24} height={11} rx={3} fill="none" stroke={INK} strokeWidth={1.2} opacity={0.8} />
+      <rect x={x + SCREEN_W - 64} y={y + 27} width={17} height={7} rx={1.5} fill={INK} opacity={0.8} />
+      <rect
+        x={x + SCREEN_W / 2 - 60}
+        y={y + SCREEN_H - 14}
+        width={120}
+        height={5}
+        rx={2.5}
+        fill={INK}
+        opacity={0.55}
       />
+    </g>
+  );
+}
+
+/** Beside a phone: the three numbers as tall tiles, one over another. */
+function statColumn(
+  cells: Stat[],
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  t: number,
+  accent: string,
+  radius: number,
+): ReactNode {
+  const gap = 16;
+  const tile = (h - gap * 2) / 3;
+  return (
+    <g>
+      {cells.map(([value, label, changed], k) => (
+        <g key={label} opacity={clamp((t - 0.3 - k * 0.15) / 0.4)}>
+          <rect x={x} y={y + k * (tile + gap)} width={w} height={tile} rx={radius} fill={CARD} />
+          <text
+            x={x + w / 2}
+            y={y + k * (tile + gap) + tile / 2 + 6}
+            textAnchor="middle"
+            className={type_.value}
+            fill={changed ? accent : INK}
+          >
+            {value}
+          </text>
+          <text
+            x={x + w / 2}
+            y={y + k * (tile + gap) + tile / 2 + 36}
+            textAnchor="middle"
+            className={type_.label}
+            fill={MUTED}
+          >
+            {label}
+          </text>
+        </g>
+      ))}
     </g>
   );
 }
@@ -376,4 +495,46 @@ export function glyph(
       transform={`translate(${x - size / 2} ${y + size / 2}) scale(${k})`}
     />
   );
+}
+
+/**
+ * A fingertip pressing at (x, y) at time `at`: a soft disc lands just before, a ring ripples
+ * out as it presses, then both fade. Pair it with the pressed thing's own dip.
+ */
+export function touch(x: number, y: number, t: number, at: number): ReactNode {
+  const before = 0.22;
+  const after = 0.5;
+  if (t < at - before || t > at + after) return null;
+  const landing = clamp((t - (at - before)) / before);
+  const ripple = clamp((t - at) / after);
+  const fade = 1 - clamp((t - at - 0.2) / (after - 0.2));
+  return (
+    <g pointerEvents="none">
+      <circle
+        cx={x}
+        cy={y}
+        r={14 + 4 * (1 - landing)}
+        fill="#ffffff"
+        opacity={0.38 * landing * fade}
+      />
+      {ripple > 0 && (
+        <circle
+          cx={x}
+          cy={y}
+          r={14 + 22 * ripple}
+          fill="none"
+          stroke="#ffffff"
+          strokeWidth={2}
+          opacity={0.7 * (1 - ripple)}
+        />
+      )}
+    </g>
+  );
+}
+
+/** A fingertip held down at (x, y), as while dragging, from `from` to `to`. */
+export function hold(x: number, y: number, t: number, from: number, to: number): ReactNode {
+  if (t < from - 0.2 || t > to + 0.3) return null;
+  const shown = clamp((t - (from - 0.2)) / 0.2) * (1 - clamp((t - to) / 0.3));
+  return <circle cx={x} cy={y} r={20} fill="#ffffff" opacity={0.3 * shown} pointerEvents="none" />;
 }

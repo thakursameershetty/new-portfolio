@@ -2,6 +2,7 @@
 
 import type { DiagramId } from "../projects";
 import { BellPair } from "./BellPair";
+import { CurlCount } from "./CurlCount";
 import { FeedStyles } from "./FeedStyles";
 import { FleetAverage } from "./FleetAverage";
 import { NovaCards } from "./NovaCards";
@@ -12,6 +13,7 @@ import { QuoteFlow } from "./QuoteFlow";
 import { SignInFlow } from "./SignInFlow";
 import { SubmissionFlow } from "./SubmissionFlow";
 import {
+  AmeroSystem,
   MutinySystem,
   NovaSystem,
   RaoSystem,
@@ -68,6 +70,10 @@ export function Diagram({
       return <RaoJoin className={className} onOpen={onOpen} />;
     case "rao-system":
       return <RaoSystem className={className} onOpen={onOpen} />;
+    case "curl-count":
+      return <CurlCount className={className} onOpen={onOpen} />;
+    case "amero-system":
+      return <AmeroSystem className={className} onOpen={onOpen} />;
     case "mutiny-system":
       return <MutinySystem className={className} onOpen={onOpen} />;
     case "spotmies-system":

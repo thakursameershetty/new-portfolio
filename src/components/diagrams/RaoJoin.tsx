@@ -9,21 +9,23 @@ import {
   RAISED,
   TRACK,
   VersionWidget,
-  button,
   clamp,
   glyph,
+  touch,
   type_,
   typed,
   type Frame,
 } from "./widget";
 
-// Joining in on a usual fan site, against Rao Bahadur's. On a usual one, liking a theory sends
-// you to make an account (an email, a password twice, then your inbox) and the like waits. On
-// Rao Bahadur, the first like asks only for a nickname, and a face is drawn from it as you type
-// (with FaceHash, as on the site), then the like lands.
+// Joining in on a usual fan site, against Rao Bahadur's, on a phone at real sizes. On a usual
+// one, liking a theory sends you to make an account (an email, a password twice, then your
+// inbox) and the like waits. On Rao Bahadur, the first like asks only for a nickname, and a
+// face is drawn from it as you type (with FaceHash, as on the site), then the like lands.
 
 const GOLD = "#f5c66d";
+const PEACOCK = "#008288";
 const NIGHT = "#010a09";
+const SHEET = "#24221f";
 const NICK = "Peacock";
 
 export function RaoJoin({
@@ -37,8 +39,8 @@ export function RaoJoin({
     <VersionWidget
       className={className}
       onOpen={onOpen}
+      phone
       title="Join in"
-      icon={glyph("favorite", 0, 0, 20, INK)}
       tabs={["Usual fan site", "Rao Bahadur"]}
       accent={GOLD}
       length={5}
@@ -63,75 +65,124 @@ export function RaoJoin({
   );
 }
 
-/** The theory being liked, its heart filled once the like lands. */
-function theory(left: number, inner: number, y: number, liked: number): ReactNode {
+/** The theories board, and the theory being liked (its heart filled once the like lands). */
+function board(cx: number, y: number, liked: number): ReactNode {
+  const L = cx + 20;
+  const W = 320;
   const pop = 1 + 0.35 * Math.sin(Math.PI * clamp(liked * 2));
   return (
     <g>
-      <rect x={left} y={y + 100} width={inner} height={104} rx={22} fill={RAISED} />
-      <text x={left + 20} y={y + 132} className={type_.tag} fill={MUTED}>
-        Theory · Hidden details
+      <text x={L} y={y + 92} className={type_.pHead} fill={GOLD} letterSpacing="0.08em">
+        RAO BAHADUR
       </text>
-      <text x={left + 20} y={y + 162} className={type_.name} fill={INK}>
+      <text x={L + W} y={y + 92} textAnchor="end" className={type_.pHead} fill={INK}>
+        ≡
+      </text>
+      <text x={L} y={y + 140} className={type_.pTitle} fill={INK}>
+        Fan theories
+      </text>
+      {["Trending", "New", "Hidden details"].map((tab, k) => {
+        const x = L + [0, 96, 166][k];
+        const w = [88, 62, 126][k];
+        return (
+          <g key={tab}>
+            <rect x={x} y={y + 160} width={w} height={34} rx={17} fill={k === 0 ? GOLD : RAISED} />
+            <text x={x + w / 2} y={y + 182} textAnchor="middle" className={type_.pLabel} fill={k === 0 ? NIGHT : MUTED}>
+              {tab}
+            </text>
+          </g>
+        );
+      })}
+
+      <rect x={L} y={y + 214} width={W} height={184} rx={22} fill={RAISED} />
+      <rect x={L + 20} y={y + 234} width={112} height={26} rx={13} fill={PEACOCK} />
+      <text x={L + 76} y={y + 252} textAnchor="middle" className={type_.pSmall} fill="#f4ead5">
+        Hidden details
+      </text>
+      <text x={L + 20} y={y + 296} className={type_.pHead} fill={INK}>
         The insect stands for doubt
       </text>
-      <g transform={`translate(${left + 32} ${y + 184}) scale(${liked > 0 ? pop : 1})`}>
-        {glyph(liked > 0 ? "favoriteFill" : "favorite", 0, 0, 22, liked > 0 ? GOLD : INK)}
+      <text x={L + 20} y={y + 322} className={type_.pLabel} fill={MUTED}>
+        A theory from the board
+      </text>
+      <g transform={`translate(${L + 34} ${y + 364}) scale(${liked > 0 ? pop : 1})`}>
+        {glyph(liked > 0 ? "favoriteFill" : "favorite", 0, 0, 26, liked > 0 ? GOLD : INK)}
       </g>
-      <text x={left + 50} y={y + 190} className={type_.field} fill={INK}>
+      <text x={L + 56} y={y + 370} className={type_.pStrong} fill={INK}>
         {liked > 0 ? "129" : "128"}
+      </text>
+      {glyph("comment", L + 130, y + 365, 24, INK)}
+      <text x={L + 150} y={y + 370} className={type_.pLabel} fill={MUTED}>
+        Reply
       </text>
     </g>
   );
 }
 
-function tap(x: number, y: number, t: number, at: number): ReactNode {
-  const k = clamp((t - at) / 0.45);
-  if (k <= 0 || k >= 1) return null;
-  return (
-    <circle cx={x} cy={y} r={10 + 10 * k} fill="none" stroke={INK} strokeWidth={2} opacity={1 - k} />
-  );
-}
 
-/** A rounded input with its label, or its value once typed. */
+/** A field with its label as a placeholder, or its value once typed. */
 function field(x: number, y: number, w: number, label: string, value: string): ReactNode {
   return (
     <g>
-      <rect x={x} y={y} width={w} height={40} rx={20} fill={TRACK} />
-      <text x={x + 18} y={y + 26} className={type_.field} fill={value ? INK : MUTED}>
+      <rect x={x} y={y} width={w} height={52} rx={26} fill={TRACK} />
+      <text x={x + 22} y={y + 32} className={type_.pBody} fill={value ? INK : MUTED}>
         {value || label}
       </text>
     </g>
   );
 }
 
-function usual({ cx, cw, y, t }: Frame): ReactNode {
-  const left = cx + 28;
-  const inner = cw - 56;
+/** A gold button that dips when `pressed` (0 to 1 and back). */
+function goldButton(x: number, y: number, w: number, label: string, pressed: number): ReactNode {
+  const s = 1 - 0.05 * Math.sin(Math.PI * clamp(pressed));
+  return (
+    <g transform={`translate(${x + w / 2} ${y + 26}) scale(${s})`}>
+      <rect x={-w / 2} y={-26} width={w} height={52} rx={26} fill={GOLD} />
+      <text y={6} textAnchor="middle" className={type_.pButton} fill={NIGHT}>
+        {label}
+      </text>
+    </g>
+  );
+}
+
+function usual({ cx, y, t }: Frame): ReactNode {
+  const L = cx + 20;
+  const W = 320;
   const sheet = ease(clamp((t - 0.9) / 0.4));
-  const top = y + 140;
+  const top = y + 336;
+  const inbox = t >= 3.8;
 
   return (
     <g>
-      {theory(left, inner, y, 0)}
-      {tap(left + 32, y + 184, t, 0.5)}
+      {board(cx, y, 0)}
+      {touch(L + 34, y + 364, t, 0.5)}
       {t >= 0.9 && (
-        <g transform={`translate(0 ${(1 - sheet) * 60})`} opacity={sheet}>
-          <rect x={left - 8} y={top} width={inner + 16} height={236} rx={26} fill="#24221f" />
-          <text x={left + 12} y={top + 34} className={type_.name} fill={INK}>
-            {t >= 3.8 ? "Check your inbox" : "Create an account"}
+        <g transform={`translate(0 ${(1 - sheet) * 420})`}>
+          <rect x={cx} y={top} width={360} height={420} rx={28} fill={SHEET} />
+          <rect x={cx + 160} y={top + 12} width={40} height={5} rx={2.5} fill={MUTED} />
+          <text x={L} y={top + 56} className={type_.pHead} fill={INK}>
+            {inbox ? "Check your inbox" : "Create an account"}
           </text>
-          {t < 3.8 ? (
+          {inbox ? (
             <>
-              {field(left + 8, top + 50, inner - 16, "Email", typed("fan@mail.com", (t - 1.3) / 0.7))}
-              {field(left + 8, top + 98, inner - 16, "Password", typed("••••••••", (t - 2.1) / 0.5))}
-              {field(left + 8, top + 146, inner - 16, "Confirm password", typed("••••••••", (t - 2.7) / 0.5))}
-              {button(left + 8, top + 192, inner - 16, 36, "Sign up", clamp((t - 3.3) / 0.3), GOLD, NIGHT)}
+              <text x={L} y={top + 86} className={type_.pBody} fill={MUTED}>
+                Verify your email, then come back
+              </text>
+              <text x={L} y={top + 110} className={type_.pBody} fill={MUTED}>
+                to like it.
+              </text>
             </>
           ) : (
-            <text x={left + 12} y={top + 70} className={type_.label} fill={MUTED}>
-              Verify your email, then come back to like it.
-            </text>
+            <>
+              <text x={L} y={top + 80} className={type_.pLabel} fill={MUTED}>
+                to like, reply or post a theory
+              </text>
+              {field(L, top + 100, W, "Email", typed("fan@mail.com", (t - 1.3) / 0.7))}
+              {field(L, top + 164, W, "Password", typed("••••••••", (t - 2.1) / 0.5))}
+              {field(L, top + 228, W, "Confirm password", typed("••••••••", (t - 2.7) / 0.5))}
+              {goldButton(L, top + 300, W, "Sign up", (t - 3.3) / 0.3)}
+              {touch(L + W / 2, top + 326, t, 3.3)}
+            </>
           )}
         </g>
       )}
@@ -139,42 +190,47 @@ function usual({ cx, cw, y, t }: Frame): ReactNode {
   );
 }
 
-function rao({ cx, cw, y, t }: Frame): ReactNode {
-  const left = cx + 28;
-  const inner = cw - 56;
+function rao({ cx, y, t }: Frame): ReactNode {
+  const L = cx + 20;
+  const W = 320;
   // The sheet comes up on the first like and goes once there's a name.
   const open = ease(clamp((t - 0.9) / 0.4)) * (1 - ease(clamp((t - 3.1) / 0.4)));
   const nick = typed(NICK, (t - 1.4) / 0.9);
   const liked = clamp((t - 3.4) / 0.5);
-  const top = y + 224;
-  const face = 56;
+  const top = y + 456;
+  const face = 64;
 
   return (
     <g>
-      {theory(left, inner, y, liked)}
-      {tap(left + 32, y + 184, t, 0.5)}
+      {board(cx, y, liked)}
+      {touch(L + 34, y + 364, t, 0.5)}
       {open > 0.01 && (
-        <g transform={`translate(0 ${(1 - open) * 60})`} opacity={open}>
-          <rect x={left - 8} y={top} width={inner + 16} height={152} rx={26} fill="#24221f" />
-          <text x={left + 12} y={top + 32} className={type_.name} fill={INK}>
+        <g transform={`translate(0 ${(1 - open) * 300})`}>
+          <rect x={cx} y={top} width={360} height={300} rx={28} fill={SHEET} />
+          <rect x={cx + 160} y={top + 12} width={40} height={5} rx={2.5} fill={MUTED} />
+          <text x={L} y={top + 56} className={type_.pHead} fill={INK}>
             Identify yourself
           </text>
+          <text x={L} y={top + 80} className={type_.pLabel} fill={MUTED}>
+            Just a nickname, the first time you join in
+          </text>
           {nick ? (
-            <foreignObject x={left + 8} y={top + 48} width={face} height={face}>
+            <foreignObject x={L} y={top + 98} width={face} height={face}>
               <Facehash
                 name={nick}
                 size={face}
-                colors={["#008288", GOLD, "#d6812e", "#123432"]}
+                colors={[PEACOCK, GOLD, "#d6812e", "#123432"]}
                 intensity3d="subtle"
                 interactive={false}
                 style={{ borderRadius: "50%", overflow: "hidden" }}
               />
             </foreignObject>
           ) : (
-            <circle cx={left + 8 + face / 2} cy={top + 48 + face / 2} r={face / 2} fill={TRACK} />
+            <circle cx={L + face / 2} cy={top + 98 + face / 2} r={face / 2} fill={TRACK} />
           )}
-          {field(left + 76, top + 56, inner - 84, "Your nickname", nick)}
-          {button(left + 8, top + 110, inner - 16, 34, "Continue", clamp((t - 2.7) / 0.3), GOLD, NIGHT)}
+          {field(L + face + 14, top + 104, W - face - 14, "Your nickname", nick)}
+          {goldButton(L, top + 188, W, "Continue", (t - 2.7) / 0.3)}
+          {touch(L + W / 2, top + 214, t, 2.7)}
         </g>
       )}
     </g>

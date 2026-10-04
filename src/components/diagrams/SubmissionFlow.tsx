@@ -7,25 +7,32 @@ import {
   DARK,
   INK,
   MUTED,
+  RAISED,
+  TRACK,
   VersionWidget,
   YELLOW,
   badge,
   clamp,
   lerp,
   pill,
+  touch,
   type_,
   type Frame,
 } from "./widget";
 
-// MutinyX's submissions, before and after. A campaign asks for two reels and a story. In
-// version 1 all three go through one upload button under one timeline; in version 2 each
-// deliverable has its own track, with steps that fit it.
+// MutinyX's submissions, before and after, on a phone at real sizes. A campaign asks for two
+// reels and a story. In version 1 the campaign has one progress timeline and one upload
+// button, so all three go through it; in version 2 each deliverable has its own card, with
+// steps that fit it. Laid out after the two versions' screens.
 
 const PIECES = [
-  { name: "Reel 1", steps: ["Script", "Work", "Proof"], width: 96 },
-  { name: "Reel 2", steps: ["Script", "Work", "Proof"], width: 96 },
-  { name: "Story", steps: ["Post", "Proof"], width: 84 },
+  { name: "Reel 1", steps: ["Script", "Work", "Proof"], width: 92 },
+  { name: "Reel 2", steps: ["Script", "Work", "Proof"], width: 92 },
+  { name: "Story", steps: ["Post", "Proof"], width: 80 },
 ];
+
+// Version 1's single timeline, as on its campaign screen.
+const TIMELINE = ["Invitation accepted", "Product received", "Content in progress"];
 
 export function SubmissionFlow({
   className,
@@ -38,12 +45,12 @@ export function SubmissionFlow({
     <VersionWidget
       className={className}
       onOpen={onOpen}
+      phone
       title="Submissions"
-      icon={<path d="M0 7V-8M-7 -1 0 -8 7 -1" />}
       length={5.5}
       status={{
         1: "Before: three pieces, one upload button, one timeline. Which piece moved it forward?",
-        2: "After: each deliverable has its own track and always shows its next step.",
+        2: "After: each deliverable has its own card and always shows its next step.",
       }}
       stats={{
         1: [
@@ -62,129 +69,175 @@ export function SubmissionFlow({
   );
 }
 
-function before({ cx, cw, y, uid, t }: Frame): ReactNode {
-  const left = cx + 28;
-  const inner = cw - 56;
-  const gap = 8;
-  const steps = ["Script", "Work", "Proof", "Done"];
-  const segment = (inner - gap * 3) / 4;
-  const progress = clamp((t - 1.8) / 0.6);
-
-  const button = { x: cx + cw / 2, y: y + 328 };
+function before({ cx, y, t }: Frame): ReactNode {
+  const L = cx + 20;
+  const W = 320;
+  const button = { x: L + W / 2, y: y + 668 };
   const landed = [1.8, 2.7, 3.6].filter((at) => t >= at).length;
   const confused = t >= 3.9;
+  const progress = clamp((t - 1.8) / 0.6);
 
-  let chipX = left;
+  let chipX = L;
   return (
     <g>
-      {steps.map((name, k) => {
-        const x = left + k * (segment + gap);
+      <text x={L} y={y + 100} className={type_.pHead} fill={INK}>
+        ‹  Campaign details
+      </text>
+
+      {/* The campaign. */}
+      <rect x={L} y={y + 120} width={W} height={84} rx={20} fill={RAISED} />
+      <circle cx={L + 38} cy={y + 162} r={22} fill={INK} />
+      <text x={L + 38} y={y + 168} textAnchor="middle" className={type_.pStrong} fill={DARK}>
+        N
+      </text>
+      <text x={L + 72} y={y + 156} className={type_.pStrong} fill={INK}>
+        Nike Run Club
+      </text>
+      <text x={L + 72} y={y + 178} className={type_.pSmall} fill={MUTED}>
+        2 reels and a story
+      </text>
+      <rect x={L + W - 96} y={y + 148} width={80} height={28} rx={14} fill={CREAM} />
+      <text x={L + W - 56} y={y + 167} textAnchor="middle" className={type_.pSmall} fill={DARK}>
+        Accepted
+      </text>
+
+      {/* One timeline for the whole campaign. */}
+      <text x={L} y={y + 246} className={type_.pStrong} fill={INK}>
+        Campaign progress
+      </text>
+      {TIMELINE.map((step, k) => {
+        const sy = y + 280 + k * 52;
+        const done = k < 2;
+        const live = k === 2;
         return (
-          <g key={name}>
-            {pill(`b${k}`, x, y + 132, segment, 18, k === 0 ? progress : 0, uid)}
-            <text
-              x={x + segment / 2}
-              y={y + 182}
-              textAnchor="middle"
-              className={type_.label}
-              fill={MUTED}
-            >
-              {name}
+          <g key={step}>
+            {k < TIMELINE.length - 1 && (
+              <rect x={L + 9} y={sy + 8} width={2} height={44} fill={done ? YELLOW : TRACK} />
+            )}
+            {live && progress > 0 && (
+              <rect x={L + 9} y={sy + 8} width={2} height={44 * progress} fill={YELLOW} />
+            )}
+            <circle cx={L + 10} cy={sy} r={8} fill={done || live ? YELLOW : TRACK} />
+            <text x={L + 32} y={sy + 5} className={type_.pBody} fill={done || live ? INK : MUTED}>
+              {step}
             </text>
           </g>
         );
       })}
 
+      {/* Three pieces of work, all going into the one upload button. */}
+      <text x={L} y={y + 520} className={type_.pLabel} fill={MUTED}>
+        To submit
+      </text>
       {PIECES.map((piece, i) => {
         const x0 = chipX;
-        chipX += piece.width + 12;
-        const start = 1 + i * 0.9;
-        const k = ease(clamp((t - start) / 0.8));
-        const x = lerp(x0 + piece.width / 2, button.x, k);
-        const cy = lerp(y + 252, button.y, k);
-        const scale = lerp(1, 0.5, k);
+        chipX += piece.width + 10;
+        const at = 1 + i * 0.9;
+        const k = ease(clamp((t - at) / 0.8));
         if (k >= 1) return null;
+        const x = lerp(x0 + piece.width / 2, button.x, k);
+        const cy = lerp(y + 556, button.y, k);
+        const scale = lerp(1, 0.5, k);
         return (
           <g
             key={piece.name}
             transform={`translate(${x} ${cy}) scale(${scale})`}
             opacity={1 - clamp((k - 0.7) / 0.3)}
           >
-            <rect
-              x={-piece.width / 2}
-              y={-20}
-              width={piece.width}
-              height={40}
-              rx={20}
-              fill={CREAM}
-            />
-            <text
-              y={6}
-              textAnchor="middle"
-              className={type_.chip}
-              fill={DARK}
-            >
+            <rect x={-piece.width / 2} y={-20} width={piece.width} height={40} rx={20} fill={CREAM} />
+            <text y={6} textAnchor="middle" className={type_.pStrong} fill={DARK}>
               {piece.name}
             </text>
           </g>
         );
       })}
+      {/* A tap on each piece sends it to the same button. */}
+      {PIECES.map((piece, i) => {
+        const x0 = L + PIECES.slice(0, i).reduce((sum, p) => sum + p.width + 10, 0);
+        return <g key={piece.name}>{touch(x0 + piece.width / 2, y + 556, t, 1 + i * 0.9 - 0.05)}</g>;
+      })}
 
       <g transform={`translate(${button.x} ${button.y})`}>
-        <rect x={-104} y={-28} width={208} height={56} rx={28} fill={YELLOW} />
-        <text
-          y={7}
-          textAnchor="middle"
-          className={type_.button}
-          fill={DARK}
-        >
+        <rect x={-W / 2} y={-28} width={W} height={56} rx={28} fill={YELLOW} />
+        <text y={6} textAnchor="middle" className={type_.pButton} fill={DARK}>
           Upload
         </text>
-        {landed > 0 && badge(96, -30, confused ? "?" : String(landed))}
+        {landed > 0 && badge(W / 2 - 18, -26, confused ? "?" : String(landed))}
       </g>
     </g>
   );
 }
 
-function after({ cx, cw, y, uid, t }: Frame): ReactNode {
-  const left = cx + 28;
-  const inner = cw - 56;
-  const gap = 8;
+function after({ cx, y, uid, t }: Frame): ReactNode {
+  const L = cx + 20;
+  const W = 320;
+
   return (
     <g>
+      <defs>
+        <linearGradient id={`${uid}-campaign`} x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stopColor="#8a0f14" />
+          <stop offset="1" stopColor="#3a0608" />
+        </linearGradient>
+      </defs>
+      {/* The campaign, as version 2 heads it. */}
+      <rect x={L} y={y + 72} width={W} height={120} rx={22} fill={`url(#${uid}-campaign)`} />
+      <text x={L + 20} y={y + 126} className={type_.pHead} fill="#ffffff">
+        Coca-Cola campaign
+      </text>
+      <text x={L + 20} y={y + 150} className={type_.pSmall} fill="rgba(255,255,255,0.75)">
+        2 Instagram reels · 1 story
+      </text>
+      <text x={L} y={y + 232} className={type_.pStrong} fill={INK}>
+        Your deliverables
+      </text>
+
+      {/* A card per deliverable, each with its own steps. */}
       {PIECES.map((piece, i) => {
         const n = piece.steps.length;
-        const ry = y + 118 + i * 86;
+        const ry = y + 252 + i * 140;
         const start = 0.4 + i * 0.5;
         const progress = clamp((t - start) / (0.9 * n)) * n;
         const done = progress >= n;
-        const segment = (inner - gap * (n - 1)) / n;
+        const gap = 8;
+        const segment = (W - 40 - gap * (n - 1)) / n;
         const current = piece.steps[Math.min(Math.floor(progress), n - 1)];
         return (
           <g key={piece.name}>
-            <text x={left} y={ry + 20} className={type_.name} fill={INK}>
+            <rect x={L} y={ry} width={W} height={124} rx={22} fill={RAISED} />
+            <text x={L + 20} y={ry + 38} className={type_.pHead} fill={INK}>
               {piece.name}
             </text>
             <text
-              x={left + inner}
-              y={ry + 20}
+              x={L + W - 20}
+              y={ry + 38}
               textAnchor="end"
-              className={type_.step}
+              className={type_.pStrong}
               fill={done ? INK : progress > 0 ? YELLOW : MUTED}
             >
-              {done ? "Done" : progress > 0 ? current : "Up next"}
+              {done ? "Approved" : progress > 0 ? `${current} upload` : "Up next"}
             </text>
-            {piece.steps.map((step, k) =>
-              pill(
-                `a${i}${k}`,
-                left + k * (segment + gap),
-                ry + 38,
-                segment,
-                16,
-                clamp(progress - k),
-                uid,
-              ),
-            )}
+            {piece.steps.map((step, k) => (
+              <g key={step}>
+                {pill(
+                  `a${i}${k}`,
+                  L + 20 + k * (segment + gap),
+                  ry + 60,
+                  segment,
+                  10,
+                  clamp(progress - k),
+                  uid,
+                )}
+                <text
+                  x={L + 20 + k * (segment + gap)}
+                  y={ry + 96}
+                  className={type_.pSmall}
+                  fill={MUTED}
+                >
+                  {step}
+                </text>
+              </g>
+            ))}
           </g>
         );
       })}

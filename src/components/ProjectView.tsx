@@ -183,6 +183,8 @@ export function ProjectView({
     writeHintPreference(hintsShown ? "off" : "on");
   };
   const [closer, setCloser] = useState<Closer | null>(null);
+  // The contents on a phone: a floating button that opens the list of parts.
+  const [menuOpen, setMenuOpen] = useState(false);
   // Stepping back out of the closer look: the screen can move on again as the view shrinks.
   const [leaving, setLeaving] = useState(false);
   const screenRectRef = useRef<(() => DOMRect | null) | null>(null);
@@ -200,6 +202,7 @@ export function ProjectView({
     setLeaving(false);
     setSeen(new Set());
     setTitleShown(false);
+    setMenuOpen(false);
   }
 
   // The text only waits to arrive once this has run, so it's all there without JavaScript.
@@ -424,6 +427,15 @@ export function ProjectView({
     );
     onCue?.("hop");
   }, [current, onCue, reduceMotion, sections]);
+
+  useEffect(() => {
+    if (!menuOpen) return;
+    const handleKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setMenuOpen(false);
+    };
+    window.addEventListener("keydown", handleKey);
+    return () => window.removeEventListener("keydown", handleKey);
+  }, [menuOpen]);
 
   // The pictures in the story, to grow the closer look from (and shrink it back into).
   const figureRefs = useRef(new Map<string, HTMLElement>());
@@ -662,7 +674,12 @@ export function ProjectView({
 
         {/* The brief: the facts at a glance, in a band across the page under the fold. */}
         {brief && (
-          <dl className={styles.brief} data-seen={titleShown || undefined}>
+          <dl
+            className={styles.brief}
+            data-seen={titleShown || undefined}
+            // How many cells, so four sit two by two and five fill both rows.
+            data-count={study.brief?.length}
+          >
             {brief.map((fact, order) => (
               <div
                 key={fact.label}
@@ -832,6 +849,64 @@ export function ProjectView({
           <span ref={contentsDotRef} className={styles.contentsDot} aria-hidden="true" />
         </ol>
       </nav>
+      {/* On a phone: the contents behind a floating button at the bottom left. */}
+      <button
+        type="button"
+        className={styles.contentsButton}
+        data-shown={!atTop || menuOpen || undefined}
+        aria-label={menuOpen ? "Close the contents" : "Open the contents"}
+        aria-expanded={menuOpen}
+        aria-controls="contents-menu"
+        onClick={() => {
+          onCue?.("remoteKey");
+          setMenuOpen((open) => !open);
+        }}
+      >
+        <span className={styles.contentsButtonDot} />
+      </button>
+      {menuOpen && (
+        <>
+          <button
+            type="button"
+            className={styles.contentsScrim}
+            aria-label="Close the contents"
+            onClick={() => setMenuOpen(false)}
+          />
+          <nav id="contents-menu" className={styles.contentsMenu} aria-label="In this case study">
+            <button
+              type="button"
+              className={styles.contentsMenuItem}
+              onClick={() => {
+                setMenuOpen(false);
+                openingRef.current?.scrollIntoView({
+                  behavior: reduceMotion ? "auto" : "smooth",
+                  block: "start",
+                });
+              }}
+            >
+              Scroll to top
+            </button>
+            <ol className={styles.contentsMenuList}>
+              {sections.map((section, position) => (
+                <li key={section.id}>
+                  <button
+                    type="button"
+                    className={styles.contentsMenuItem}
+                    aria-current={position === current ? "true" : undefined}
+                    onClick={() => {
+                      setMenuOpen(false);
+                      if (position !== current) onCue?.("hop");
+                      goTo(position);
+                    }}
+                  >
+                    {section.label}
+                  </button>
+                </li>
+              ))}
+            </ol>
+          </nav>
+        </>
+      )}
       <div className={styles.story}>
         {sections.map((section, position) => {
           const channel = storyChannels.findIndex(
