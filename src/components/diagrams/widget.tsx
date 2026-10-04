@@ -1,6 +1,14 @@
 "use client";
 
-import { useId, useRef, useState, type CSSProperties, type ReactNode } from "react";
+import {
+  createContext,
+  useContext,
+  useId,
+  useRef,
+  useState,
+  type CSSProperties,
+  type ReactNode,
+} from "react";
 import { useReducedMotion } from "framer-motion";
 import { MATERIAL_PATHS, type MaterialIconName } from "../icons/MaterialIcon";
 import { ControlIcon, useDiagramBox, useTicker } from "./shared";
@@ -13,6 +21,10 @@ import type_ from "./Widget.module.css";
 // top, and replayed.
 
 export type Version = 1 | 2;
+
+/** Inside something small (the TL;DR panel): a phone diagram keeps its stats beside the
+ *  phone at any width, the shortest layout, instead of stacking them under it. */
+export const CompactDiagrams = createContext(false);
 
 export const STAGE = "#d3d0cb";
 export const CARD = "#171614";
@@ -82,7 +94,12 @@ export function VersionWidget({
   phone?: boolean;
 }) {
   const rootRef = useRef<HTMLDivElement>(null);
-  const { wide, onScreen } = useDiagramBox(rootRef);
+  // It plays only once enough of it is in view (35%), and starts over from the beginning
+  // each time it comes back.
+  const box = useDiagramBox(rootRef, 0.35);
+  const compact = useContext(CompactDiagrams);
+  const { onScreen } = box;
+  const wide = box.wide || (compact && phone);
   const still = Boolean(useReducedMotion());
   const uid = useId().replace(/:/g, "");
 
@@ -91,6 +108,18 @@ export function VersionWidget({
   const [playing, setPlaying] = useState(true);
   // Once a version is picked, it stays: version 1 no longer runs on into version 2.
   const [picked, setPicked] = useState(false);
+
+  // Out of view, it goes back to how it starts: version 1, at the beginning, ready to play.
+  const [wasOnScreen, setWasOnScreen] = useState(onScreen);
+  if (wasOnScreen !== onScreen) {
+    setWasOnScreen(onScreen);
+    if (!onScreen) {
+      setVersion(1);
+      setTime(0);
+      setPlaying(true);
+      setPicked(false);
+    }
+  }
 
   const running = playing && onScreen && !still;
   const t = still ? length : time;

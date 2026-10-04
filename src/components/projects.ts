@@ -106,6 +106,27 @@ export interface CaseSection {
   layout?: "wide" | "pair" | "grid" | "row" | "carousel";
 }
 
+/** The case study in a minute, opened from the TL;DR pill: an overview, then the problem
+ *  (with an insight line), a reframe if there was one, the solution, the result (big figures,
+ *  only real ones) and the learnings. Written only from what the case study already says. */
+/** A part of the TL;DR, which can carry one picture or diagram. */
+export type TldrPart = "overview" | "problem" | "reframe" | "solution" | "result" | "learnings";
+
+export interface CaseTldr {
+  /** At most one or two per project, on the parts they explain best. */
+  visuals?: Partial<Record<TldrPart, ProjectMedia | DiagramFigure>>;
+  overview: string[];
+  problem?: { points: string[]; insight?: string };
+  /** "Instead of …" and what it became; shown as "I reframed it as:" between them. */
+  reframe?: { from: string; to: string };
+  solution?: string[];
+  result?: {
+    metrics?: { kicker?: string; value: string; label: string }[];
+    points?: string[];
+  };
+  learnings?: string[];
+}
+
 /** A cell of the brief under a case study's title: what it's about, the fact, and a note.
  *  `logo` shows a mark in place of the value (which then only names it for screen readers);
  *  `people` shows who made it the same way, as overlapping photos (each a link if it has an
@@ -166,6 +187,7 @@ export interface Project {
     timeframe: string;
     client?: CaseClient | CaseClient[];
     headline?: string;
+    tldr?: CaseTldr;
     brief?: CaseFact[];
     reel?: ScreenItem[];
     sections: CaseSection[];
@@ -283,6 +305,61 @@ export const projects: Project[] = [
           alt: "The insect easter egg",
         },
       ],
+      tldr: {
+        overview: [
+          "Designed and built a fan site for the Telugu film Rao Bahadur, alone, in under a week",
+          "Fans pick their favourite characters, post theories and debate, without making an account",
+          "An admin panel let the film team run the debate and the buzz page themselves",
+          "The film's official X account sent people to it four times in its first ten days",
+        ],
+        problem: {
+          points: [
+            "A slow, detailed film, opening the same week as a bigger star's",
+            "It needed word of mouth from the people who had already seen it",
+            "Fans of a smaller film won't make an account just to leave a comment",
+          ],
+          insight: "Remove every hurdle: a nickname should be enough to join in.",
+        },
+        solution: [
+          "No sign-up: your first like, reply or post asks only for a nickname, and a face is drawn from it",
+          "One question before any spoilers: have you watched it?",
+          "A hidden easter egg, for a film full of hidden details",
+        ],
+        result: {
+          metrics: [
+            {
+              value: "271",
+              label: "theories posted by fans",
+            },
+            {
+              value: "36,000+",
+              label: "views on the film's posts about the site",
+            },
+          ],
+          points: [
+            "The film's account asked for theories, saying the director would reply to the best ones",
+            "The site carried on past the cinema run, with a debate and then a link to Netflix",
+          ],
+        },
+        learnings: [
+          "In a week, decide early what has to be right; here it was joining in without an account",
+          "Plan for speed from the start, before the content piles up",
+        ],
+        visuals: {
+          solution: {
+            type: "diagram",
+            diagram: "rao-join",
+            alt: "Animated diagram: liking a theory on a usual fan site, with a sign-up form, against Rao Bahadur's nickname",
+            caption: "Joining in, on a usual fan site and on Rao Bahadur.",
+          },
+          result: {
+            type: "image",
+            src: "/work/raobahadur/posts-jul-7.jpg",
+            alt: "Two posts about the site from the film's official X account",
+            caption: "The film's account, sending fans to the site.",
+          },
+        },
+      },
       sections: [
         {
           id: "brief",
@@ -658,6 +735,62 @@ export const projects: Project[] = [
           label: "Version 2",
         },
       ],
+      tldr: {
+        overview: [
+          "Designed both versions of MutinyX's creator app, and built version 2's frontend in React Native",
+          "Version 1: about 35 screens in three days; version 2: a redesign in five days, after the rebrand",
+          "Rebuilt around the work after a creator says yes: submitting each deliverable",
+          "Version 2 is approved and in testing",
+        ],
+        problem: {
+          points: [
+            "Creators couldn't tell where each deliverable went, or what came next",
+            "A campaign with several pieces still had one timeline and one upload button",
+            "By release, version 1's build had drifted from its design",
+          ],
+          insight: "Creators complained to the client, and their complaints became version 2's brief.",
+        },
+        solution: [
+          "A tab per deliverable, each with its own steps, each reviewed in turn",
+          "Your own quote, checked only against the brand's budget, in place of a slider promising odds it couldn't know",
+          "One phone number to get in: an OTP, and a name and email only if you're new",
+          "Pure black, with the MutinyX yellow kept for what you can act on",
+        ],
+        result: {
+          metrics: [
+            {
+              value: "5 days",
+              label: "to redesign the app",
+            },
+            {
+              value: "1 week",
+              label: "to build version 2's frontend",
+            },
+          ],
+          points: [
+            "My team lead checked and approved it; the backend is being connected",
+            "In testing, with no creators on it yet, so no numbers to share",
+          ],
+        },
+        learnings: [
+          "A design is only as good as what ships, which is why I built version 2's frontend myself",
+          "Hear from creators directly, not only through the client",
+        ],
+        visuals: {
+          problem: {
+            type: "image",
+            src: "/work/mutiny/boards/v1-submit.jpg",
+            alt: "Version 1: a campaign's single progress timeline, the upload screen and the submitted message",
+            caption: "Version 1: one pipeline for the whole campaign.",
+          },
+          solution: {
+            type: "diagram",
+            diagram: "submission-flow",
+            alt: "Animated diagram: version 1's one upload button for every piece, against version 2's card per deliverable",
+            caption: "Submitting, before and after.",
+          },
+        },
+      },
       sections: [
         {
           id: "brief",
@@ -1054,6 +1187,48 @@ export const projects: Project[] = [
           alt: "The old Spotmies website",
         },
       ],
+      tldr: {
+        overview: [
+          "Redesigned Spotmies' own website: researched, designed and built in Next.js",
+          "From a stock-photo template to a dark site that shows the studio's work",
+          "Signed off by the CEO and founders, and live at spotmies.com",
+        ],
+        problem: {
+          points: [
+            "The old site was a template: stock photos and lines like “Innovative solutions to stay ahead of the competition”",
+            "It said little about what the studio actually builds",
+          ],
+        },
+        solution: [
+          "References first: how the best studio sites show what they do, instead of saying it",
+          "A section for each job: services, clients, featured work, a way to get in touch",
+          "Near-black, with the Spotmies cyan for highlights, and Outfit for headings",
+        ],
+        result: {
+          points: [
+            "Live by the second week of February 2026",
+            "Signed off by the CEO and founders",
+          ],
+        },
+        learnings: [
+          "Lead with proof: show what you've built, and let it do the talking",
+          "Build in a way to measure a redesign, like where enquiries come from",
+        ],
+        visuals: {
+          problem: {
+            type: "image",
+            src: "/work/spotmies/old-hero.jpg",
+            alt: "The old Spotmies homepage: a stock photo and a generic line",
+            caption: "Before: a template.",
+          },
+          solution: {
+            type: "image",
+            src: "/work/spotmies/new-hero.jpg",
+            alt: "The new Spotmies homepage: dark, with the work up top",
+            caption: "After: the studio's own look.",
+          },
+        },
+      },
       sections: [
         {
           id: "brief",
@@ -1279,6 +1454,42 @@ export const projects: Project[] = [
           alt: "Swap, wallet, liquidity staking and orders",
         },
       ],
+      tldr: {
+        overview: [
+          "My first project at Spotmies: refining the designs of Amero X, a crypto trading platform",
+          "Black and gold, made to feel premium and trustworthy instead of cheap",
+          "21 screens in Figma, then the landing page built to match",
+        ],
+        problem: {
+          points: [
+            "The designs already existed, but they felt cheap",
+            "In crypto, a cheap look costs trust",
+          ],
+          insight: "Enough gold to feel premium, never so much that it looks cheap.",
+        },
+        solution: [
+          "Gold kept for what matters: the action you're about to take, your balance, the page you're on",
+          "Everything else on near-black and dark panels",
+          "The landing page built to the pixel, animations and all",
+        ],
+        result: {
+          points: [
+            "Handed off in January 2026; the developers changed parts of the live site later",
+          ],
+        },
+        learnings: [
+          "A premium look comes from restraint",
+          "Write down the rules behind a design at handoff, so whoever changes it keeps what makes it work",
+        ],
+        visuals: {
+          solution: {
+            type: "image",
+            src: "/work/amerox/board-trading.jpg",
+            alt: "Amero X's trading screens in black and gold",
+            caption: "Gold kept for what matters.",
+          },
+        },
+      },
       sections: [
         {
           id: "brief",
@@ -1504,6 +1715,57 @@ export const projects: Project[] = [
           alt: "Inside a torch-lit cave",
         },
       ],
+      tldr: {
+        overview: [
+          "A Roblox world for the Telugu film Peddi, made with Dworak to promote its release",
+          "A fairground, mountains, caves and rivers, with the film all through it",
+          "Launched by the film's official X account on June 5, 2026",
+        ],
+        problem: {
+          points: [
+            "The film wanted something fans could spend time in around its release",
+            "It had to be a game, and built fast",
+          ],
+        },
+        solution: [
+          "Roblox, for its own studio, quick building and players who pick it up easily",
+          "References to the film everywhere: the fair, the cricket pitch, Ram Charan's character",
+          "Things to find for those who wander: a piano on a hilltop, a chest on the snowiest peak",
+        ],
+        result: {
+          metrics: [
+            {
+              value: "49.5K",
+              label: "views on the launch post",
+            },
+            {
+              value: "3.3K",
+              label: "likes on it",
+            },
+          ],
+          points: [
+            "Telugu YouTubers played it on their channels",
+          ],
+        },
+        learnings: [
+          "Picking the tool is a design decision too",
+          "Scope to the timeline from day one",
+        ],
+        visuals: {
+          overview: {
+            type: "image",
+            src: "/work/peddi/cover.jpg",
+            alt: "Peddi on Roblox",
+            caption: "Peddi's world on Roblox.",
+          },
+          result: {
+            type: "image",
+            src: "/work/peddi/x-post-screen.jpg",
+            alt: "The film's X post launching the world on Roblox",
+            caption: "The launch post.",
+          },
+        },
+      },
       sections: [
         {
           id: "brief",
@@ -1832,6 +2094,54 @@ export const projects: Project[] = [
           alt: "The Satara Today website, in Marathi",
         },
       ],
+      tldr: {
+        overview: [
+          "Designed the app and website for TMN and Satara Today: one design, in English and in Marathi",
+          "A Gen Z news app where readers react, vote and write their own articles",
+          "Approved, and being built by the Spotmies developers",
+        ],
+        problem: {
+          points: [
+            "The old website's fonts and colours didn't match, and nothing on it moved",
+            "The client wanted a Gen Z news app, not another generic one",
+            "One design had to hold two brands and two scripts",
+          ],
+        },
+        reframe: {
+          from: "Instead of copying Inshorts, as the brief asked,",
+          to: "“Where does Gen Z already read? On Instagram.”",
+        },
+        solution: [
+          "A feed that scrolls like Instagram, with reactions, polls and comments",
+          "One layout for both scripts, with cards that grow for longer Marathi headlines",
+          "Red for the news, black for the ink, white for the page",
+        ],
+        result: {
+          points: [
+            "The first draft half landed; the final design, a week later, was approved",
+            "Being built and tested, with no readers on it yet",
+          ],
+        },
+        learnings: [
+          "A reference in a brief is a starting point, not the requirement",
+          "Ask what the client means by it before designing anything",
+        ],
+        visuals: {
+          reframe: {
+            type: "diagram",
+            diagram: "feed-styles",
+            alt: "Animated diagram: the first draft's Inshorts-style feed against the final Instagram-style feed",
+            caption: "The home feed: first draft, then final.",
+          },
+          solution: {
+            type: "video",
+            src: "/work/tmn-satara/app-tour.mp4",
+            poster: "/work/tmn-satara/app-tour.jpg",
+            alt: "The TMN app in English beside the Satara Today app in Marathi",
+            caption: "One design, two languages.",
+          },
+        },
+      },
       sections: [
         {
           id: "brief",
@@ -2128,6 +2438,34 @@ export const projects: Project[] = [
           alt: "The dark theme",
         },
       ],
+      tldr: {
+        overview: [
+          "A news app I designed on my own, as practice, in light and dark",
+          "Ten screens in Figma: the front page, articles, print papers and readers' own posts",
+          "The month after, it became the first draft of TMN · Satara Today",
+        ],
+        solution: [
+          "The day's front page, with the date, the city, breaking news and top stories",
+          "The print papers to explore, and a calendar for another day's",
+          "Readers publishing their own posts, with an image or video",
+        ],
+        result: {
+          points: [
+            "About 80% of TMN · Satara Today's first draft came from it",
+          ],
+        },
+        learnings: [
+          "A draft made for yourself still has to be reshaped for a client's brand and audience",
+        ],
+        visuals: {
+          overview: {
+            type: "image",
+            src: "/work/the-newspaper/boards/feed.jpg",
+            alt: "The Newspaper: its front page, an article and search",
+            caption: "The front page, an article and search.",
+          },
+        },
+      },
       sections: [
         {
           id: "brief",
@@ -2334,6 +2672,54 @@ export const projects: Project[] = [
           href: "https://lnkd.in/p/dm_zxSaB",
         },
       ],
+      tldr: {
+        overview: [
+          "My final-year project, built on my own: the research, the design and every part of the code",
+          "A working simulation of keeping an underwater drone swarm's links safe from future quantum computers",
+          "Phones stand in for the drones, and a live 3D dashboard shows the swarm",
+        ],
+        problem: {
+          points: [
+            "Swarms talk over encryption that a large enough quantum computer will break",
+            "Anyone can record that traffic today and decrypt it later",
+            "A captured drone has to be noticed",
+          ],
+        },
+        solution: [
+          "Keys from entangled Bell pairs, simulated in Qiskit (the E91 idea)",
+          "The fleet's readings averaged while still encrypted, so no server sees every drone's data",
+          "An attacker console, to break it on purpose, live",
+        ],
+        result: {
+          metrics: [
+            {
+              value: "7",
+              label: "attack scenarios, run live against the swarm",
+            },
+          ],
+          points: [
+            "A demo, a paper, and a talk at GITAM's Quantumisers club",
+          ],
+        },
+        learnings: [
+          "Mapping real things into a simulated world: phones in my hands became drones, live",
+          "Working with quantum frameworks, three layers running at once",
+        ],
+        visuals: {
+          overview: {
+            type: "image",
+            src: "/work/samudragupt/swarm.jpg",
+            alt: "The command dashboard showing a three-drone swarm in 3D",
+            caption: "The live dashboard, with a three-drone swarm.",
+          },
+          solution: {
+            type: "diagram",
+            diagram: "packet-flow",
+            alt: "Animated diagram: packets through the quantum engine's four checks",
+            caption: "Every packet, through four checks.",
+          },
+        },
+      },
       sections: [
         {
           id: "overview",
@@ -2683,6 +3069,44 @@ export const projects: Project[] = [
           alt: "Aura, played by hand",
         },
       ],
+      tldr: {
+        overview: [
+          "Two experiments in using the web without touching anything",
+          "Gesture Shop: browse a store and fill your cart with your hand",
+          "Aura: a music visualizer you play, skip and restyle with gestures",
+          "Both track your hand through the webcam, in the browser",
+        ],
+        problem: {
+          points: [
+            "What if you could control the web with the camera, instead of the mouse?",
+            "A hand in front of a webcam never sits still",
+          ],
+        },
+        solution: [
+          "Pinch to select; close your hand to grab a product, and let go over the cart",
+          "A smoothed cursor that glides instead of shaking, and shows what your hand is holding",
+          "Visuals that pulse with the music, drawn in shaders",
+        ],
+        result: {
+          points: [
+            "Both live on Vercel",
+            "Shown to friends, not posted online",
+          ],
+        },
+        learnings: [
+          "An interface isn't only what you tap or click: sometimes it's how you move",
+          "Designing for a hand in the air means designing for imprecision",
+        ],
+        visuals: {
+          overview: {
+            type: "video",
+            src: "/work/guesture-shop/shop-hands.mp4",
+            poster: "/work/guesture-shop/shop-hands.jpg",
+            alt: "Using Gesture Shop by hand in front of a laptop",
+            caption: "Shopping by hand.",
+          },
+        },
+      },
       sections: [
         {
           id: "idea",
@@ -2816,6 +3240,8 @@ export const projects: Project[] = [
       },
     ],
     caseStudy: {
+      // Its own app icon, credited above the title like a client's logo.
+      client: { logo: "/logos/nova-logo.png", name: "Nova UPI", height: 44 },
       timeframe: "48-hour sprint",
       headline: "Your money, upgraded: a calmer UPI app, designed in 48 hours",
       brief: [
@@ -2878,6 +3304,58 @@ export const projects: Project[] = [
           alt: "Paying by QR",
         },
       ],
+      tldr: {
+        overview: [
+          "A UPI payments app I designed in 48 hours, a sprint I set myself",
+          "About 50 screens, a design system, and a prototype that morphs from screen to screen",
+          "The project that got me hired at Spotmies",
+        ],
+        problem: {
+          points: [
+            "Home screens crowded with ads and insurance offers",
+            "Checking your balance hidden behind several taps",
+            "Colours that don't match, and low-contrast text that's hard to read outdoors",
+          ],
+        },
+        solution: [
+          "Your balance first, with no ads in the way",
+          "Your cards fetched from your phone number, and pulled down to add (a concept)",
+          "Swipe to pay instead of tapping, so you mean it",
+        ],
+        result: {
+          metrics: [
+            {
+              value: "48 hrs",
+              label: "from research to a prototype you can click through",
+            },
+            {
+              value: "~50",
+              label: "screens",
+            },
+          ],
+          points: [
+            "It got me hired at Spotmies",
+          ],
+        },
+        learnings: [
+          "A tight deadline makes you build a system",
+          "Even for a concept, show the prototype to people who pay by UPI every day",
+        ],
+        visuals: {
+          problem: {
+            type: "diagram",
+            diagram: "nova-home",
+            alt: "Animated diagram: a typical UPI app's cluttered home against Nova's, balance first",
+            caption: "Home, in a typical UPI app and in Nova.",
+          },
+          result: {
+            type: "image",
+            src: "/work/nova-upi/boards/mockup-hand.jpg",
+            alt: "Nova's opening screen on an iPhone held over a laptop",
+            caption: "Nova, in the hand.",
+          },
+        },
+      },
       sections: [
         {
           id: "brief",
@@ -3226,6 +3704,39 @@ export const projects: Project[] = [
           alt: "The FitPro dashboard",
         },
       ],
+      tldr: {
+        overview: [
+          "A fitness dashboard with a trainer that watches you through your webcam",
+          "It counts your bicep curls from the angle of your elbow, with MediaPipe",
+          "Designed and built on my own in April 2025",
+        ],
+        solution: [
+          "The elbow's angle: over 160° the arm is straight (down), under 30° it's curled (up)",
+          "A curl only counts after the arm has straightened again, so half reps never count",
+          "Flask streams the tracked video into a pastel dashboard",
+        ],
+        result: {
+          points: [
+            "Counts curls live, as in the demo video",
+            "The dashboard's charts are still on sample data",
+          ],
+        },
+        visuals: {
+          overview: {
+            type: "video",
+            src: "/work/gym-trainer/demo.mp4",
+            poster: "/work/gym-trainer/demo.jpg",
+            alt: "The FitPro dashboard counting bicep curls live",
+            caption: "Counting curls live.",
+          },
+          solution: {
+            type: "diagram",
+            diagram: "curl-count",
+            alt: "Animated diagram: the angle at the elbow, a full rep and a half rep",
+            caption: "The rule, at the elbow.",
+          },
+        },
+      },
       sections: [
         {
           id: "brief",

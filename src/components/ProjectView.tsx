@@ -39,6 +39,7 @@ import {
   type ScreenItem,
 } from "./projects";
 import { Diagram, isCompactDiagram } from "./diagrams/Diagram";
+import { Tldr } from "./Tldr";
 import { ArrowIcon } from "./icons/ArrowIcon";
 import styles from "./ProjectView.module.css";
 
@@ -185,6 +186,11 @@ export function ProjectView({
   const [closer, setCloser] = useState<Closer | null>(null);
   // The contents on a phone: a floating button that opens the list of parts.
   const [menuOpen, setMenuOpen] = useState(false);
+  // The TL;DR's summary, open over the page: the page's keys wait while it is.
+  const [tldrOpen, setTldrOpen] = useState(false);
+  // 30% through the story: the TL;DR key steps aside (long case studies took too long to
+  // reach a half).
+  const [readOn, setReadOn] = useState(false);
   // Stepping back out of the closer look: the screen can move on again as the view shrinks.
   const [leaving, setLeaving] = useState(false);
   const screenRectRef = useRef<(() => DOMRect | null) | null>(null);
@@ -203,6 +209,8 @@ export function ProjectView({
     setSeen(new Set());
     setTitleShown(false);
     setMenuOpen(false);
+    setTldrOpen(false);
+    setReadOn(false);
   }
 
   // The text only waits to arrive once this has run, so it's all there without JavaScript.
@@ -231,6 +239,8 @@ export function ProjectView({
   // The part being read: the last one whose top has passed the reading line. While a tick's
   // scroll is under way, it holds the tick's part instead.
   const partRefs = useRef<(HTMLElement | null)[]>([]);
+  const storyRef = useRef<HTMLDivElement>(null);
+  const contentsButtonRef = useRef<HTMLButtonElement>(null);
   const openingRef = useRef<HTMLDivElement>(null);
   const heldRef = useRef(false);
   // When the hold on a tick's part lets go: once the scrolling has stopped.
@@ -242,6 +252,17 @@ export function ProjectView({
       frame = 0;
       const opening = openingRef.current?.getBoundingClientRect();
       setAtTop(!opening || opening.top > -60);
+      // How far through the story the reading line is, for the phone contents button's ring:
+      // written straight onto the button, so scrolling doesn't re-render the page.
+      const story = storyRef.current?.getBoundingClientRect();
+      if (story) {
+        const through = Math.min(
+          1,
+          Math.max(0, (window.innerHeight * readingLine - story.top) / story.height),
+        );
+        contentsButtonRef.current?.style.setProperty("--progress", String(through));
+        setReadOn(through >= 0.3);
+      }
       if (heldRef.current) return;
       const line = window.innerHeight * readingLine;
       let reading = 0;
@@ -378,7 +399,7 @@ export function ProjectView({
   // Keys: ← and → move a part, 1–9 jump to one.
   useEffect(() => {
     const handleKey = (event: KeyboardEvent) => {
-      if (closer !== null || event.metaKey || event.ctrlKey || event.altKey)
+      if (closer !== null || tldrOpen || event.metaKey || event.ctrlKey || event.altKey)
         return;
       const target = event.target as HTMLElement | null;
       if (target?.closest("input, textarea, select, [contenteditable]")) return;
@@ -394,7 +415,7 @@ export function ProjectView({
     };
     window.addEventListener("keydown", handleKey);
     return () => window.removeEventListener("keydown", handleKey);
-  }, [current, closer, goTo, onCue, sections.length]);
+  }, [current, closer, tldrOpen, goTo, onCue, sections.length]);
 
   // The contents' dot: beside the part being read, and when that changes, it hops there in a
   // little arc out to the right instead of sliding straight down the list.
@@ -813,44 +834,36 @@ export function ProjectView({
         </button>
       </div>
 
-      <div className={styles.storyLayout}>
-      <nav className={styles.contents} aria-label="In this case study">
-        <button
-          type="button"
-          className={styles.contentsTop}
-          onClick={() =>
-            openingRef.current?.scrollIntoView({
-              behavior: reduceMotion ? "auto" : "smooth",
-              block: "start",
-            })
+      {/* The case study in a minute, from a pill at the foot of the screen. */}
+      {study?.tldr && (
+        <Tldr
+          key={project.id}
+          tldr={study.tldr}
+          shown={!atTop && !menuOpen && closer === null}
+          // 30% through the story, it steps aside into a small circle.
+          minimised={readOn}
+          onOpenChange={setTldrOpen}
+          // Its pictures lead back to the part of the story they come from.
+          findSection={(item) =>
+            sections.findIndex((section) =>
+              [section.lead, ...(section.figures ?? []), ...(section.screen ?? [])].some(
+                (figure) =>
+                  figure !== undefined &&
+                  (figure.type === "diagram" || item.type === "diagram"
+                    ? figure.type === "diagram" &&
+                      item.type === "diagram" &&
+                      figure.diagram === item.diagram
+                    : "src" in figure && "src" in item && figure.src === item.src),
+              ),
+            )
           }
-        >
-          Scroll to top
-        </button>
-        <ol className={styles.contentsList}>
-          {sections.map((section, position) => (
-            <li key={section.id}>
-              <button
-                type="button"
-                className={styles.contentsItem}
-                aria-current={position === current ? "true" : undefined}
-                onClick={() => goTo(position)}
-              >
-                <span
-                  ref={(node) => {
-                    contentsLabelRefs.current[position] = node;
-                  }}
-                >
-                  {section.label}
-                </span>
-              </button>
-            </li>
-          ))}
-          <span ref={contentsDotRef} className={styles.contentsDot} aria-hidden="true" />
-        </ol>
-      </nav>
+          onJump={goTo}
+        />
+      )}
+
       {/* On a phone: the contents behind a floating button at the bottom left. */}
       <button
+        ref={contentsButtonRef}
         type="button"
         className={styles.contentsButton}
         data-shown={!atTop || menuOpen || undefined}
@@ -862,6 +875,11 @@ export function ProjectView({
           setMenuOpen((open) => !open);
         }}
       >
+        {/* How far through the story you are, round the dot (it fills from the top). */}
+        <svg className={styles.contentsRing} viewBox="0 0 48 48" aria-hidden="true">
+          <circle className={styles.contentsRingTrack} cx="24" cy="24" r="21" />
+          <circle className={styles.contentsRingFill} cx="24" cy="24" r="21" pathLength={1} />
+        </svg>
         <span className={styles.contentsButtonDot} />
       </button>
       {menuOpen && (
@@ -907,7 +925,43 @@ export function ProjectView({
           </nav>
         </>
       )}
-      <div className={styles.story}>
+      <div className={styles.storyLayout}>
+      <nav className={styles.contents} aria-label="In this case study">
+        <button
+          type="button"
+          className={styles.contentsTop}
+          onClick={() =>
+            openingRef.current?.scrollIntoView({
+              behavior: reduceMotion ? "auto" : "smooth",
+              block: "start",
+            })
+          }
+        >
+          Scroll to top
+        </button>
+        <ol className={styles.contentsList}>
+          {sections.map((section, position) => (
+            <li key={section.id}>
+              <button
+                type="button"
+                className={styles.contentsItem}
+                aria-current={position === current ? "true" : undefined}
+                onClick={() => goTo(position)}
+              >
+                <span
+                  ref={(node) => {
+                    contentsLabelRefs.current[position] = node;
+                  }}
+                >
+                  {section.label}
+                </span>
+              </button>
+            </li>
+          ))}
+          <span ref={contentsDotRef} className={styles.contentsDot} aria-hidden="true" />
+        </ol>
+      </nav>
+      <div ref={storyRef} className={styles.story}>
         {sections.map((section, position) => {
           const channel = storyChannels.findIndex(
             (entry) => entry.part === position,

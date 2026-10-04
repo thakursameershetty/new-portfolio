@@ -229,18 +229,19 @@ const NOVA: System = {
     {
       name: "The glass",
       hex: "#FFFFFF",
-      use: "Frosted panels and cards",
+      use: "Frosted panels and cards, with black (#000000) text",
       ink: "#0b2540",
     },
     {
-      name: "The ink",
-      hex: "#000000",
-      use: "Text on the glass",
+      name: "The icon",
+      hex: "#9592EA → #1D2B85",
+      use: "The app icon's petals, lavender to navy",
       ink: "#ffffff",
+      fill: "linear-gradient(135deg, #9592ea, #1d2b85)",
     },
   ],
   source: {
-    label: "Picked from the style guide",
+    label: "Picked from the style guide and the app icon",
     backdrop: "#ffffff",
     pictures: [
       {
@@ -254,6 +255,14 @@ const NOVA: System = {
           { x: 93.2, y: 22.7 },
           null,
         ],
+      },
+      {
+        src: "/logos/nova-logo.png",
+        alt: "Nova's app icon: a pinwheel of lavender-to-navy petals on pale blue",
+        width: 360,
+        height: 360,
+        // Measured on the icon: a petal, where its lavender turns to navy.
+        picks: [null, null, null, { x: 41.7, y: 33.3 }],
       },
     ],
   },

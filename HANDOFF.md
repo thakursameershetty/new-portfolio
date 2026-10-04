@@ -6,8 +6,10 @@ lives, how the pieces connect, the decisions already made (and rejected), and wh
 - **Owner:** Thakur Sameer Shetty Tammana — UI/UX designer at Spotmies LLP who grew into full
   stack. Based in Visakhapatnam, India. Email `thakursst5002810@gmail.com`, LinkedIn
   `linkedin.com/in/thakur-sameer-shetty-tammana/`. Phone number is deliberately kept off the site.
-- **Repo:** `https://github.com/thakursameershetty/new-portfolio` (branch `main`, all work
-  committed as of commit `02d4a5d`).
+- **Repo:** `https://github.com/thakursameershetty/new-portfolio` (branch `main`, deployed on
+  Vercel from GitHub). All work committed and pushed as of `b076211` (2026-10-04). The case
+  studies have their own handoff, `HANDOFF-case-studies.md`; keep both files in the repo.
+- **Live site:** the URL is in `src/components/site.ts` (no `www`).
 - **Inspiration:** `https://www.dsnikhil.com/` (red grid hero, "I'M NAME" type, Disket Mono).
   The owner explicitly does **not** want to copy it; ideas are borrowed, never layouts. The
   owner does point at it for specific behaviours (the session-only splash, the contact keys'
@@ -26,6 +28,9 @@ lives, how the pieces connect, the decisions already made (and rejected), and wh
   react-three-fiber) for the 3D disk boxes, loaded with a dynamic `import()` only when the
   Work section gets near. Web Audio for all sound (synthesized, no audio files).
 - **Utilities:** `clsx`. `next-themes` is installed but the site is forced to its own palette.
+  `facehash` (MIT) draws avatars in one case-study diagram.
+- **Analytics:** Vercel Analytics (`<Analytics />`) and Microsoft Clarity (a `next/script` in
+  `src/app/layout.tsx`).
 - **Checks:** `npx tsc --noEmit -p .` passes. `npx eslint src` reports 2 known errors in
   `WebsiteShaderCanvas.tsx` (`react-hooks/set-state-in-effect` for `setFailed` and `setMounted`),
   inherited from the original component code; everything else is clean.
@@ -34,10 +39,20 @@ lives, how the pieces connect, the decisions already made (and rejected), and wh
 - **Code style:** comments explain *why*, in the voice already used in the files. Match
   surrounding naming and density.
 
-## Page structure (`src/app/page.tsx`)
+## Routes and page structure
 
-`SiteIntro` wraps everything, then in order: `Hero` (`#top`) → `Currently` (`#about`) →
-`Work` (`#work`) → `Contact` (`#contact`). The nav lists them in that same order.
+- `/` (`src/app/page.tsx`): `SiteIntro` wraps everything, then in order: `Hero` (`#top`) →
+  `Currently` (`#about`) → `Work` (`#work`) → `Contact` (`#contact`). The nav lists them in
+  that same order.
+- `/about`: the About page (see "About page" below).
+- `/practice`: the Figma prototypes board, in the About page's frame.
+- `/work/[id]`: a project's case study as its own page, for shared or direct links. From the
+  site, disks open the same `ProjectView` over the home page (in `Work.tsx`'s `<dialog>`) at
+  this same URL. A pager at the foot leads to the previous and next project, with mini floppies.
+- SEO and sharing: `site.ts` (metadata, JSON-LD, sitemap data, contact links), `robots.ts`,
+  `sitemap.ts`, `manifest.ts` (add to home screen, floppy icons), `icon.png`, `apple-icon.png`,
+  `favicon.ico`, and `opengraph-image.tsx` (the link preview: name and headline, the ID card on
+  its lanyard with stickers, two floppies and the music player; rendered at build time).
 
 ## Fonts (`src/app/layout.tsx`, all via `next/font/local`)
 
@@ -46,6 +61,10 @@ lives, how the pieces connect, the decisions already made (and rejected), and wh
 | `--font-hero` | Disket Mono (regular + bold, `public/disket-mono-free-font/`) | Hero "HI", "I'M THAKUR", headline, section labels and headings, floppy labels (HTML and 3D textures) |
 | `--font-display` | Google Sans (variable 400–700, `src/fonts/`) | Nav, role line, small uppercase labels |
 | `--font-sans` | Google Sans Flex (variable 1–1000, `src/fonts/`) | Body text |
+
+The case-study design cards self-host their brands' fonts in `src/fonts/` too (Epilogue, Inter,
+Cinzel, Outfit, General Sans, Gambarino, Space Grotesk), scoped to those cards with
+`localFont` in `diagrams/SystemCard.tsx`.
 
 Google Sans files are self-hosted (Latin subset, SIL OFL) because Turbopack ignored
 `adjustFontFallback: false` and kept warning when they came from `next/font/google`. The 3D
@@ -182,6 +201,26 @@ looping only while on screen. It started as a pop-up and was made a page to matc
 other sections. Keep the copy modest: self-taught practice, not client work. Raw recordings
 are in `~/Desktop/Sample/figma-recordings-2026-09-29` (outside the repo).
 
+### About page — `src/app/about/page.tsx`, `src/components/about/`
+- `IdCard.tsx`: an ID card on a lanyard (the owner's photo in black and white) that turns
+  over; its back carries stickers you can peel and move (`StickerPeel.tsx`, adapted from React
+  Bits, MIT), with haptic taps.
+- `RecordTimeline.tsx` / `Milestones.tsx`: the timeline, and the longer list of milestones
+  (newest first; only what the case studies and the résumé say; `project` links one to its
+  case study).
+- `taste.ts` holds what the owner is listening to, watching and playing; swap a list and
+  nothing else changes. `ListeningTo.tsx` (a crate of covers, a swipeable strip on touch,
+  30-second iTunes previews), `Watching.tsx` (a looping poster carousel), `Playing.tsx`
+  (Game Center-style cards cut like floppies, which turn over).
+- `MiniPlayer.tsx`: when music plays somewhere the big player isn't, a small spinning record
+  in the **bottom-left corner** (progress running round it; the ID card docks bottom-right).
+  It flies out of the big player's record as you scroll away and back in as you return; on
+  other pages it drops in. Clicking it opens the player as a pop-up. While it shows, it sets
+  `data-mini-player` on `<html>`, and anything else fixed to the bottom-left corner moves above
+  it (the case studies' phone contents button does, in `ProjectView.module.css`).
+- `AboutFooter.tsx`: a closing line, the contact keys (email, LinkedIn, Threads, GitHub), a way
+  on to the work, and the credits, over the same growing red grid as the home Contact.
+
 ### Work — `src/components/Work.tsx`, `diskBox3d.ts`, `CrtPreview.tsx`, `projects.ts`
 **Discipline tags:** each row shows DESIGN · DEV · 3D from `disciplines` in `projects.ts`. A
 "View by" lens filter (with disks shut away in the boxes, empty boxes docking beside the switch,
@@ -192,13 +231,13 @@ that job.
 How it evolved (so nothing rejected comes back): featured rows → two boxes; 2-column
 disk+details grid → single-column rows; tap-to-open box → opens on arrival.
 
-**Data (`projects.ts`):** 10 projects from the résumé (and The Newspaper, from the owner) only (no invented years/stacks). Fields:
+**Data (`projects.ts`):** 11 projects (the résumé's 10 and The Newspaper, from the owner); no invented years or stacks. The case studies live here too (see `HANDOFF-case-studies.md`). Fields:
 title, kind, role, `context` (`"Spotmies"` | `"Project"`), summary, highlights, stack, optional
 `link`, `media` (images/videos for the monitor and window), disk colours (`disk`, `ink`).
-Shelves are split by `context`: **Spotmies · Client work** (Rao Bahadur, Mutiny Talent,
-Spotmies · Amerox, Peddi, TMN · Satara Today) and **Personal · Hobby & academic** (The Newspaper, SamudraGupt-Q
-— the final-year project —, Gesture Shop · Aura, Nova UPI, AI Gym Trainer). Disks are numbered
-01–10 straight through both.
+Shelves are split by `context`: **Spotmies · Client work** (Rao Bahadur, MutinyX, Spotmies,
+Amero X, Peddi, TMN · Satara Today) and **Personal · Hobby & academic** (The Newspaper,
+SamudraGupt-Q — the final-year project —, Gesture Shop · Aura, Nova UPI, AI Gym Trainer).
+Disks are numbered 01–11 straight through both (`diskOrder`).
 
 **Two disk boxes side by side** (stacked ≤720px), each a `DiskBox`:
 - **3D box (`diskBox3d.ts`, plain three.js):** smoky clear plastic tray (transparent
@@ -281,7 +320,7 @@ outside `public/`, which ships with the site.
 - Split-flap "LET'S MAKE SOMETHING / FEEL RIGHT", status line (green pulse, live India time
   with animated map pin).
 - Keycap buttons: cream email key (copies the address → "COPIED ✓"; the ↗ segment opens
-  mail) and dark LinkedIn key. **Phones:** keys stack left-aligned, each as wide as its content
+  mail) and dark keys for LinkedIn, Threads (replaced Dribbble on 2026-10-01) and GitHub. **Phones:** keys stack left-aligned, each as wide as its content
   (like dsnikhil); the email address **always stays on one line** and scales down to fit
   (`font-size: min(1em, calc((100vw - 152px) / 14.2))` — 17px from 414px wide, ~11.8px at 320px).
   Top padding on phones is 170px (was ~270px).
@@ -306,6 +345,13 @@ outside `public/`, which ships with the site.
 - Don't copy the reference; don't add unasked features; keep changes scoped. Recommend an
   approach (with a pick) before large changes; the owner usually takes the recommendation.
 - Iterates from screenshots (often phone-sized); prefers seeing a result then tuning numbers.
+- **Never invent** facts, numbers, copy or reasons in anything about their work; ask, and
+  credit precisely who built what. Don't link client previews before a launch.
+- Wants interfaces drawn realistically (real sizes, real content from the actual screens), not
+  generic or "AI slop"; Apple-widget polish; one accent colour per product.
+- **Light verification:** type check and lint, then hand over; the owner tests on their own
+  laptop and phone. Don't run long headless checks unless asked.
+- Commits and pushes only when asked; sometimes commits themself.
 - Rejected before (don't reintroduce): pixel-mosaic portrait, glass nav variants with white
   frosting, red side-tint fade on the scene, Google Sans for the name, click sound on floppy
   open, split-flap flutter for floppy open, center ripple for Contact, timed pour for Contact,
@@ -317,102 +363,49 @@ outside `public/`, which ships with the site.
 
 ## Open items / next steps
 
-**Case study restructure (2026-10-04): see `HANDOFF-case-studies.md`** for the new template,
-the widget diagram kit (`diagrams/widget.tsx`), the design language cards
-(`diagrams/SystemCard.tsx`), the numbered points / stats table / inline links / contents
-sidebar in `ProjectView.tsx`, the facts settled with the owner, and what's still open. Where it
-and the notes below disagree, it is newer. New dependency: `facehash`. New fonts in
-`src/fonts/` (Epilogue, Inter, Cinzel, Outfit, General Sans) are scoped to the cards.
+**Case studies: done (2026-10-04). Everything about them is in `HANDOFF-case-studies.md`**:
+the rules agreed with the owner, the data model, the diagram kit and design cards, the
+contents sidebar and phone menu, each project's state and the facts the owner confirmed.
+Lasting notes about the case study page that aren't there:
+- The page (`ProjectView.tsx`): a first screen with the meta line (with a read time), the
+  title, the `headline`, link and tools, kept sparse on purpose, beside the CRT set on a faint
+  grid floor (channel 1 is the `reel`, then a channel per part; the remote's keys tune the TV
+  without scrolling, and ◀ ▶ step through a channel's pictures). Then the `brief` band, then the
+  story in a 680px column with each part's figures under it. Any picture opens `ScreenViewer`.
+  The how-to hints live in the hero's top-right corner ("? Hide hints"); the owner rejected
+  them under the set, under the title and in the top bar.
+- Spotmies work opens with a credits row of logos (`public/logos/`) above the meta line;
+  `client` can be a list, split by a rule.
+- Every brief has a **Stage** cell: "0 → 1, …" only where the product didn't exist before,
+  "Redesign" or "Concept" otherwise (interviewers probe 0 → 1 claims). Don't quote numbers a
+  client sets for marketing (Rao Bahadur's home page counter).
+- Phone screens are shown as 4:3 "boards" (`public/work/*/boards/`): 1600×1200 on Figma grey
+  `#1e1e1e`, up to three screens (top 1748px of each 804px-wide 2x export) at 1008px tall with
+  64px corners, 56px apart; portrait clips the same way at 1200×900. Built with ffmpeg (a
+  rounded-rect mask via `geq`, then `alphamerge`; with a looped still mask, pass
+  `alphamerge=shortest=1` and `-t`, or it never ends). The monitor's screen is 4:3 and covers.
+- **Real media still wanted:** a SamudraGupt-Q screen recording (the deck had only stills), and
+  a clearer Gesture Shop video.
 
-**Animated diagrams (`src/components/diagrams/`, 2026-09-30):** a case-study figure of
-`type: "diagram"` is an interactive SVG with its own controls (so it isn't wrapped in the
-"look closer" button; its controls include one). SamudraGupt-Q has three, each a part's
-`lead`: `packet-flow` (How it works: packets through the quantum engine's four checks, six
-pickable scenarios), `bell-pair` (Quantum key: the E91 circuit from `quantum_layer.py`, shot
-by shot, H gate switchable, "run all 512") and `fleet-average` (Privacy: CKKS averaging, depth
-sliders). They follow the site's reduced-motion setting and pause off screen. The monitor
-can't play them (WebGL textures), so parts with one set `screen` or drop off the monitor.
+The older `diagrams/` (`packet-flow`, `bell-pair`, `fleet-average`, SamudraGupt-Q, 2026-09-30)
+are interactive SVGs in a monospace "lab" style; left as they are.
 
-1. **Real media:** a SamudraGupt-Q screen recording (the deck had only stills), and its two
-   remaining test cards.
-2. **Case studies (in progress):** one per project, written up in `projects.ts`
-   (`caseStudy`). Peddi (the Roblox world, made with Dworak) is written from the owner's
-   screenshots in `public/work/peddi/` (resized to 1680px, the player list blurred since it
-   shows other players' names); its outcome shows two YouTubers' videos as `youtube` items (a
-   local thumbnail in the story and on the monitor, the real player only in `ScreenViewer`).
-   It launched June 5, 2026 via @PeddiMovieOffl on X (post shown in the outcome, a 4:3 black-framed
-   copy for the monitor). A reflection and who did what with Dworak are still to confirm.
-   TMN · Satara Today is written from the owner's Figma recordings (`public/work/tmn-satara/`):
-   the website scrolls at 1280px, and each app clip as a 1200×900 board with the English (TMN)
-   and Marathi (Satara Today) phones side by side, the shorter clip holding its last frame. The app is
-   in production with the Spotmies dev team, who also built the website (unlinked until it launches on its own domain; its Vercel preview isn't shared). Designed
-   May 2026. Credits read Spotmies × TMN | Satara Today: `client` takes a list, split by a rule,
-   and a squarer mark can set its own `height`.
-   The Newspaper (personal, solo design only, April 2026; parts of it were reused in TMN ·
-   Satara Today, which its case study, TMN's brief and an Apr 2026 milestone say) is written
-   from the owner's 20 Figma exports (10 screens × light/dark) and an 84s recording: four
-   1600×1200 boards (feed, papers, you, dark) and the recording cut into three 1200×900
-   single-phone clips (read 0–30s, papers 30–64s, you 64–84s; its black surround keyed onto
-   Figma grey). Originals in `~/Desktop/Sample/the-newspaper-originals-2026-09-29`. The
-   calendar is read as "another day's papers"; confirm with the owner.
-   Gesture Shop · Aura is written from the owner's phone videos (`public/work/guesture-shop/`,
-   `guesture-aura/`, square, shown as a centred pair of one); Gesture Shop leads, with Aura as a
-   second link (`alsoLink`). A clearer Gesture Shop video is coming. Nova UPI is written from its
-   Figma recording (cut into three single-phone boards, 1200×900) and 52 screen exports (four
-   1600×1200 boards of three); design only, in 48 hours as a challenge the owner set themself (not a hackathon); date still to confirm. Also wireframes, a design-system sheet (colours, glass, icon and type composed on Figma grey) and three Mockuuups photo mockups (corners cropped, credited in captions). Rao Bahadur is done (bar a line on what they'd change, and whether fans'
-   nicknames in screenshots should be blurred); SamudraGupt-Q is written; the rest fall back to
-   a single overview. Layout (`ProjectView.tsx`), chosen over an earlier version where the
-   story sat beside a sticky CRT and each part was a channel (the work was too small to see,
-   and it read as a wall of text): a first screen with the meta line (with a read time worked
-   out from the text), the title, a story `headline` (the summary only shows without one),
-   link and tools, kept sparse on purpose (the owner found a fuller version clumsy), beside
-   the CRT standing on a faint grid floor that fades out (channel 1 is the project's `reel`,
-   then a channel per part with pictures, its `screen` or else its `figures`; the remote's
-   keys tune the TV without scrolling the page, and its ◀ ▶ step through the channel's
-   pictures); then a `brief` band across the page under the fold (label, value, note, 3
-   across; after a reference the owner liked); then the story in a 680px column, each part's
-   `figures` large under its text (`layout`: wide, pair, grid, row, or carousel: one at a
-   time with a tab per picture, for clips that would compete side by side; the owner found two
-   scrolling clips playing together distracting); a part's `lead` shows one picture full width before its
-   figures (MutinyX's Submissions: the flow clip first, then the before → after pair side by
-   side; a carousel would never show both sides at once), with a `caption` each.
-   Spotmies work opens with a credits row of logos above the meta line (`public/logos/`:
-   Spotmies, darkened for the cream page, × the client's `caseStudy.client.logo`).
-   A part's `act` names a new act of the story above it (The brief, The decisions, The build,
-   What happened). Any picture, or the set's screen, opens `ScreenViewer`. The how-to hints
-   live in the hero's empty top-right corner (a "? Hide hints" switch with a dark card of
-   hints under it; just above the set on narrow screens). The owner rejected them under the set,
-   under the title, and inside the top bar. The card opens by itself on wide screens with a
-   mouse until the set is used, and only on request elsewhere. Shape per
-   project: brief → 2–3 key decisions (the bulk) → everything else as a grid of screens →
-   the hard part → outcome → reflection. Say plainly the work was solo. Every brief has a
-   **Stage** cell third (top row; Gesture's after its two projects): "0 → 1, …" only where the
-   product didn't exist before, "Redesign" (Spotmies site, Amero X) or "Concept" (The
-   Newspaper, Nova) otherwise, since interviewers probe 0→1 claims; it replaced a weaker
-   cell, its note carrying anything that cell said. Don't quote numbers
-   the client sets for marketing (Rao Bahadur's home page counter). The monitor's screen is
-   4:3 and covers, so portrait pictures for the `reel` are paired side by side on black.
-   Phone screens are shown as 4:3 "boards" (`public/work/mutiny/boards/`): 1600×1200 on
-   Figma grey #1e1e1e, up to three screens (top 1748px of each 804px-wide 2x export) at
-   1008px tall with 64px rounded corners, 56px apart; portrait clips framed the same way at
-   1200×900. Built with ffmpeg (a rounded-rect mask via `geq`, then `alphamerge`); with a
-   looped still mask, pass `alphamerge=shortest=1` and `-t`, or it never ends. One shape
-   means the page and the monitor show the same picture, uncropped.
-3. Optional résumé download key in Contact (needs `public/resume.pdf`).
-4. At 320px, the status line wraps awkwardly ("10:27 / PM" beside "IN VISAKHAPATNAM, / INDIA");
+1. Optional résumé download key in Contact (needs `public/resume.pdf`).
+2. At 320px, the status line wraps awkwardly ("10:27 / PM" beside "IN VISAKHAPATNAM, / INDIA");
    offered a tidy-up, not done.
-5. Optional: skip the splash for `prefers-reduced-motion` visitors (dsnikhil does); offered, not
+3. Optional: skip the splash for `prefers-reduced-motion` visitors (dsnikhil does); offered, not
    done.
-6. If the CRT hum or the hinge creak still don't feel real, swap in a short real recording
+4. If the CRT hum or the hinge creak still don't feel real, swap in a short real recording
    (loop it quietly / play it as a buffer through the same bus).
-7. Launch prep: performance check on low-end devices (3 WebGL contexts: hero, contact, two
-   boxes), social preview image, deployment (Vercel). **Test phone tilt (iOS permission
+5. Launch prep: performance check on low-end devices (3 WebGL contexts: hero, contact, two
+   boxes). **Test phone tilt (iOS permission
    prompt) and Android haptics on the deployed https site** — neither can be verified in
    headless Chrome.
 
 ## Testing notes
 
-There's no test suite; changes were verified by driving the site in headless Chrome with
+The owner prefers light verification now (see preferences); the notes below are for when a
+deeper check is asked for. There's no test suite; changes were verified by driving the site in headless Chrome with
 `puppeteer-core` against the local dev server (installed in a scratch folder, not in the repo;
 `executablePath` = `/Applications/Google Chrome.app/Contents/MacOS/Google Chrome`). Useful
 patterns:
@@ -435,5 +428,11 @@ patterns:
 - The "N" badge in the corner is Next.js dev tools (dev only); on phones it covers the start of
   the footer's last lines in dev.
 - After changing `next.config.ts`, restart `npm run dev`.
+- The dev "N" badge sits in the bottom-left corner, where the case studies' phone contents
+  button also floats; they overlap on `localhost` only.
+- On Node 20, `sharp` (used by `next/image`) prints an "Importing JSON modules is an
+  experimental feature" warning; harmless, gone on Node 22.
+- Files dropped into `src/app/` aren't served; copy a web-sized version into `public/` and
+  remove the original.
 - Browsers reset `word-spacing` on `<button>`; the row title button sets `word-spacing:
   inherit` so the Disket spacing fix applies.

@@ -86,6 +86,13 @@ export function MiniPlayer() {
   const progress = player.duration ? player.time / player.duration : 0;
   const track = loaded ? tracks[player.track!] : null;
 
+  // While the disc shows, the page knows: anything else in the bottom-left corner (the case
+  // studies' contents button) moves up above it.
+  useEffect(() => {
+    document.documentElement.toggleAttribute("data-mini-player", shown);
+    return () => document.documentElement.removeAttribute("data-mini-player");
+  }, [shown]);
+
   // The song's art, fetched and decoded as soon as the box shows, so the pop-up's cover is
   // ready to draw the moment it opens (even on a first visit).
   const artwork = track?.artwork;

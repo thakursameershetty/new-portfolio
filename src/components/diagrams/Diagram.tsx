@@ -23,6 +23,19 @@ import {
 import { TwoScripts } from "./TwoScripts";
 import styles from "./Diagram.module.css";
 
+/** The diagrams drawn on a phone screen (tall): the TL;DR panel sizes them by height. */
+const PHONE: DiagramId[] = [
+  "submission-flow",
+  "quote-flow",
+  "sign-in-flow",
+  "two-scripts",
+  "feed-styles",
+  "nova-home",
+  "nova-cards",
+  "rao-join",
+];
+export const isPhoneDiagram = (id: DiagramId) => PHONE.includes(id);
+
 /** The older lab diagrams, drawn for a wide screen; the rest are widgets, sized like a card. */
 const WIDE: DiagramId[] = ["packet-flow", "bell-pair", "fleet-average"];
 export const isCompactDiagram = (id: DiagramId) => !WIDE.includes(id);

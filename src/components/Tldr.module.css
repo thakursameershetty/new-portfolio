@@ -1,0 +1,421 @@
+/* The TL;DR: a dark pill at the foot of the screen, and the case study summed up in a white
+   panel over an 80% black backdrop. Sizes after the reference the owner chose. */
+
+.root {
+  display: contents;
+}
+
+/* ---- The pill: floating over everything at the foot of the screen ---- */
+.bar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 15;
+  display: flex;
+  justify-content: center;
+  padding: 0 64px calc(24px + env(safe-area-inset-bottom));
+  pointer-events: none;
+}
+
+/* The same make as the contents button beside it on phones: dark glass over the page, a
+   faint cream edge and a soft shadow, cream type, and round like it: rounded ends, then a
+   circle once it shrinks. */
+.pill {
+  width: 400px;
+  max-width: 100%;
+  height: 48px;
+  border: 1px solid rgba(245, 241, 234, 0.14);
+  border-radius: 24px;
+  background: rgba(20, 19, 18, 0.86);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+  color: #f5f1ea;
+  font-family: var(--font-display), sans-serif;
+  font-size: 17px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  box-shadow: 0 10px 30px -12px rgba(0, 0, 0, 0.6);
+  cursor: pointer;
+  pointer-events: auto;
+  transition: background-color 150ms ease;
+}
+
+/* The label or the icon, centred on the key, crossfading as it changes shape. */
+.pill {
+  position: relative;
+  padding: 0;
+}
+
+.face {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  white-space: nowrap;
+}
+
+/* 30% in: a 48px circle at the bottom right, out of the reading's way. */
+.bar[data-minimised] {
+  justify-content: flex-end;
+}
+
+.bar[data-minimised] .pill {
+  width: 48px;
+}
+
+.pill:hover {
+  background: rgba(10, 9, 9, 0.94);
+}
+
+.pill:focus-visible,
+.close:focus-visible {
+  outline: 2px solid var(--disk, #222222);
+  outline-offset: 3px;
+}
+
+/* Narrower than the contents sidebar: the key runs the width, on one line with the contents
+   button (48px, 16px in from the left and the bottom) and 12px from it; with music on, beside
+   the mini player's 72px disc instead (20px in), centred on it. */
+@media (max-width: 1279px) {
+  .bar {
+    padding: 0 16px calc(16px + env(safe-area-inset-bottom)) 76px;
+  }
+
+  .pill {
+    width: 100%;
+  }
+
+  .bar[data-minimised] .pill {
+    width: 48px;
+  }
+
+  :global(html[data-mini-player]) .bar {
+    padding-left: 104px;
+    padding-bottom: calc(max(20px, env(safe-area-inset-bottom)) + 12px);
+  }
+}
+
+/* ---- The summary ---- */
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  background: rgba(0, 0, 0, 0.8);
+  user-select: none;
+}
+
+.frame {
+  position: fixed;
+  top: 50%;
+  left: 0;
+  right: 0;
+  z-index: 21;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 0 64px 60px;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.frame > * {
+  pointer-events: auto;
+}
+
+.close {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 48px;
+  height: 48px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: #f8f8f8;
+  cursor: pointer;
+}
+
+.close svg {
+  width: 24px;
+  height: 24px;
+  fill: none;
+  stroke: #777777;
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+
+.panel {
+  width: 100%;
+  max-width: 900px;
+  height: min(720px, 86svh);
+  overflow: hidden;
+  border-radius: 36px;
+  background: #ffffff;
+  color: #222222;
+}
+
+.scroll {
+  display: flex;
+  flex-direction: column;
+  gap: 48px;
+  height: 100%;
+  padding: 48px clamp(24px, 9%, 96px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: none;
+}
+
+.scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.part {
+  display: grid;
+  gap: 14px;
+}
+
+/* The case study's own heading type: Disket Mono, bold capitals, set tight (as on its parts'
+   headings), a size smaller to suit the panel. */
+.heading {
+  margin: 0;
+  font-family: var(--font-hero), monospace;
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.04em;
+  word-spacing: -0.3em;
+  text-transform: uppercase;
+  color: #222222;
+}
+
+.lines {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.lines li,
+.text {
+  position: relative;
+  margin: 0;
+  font-family: var(--font-sans), sans-serif;
+  font-size: 20px;
+  line-height: 32px;
+  color: #777777;
+}
+
+.lines li {
+  padding-left: 22px;
+}
+
+/* A small dot in the project's own colour. */
+.lines li::before {
+  content: "";
+  position: absolute;
+  top: 13px;
+  left: 2px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--disk, #222222);
+}
+
+.insight,
+.quote {
+  margin: 0;
+  font-family: var(--font-sans), sans-serif;
+  font-size: 20px;
+  line-height: 32px;
+  font-weight: 600;
+  color: #222222;
+}
+
+.quote {
+  font-size: 22px;
+}
+
+.metrics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px 48px;
+  margin-bottom: 6px;
+}
+
+.metric {
+  display: grid;
+  gap: 6px;
+  max-width: 260px;
+}
+
+.kicker {
+  font-family: var(--font-display), sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #777777;
+}
+
+.value {
+  font-family: var(--font-display), sans-serif;
+  font-size: 48px;
+  font-weight: 700;
+  line-height: 1;
+  color: #222222;
+}
+
+.label {
+  font-family: var(--font-sans), sans-serif;
+  font-size: 14px;
+  line-height: 1.4;
+  color: #777777;
+}
+
+/* A part's picture or diagram: full width (diagrams capped at a readable 640px), with soft
+   corners and a short caption. */
+.visual {
+  display: grid;
+  gap: 10px;
+  margin: 10px 0 0;
+}
+
+.visualMedia {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 16px;
+  background: #1e1e1e;
+}
+
+.visualDiagram {
+  width: 100%;
+  max-width: 560px;
+  justify-self: center;
+  overflow: hidden;
+  border-radius: 16px;
+}
+
+/* A phone diagram is tall (the phone, with its stats beside it): narrower, so all of it fits
+   in the panel at once. */
+.visualDiagram[data-phone] {
+  max-width: 470px;
+}
+
+/* Under a picture: its caption, and the way back to it in the story. */
+.visualFoot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 16px;
+}
+
+.read {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 36px;
+  padding: 0 14px 0 16px;
+  border: 1px solid rgba(34, 34, 34, 0.16);
+  border-radius: 18px;
+  background: transparent;
+  color: #222222;
+  font-family: var(--font-display), sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition:
+    border-color 150ms ease,
+    background-color 150ms ease;
+}
+
+.read:hover {
+  border-color: #222222;
+  background: rgba(34, 34, 34, 0.04);
+}
+
+.read:focus-visible {
+  outline: 2px solid var(--disk, #222222);
+  outline-offset: 2px;
+}
+
+.read svg {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: transform 150ms ease;
+}
+
+.read:hover svg {
+  transform: translateX(2px);
+}
+
+.visualCaption {
+  font-family: var(--font-sans), sans-serif;
+  font-size: 14px;
+  line-height: 1.4;
+  color: #777777;
+}
+
+/* On a phone: a sheet from the bottom, 90% of the screen tall. */
+@media (max-width: 720px) {
+  .frame {
+    top: auto;
+    bottom: 0;
+    height: 90svh;
+    justify-content: flex-end;
+    padding: 0;
+    transform: none;
+  }
+
+  .close {
+    width: 36px;
+    height: 36px;
+  }
+
+  .close svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  .panel {
+    flex: 1;
+    height: auto;
+    min-height: 0;
+    max-width: none;
+    border-radius: 20px 20px 0 0;
+  }
+
+  .scroll {
+    gap: 40px;
+    padding: 32px 20px calc(32px + env(safe-area-inset-bottom));
+  }
+
+  .lines li,
+  .text,
+  .insight {
+    font-size: 16px;
+    line-height: 24px;
+  }
+
+  .lines li::before {
+    top: 9px;
+  }
+
+  .quote {
+    font-size: 18px;
+    line-height: 26px;
+  }
+
+  .value {
+    font-size: 32px;
+  }
+}

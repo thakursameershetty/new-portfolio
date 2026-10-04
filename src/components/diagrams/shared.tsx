@@ -17,8 +17,11 @@ export const COLOR = {
   warm: "#f0c44c",
 };
 
-/** Wide (drawn left to right) once the box is 560px across; and whether it's on screen. */
-export function useDiagramBox(ref: RefObject<HTMLElement | null>) {
+/**
+ * Wide (drawn left to right) once the box is 560px across; and whether it's on screen: any
+ * of it, or with `visible`, at least that fraction of it (0 to 1).
+ */
+export function useDiagramBox(ref: RefObject<HTMLElement | null>, visible = 0) {
   const [wide, setWide] = useState(true);
   const [onScreen, setOnScreen] = useState(false);
   useEffect(() => {
@@ -27,8 +30,10 @@ export function useDiagramBox(ref: RefObject<HTMLElement | null>) {
     const resize = new ResizeObserver(([entry]) => {
       if (entry) setWide(entry.contentRect.width >= 560);
     });
-    const view = new IntersectionObserver(([entry]) =>
-      setOnScreen(Boolean(entry?.isIntersecting)),
+    const view = new IntersectionObserver(
+      ([entry]) =>
+        setOnScreen(Boolean(entry?.isIntersecting) && entry.intersectionRatio >= visible),
+      { threshold: visible > 0 ? [0, visible] : 0 },
     );
     resize.observe(root);
     view.observe(root);
@@ -36,7 +41,7 @@ export function useDiagramBox(ref: RefObject<HTMLElement | null>) {
       resize.disconnect();
       view.disconnect();
     };
-  }, [ref]);
+  }, [ref, visible]);
   return { wide, onScreen };
 }
 
