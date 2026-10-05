@@ -34,7 +34,8 @@
   position: relative;
   z-index: 1;
   padding: 14px 14px 0;
-  border-radius: 18px 18px 12px 12px;
+  /* Concentric with the screen: its 10 plus the 14 of bezel around it. */
+  border-radius: 24px 24px 12px 12px;
   background:
     linear-gradient(160deg, rgba(255, 255, 255, 0.35), transparent 40%),
     linear-gradient(0deg, rgba(0, 0, 0, 0.12), transparent 35%),
@@ -135,8 +136,8 @@
   position: relative;
   overflow: hidden;
   aspect-ratio: 16 / 10;
-  /* A barrel-ish tube: rounder corners than the bezel, and an inset shadow for depth. */
-  border-radius: 14px / 18px;
+  /* The tube: corners the bezel's less its 14, and an inset shadow for depth. */
+  border-radius: 10px;
   background: #0b0d0c;
   box-shadow:
     inset 0 0 0 3px #2b2926,

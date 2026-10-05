@@ -16,20 +16,34 @@ import { ProfileCardIcon } from "./icons/ProfileCardIcon";
 import type { AnimatedIconHandle } from "./icons/types";
 import styles from "./Currently.module.css";
 
-/** How long something's run, in whole years, counted to this month so it never goes stale. */
+/** How long something's run, counted to this month so it never goes stale. */
 function YearsSince({ from }: { from?: number }) {
   const now = useMonthNow();
   if (from === undefined) return null;
-  const months = now + 1 - from;
-  const years = Math.floor(months / 12);
-  if (years < 1) return null;
-  return (
-    <span className={styles.groupYears}>
-      {years}
-      {months % 12 ? "+" : ""} {years === 1 && months % 12 === 0 ? "yr" : "yrs"}
-    </span>
-  );
+  return <span className={styles.groupYears}>{spanOf(now + 1 - from)}</span>;
 }
+
+/** A run of months, said short: months under a year, then whole years ("5+ yrs"). */
+function spanOf(months: number) {
+  const years = Math.floor(months / 12);
+  if (years < 1) return `${months} ${months === 1 ? "mo" : "mos"}`;
+  return `${years}${months % 12 ? "+" : ""} ${years === 1 && months % 12 === 0 ? "yr" : "yrs"}`;
+}
+
+// Counted from the Spotmies entry's start in the record, so the two never disagree.
+const workFrom = record[0].entries[0].timeline!.from;
+
+/** Time at Spotmies, counted to this month. */
+function Experience() {
+  return <>{spanOf(useMonthNow() + 1 - workFrom)} at Spotmies</>;
+}
+
+const facts: { label: string; value: React.ReactNode }[] = [
+  { label: "Experience", value: <Experience /> },
+  { label: "For", value: "Film, media, creator tools, fintech" },
+  { label: "Design", value: "Figma, design systems, motion" },
+  { label: "Build", value: "React Native, Next.js, Node.js" },
+];
 
 /** First section below the hero: who Thakur is and the work right now, with the Résumé
  *  key. The record behind it comes after the work, in TrackRecord. */
@@ -45,36 +59,49 @@ export function Currently() {
       <h2 id="about-heading" className={styles.label}>
         About
       </h2>
-      <p className={styles.statement}>
-        Designing and building at{" "}
-        {/* The mark and the name wrap as one word, so the logo never ends a line alone. */}
-        <span className={styles.brand}>
-          <Image
-            src="/spotmies-mark.png"
-            alt=""
-            width={692}
-            height={684}
-            className={styles.mark}
-          />
-          <strong>Spotmies</strong>.
-        </span>{" "}
-        I started as a UI/UX designer and now lead full stack builds,{" "}
-        <span className={clsx(styles.muted, lineOn && styles.mutedOn)}>
-          with a soft spot for{" "}
-          {/* The switch stands in for the hyphen in "micro-interactions", the word kept
-              whole so the line never breaks around it. */}
-          <span className={styles.compound}>
-            micro
-            <LineSwitch on={lineOn} onToggle={setLineOn} />
-            interactions:
+      <div className={styles.aboutGrid}>
+        <p className={styles.statement}>
+          UI/UX designer at{" "}
+          {/* The mark and the name wrap as one word, so the logo never ends a line alone. */}
+          <span className={styles.brand}>
+            <Image
+              src="/spotmies-mark.png"
+              alt=""
+              width={692}
+              height={684}
+              className={styles.mark}
+            />
+            <strong>Spotmies</strong>,
           </span>{" "}
-          the small moments that make a product feel right.
-        </span>
-      </p>
+          a studio building products for startups. I design apps and websites,
+          then build them,{" "}
+          <span className={clsx(styles.muted, lineOn && styles.mutedOn)}>
+            with a soft spot for{" "}
+            {/* The switch stands in for the hyphen in "micro-interactions", the word kept
+              whole so the line never breaks around it. */}
+            <span className={styles.compound}>
+              micro
+              <LineSwitch on={lineOn} onToggle={setLineOn} />
+              interactions.
+            </span>
+          </span>
+        </p>
 
-      <div className={styles.actions}>
-        <ResumeKey />
-        <TimelineKey />
+        {/* The detail the statement leaves out, to scan rather than read: a cream spec
+          card beside it, the Résumé key's face on the same skirt. */}
+        <dl className={styles.facts}>
+          {facts.map((fact) => (
+            <div key={fact.label} className={styles.fact}>
+              <dt className={styles.factLabel}>{fact.label}</dt>
+              <dd className={styles.factValue}>{fact.value}</dd>
+            </div>
+          ))}
+        </dl>
+
+        <div className={styles.actions}>
+          <ResumeKey />
+          <TimelineKey />
+        </div>
       </div>
     </section>
   );
@@ -274,27 +301,42 @@ function ResumeKey() {
   const iconRef = useRef<AnimatedIconHandle>(null);
 
   return (
-    <a
-      href="/resume.pdf"
-      target="_blank"
-      rel="noopener"
-      className={styles.key}
-      onMouseEnter={() => {
-        iconRef.current?.startAnimation();
-        playCue("tap");
-      }}
-      onPointerDown={() => playCue("land")}
-    >
-      <DocumentIcon ref={iconRef} size={20} className={styles.keyIcon} />
-      <span>Résumé</span>
-      <span className={styles.keyMeta}>PDF</span>
-      <ArrowIcon
-        direction="up-right"
-        size={16}
-        animated={false}
-        className={styles.keyArrow}
-      />
-      <span className={styles.srOnly}> (opens in a new tab)</span>
-    </a>
+    <span className={styles.resumeWrap}>
+      <a
+        href="/resume.pdf"
+        target="_blank"
+        rel="noopener"
+        className={styles.key}
+        onMouseEnter={() => {
+          iconRef.current?.startAnimation();
+          playCue("tap");
+        }}
+        onPointerDown={() => playCue("land")}
+      >
+        <DocumentIcon ref={iconRef} size={20} className={styles.keyIcon} />
+        <span>Résumé</span>
+        <span className={styles.keyMeta}>PDF</span>
+        <ArrowIcon
+          direction="up-right"
+          size={16}
+          animated={false}
+          className={styles.keyArrow}
+        />
+        <span className={styles.srOnly}> (opens in a new tab)</span>
+      </a>
+      {/* A peek at the page itself, held up above the key on hover or focus. It's a
+        picture of the PDF's first page (public/resume-preview.jpg), so remake it when
+        the PDF changes. */}
+      <span aria-hidden="true" className={styles.resumePeek}>
+        <Image
+          src="/resume-preview.jpg"
+          alt=""
+          width={617}
+          height={800}
+          sizes="280px"
+          className={styles.resumePeekImage}
+        />
+      </span>
+    </span>
   );
 }

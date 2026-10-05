@@ -14,7 +14,7 @@ import key from "@/components/about/Keycap.module.css";
 import styles from "./page.module.css";
 
 const description =
-  "Thakur Sameer Shetty, product designer at Spotmies in Visakhapatnam: the longer story from electrical engineering to designing and building whole products, and what he's listening to, watching and playing.";
+  "Thakur Sameer Shetty, UI/UX designer and developer at Spotmies in Visakhapatnam: the longer story from electrical engineering to designing and building whole products, and what he's listening to, watching and playing.";
 
 // The site's link preview carries on here (a page's own openGraph replaces the one it
 // would inherit, images and all).
@@ -22,7 +22,7 @@ const preview = {
   url: "/opengraph-image",
   width: 1200,
   height: 630,
-  alt: "Thakur Sameer Shetty, Product Designer",
+  alt: "Thakur Sameer Shetty, UI/UX Designer & Developer",
 };
 
 export const metadata: Metadata = {

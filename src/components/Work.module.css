@@ -128,6 +128,13 @@
 
 /* The pinned tag naming the box whose cards are scrolling by: taking no room of its own,
    it rides at the top left beside the nav, until its shelf's list has gone past. */
+@keyframes shelfTagIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+}
+
 .shelfTag {
   position: sticky;
   top: 24px;
@@ -150,6 +157,8 @@
   backdrop-filter: blur(24px) saturate(140%);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
   color: var(--ink);
+  /* Drops in as the box opens; Work.tsx lifts it away as the disks go back. */
+  animation: shelfTagIn 420ms cubic-bezier(0.22, 1, 0.36, 1) 160ms both;
   font-family: var(--font-hero), monospace;
   font-size: 11px;
   font-weight: 700;
@@ -183,7 +192,7 @@
   }
 }
 
-.shelfCell > .shelfIndex {
+.shelfCell > .shelfIndexFold {
   grid-area: index;
 }
 
@@ -250,8 +259,9 @@
   grid-template-rows: repeat(3, auto);
   justify-content: start;
   gap: 4px 36px;
-  margin: 14px 0 0;
-  padding: 0;
+  /* Padding, not margin, so the space folds away with the rows. */
+  margin: 0;
+  padding: 14px 0 0;
   list-style: none;
   font-size: 15px;
   line-height: 1.5;
@@ -259,6 +269,36 @@
 
 .shelfIndex li {
   white-space: nowrap;
+  transition:
+    opacity 260ms ease calc(80ms + var(--i, 0) * 45ms),
+    transform 420ms cubic-bezier(0.22, 1, 0.36, 1) calc(80ms + var(--i, 0) * 45ms),
+    filter 260ms ease calc(80ms + var(--i, 0) * 45ms);
+}
+
+/* The index folds shut (its rows' height eases to nothing) as the box opens, its lines
+   leaving together, fast; once the box is shut it unfolds and they come back one by one. */
+.shelfIndexFold {
+  display: grid;
+  grid-template-rows: 1fr;
+  transition: grid-template-rows 420ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.shelfIndexFold > .shelfIndex {
+  min-height: 0;
+  overflow: hidden;
+}
+
+.shelfIndexFold[data-folded] {
+  grid-template-rows: 0fr;
+  transition-duration: 320ms;
+}
+
+.shelfIndexFold[data-folded] li {
+  opacity: 0;
+  transform: translateY(-6px);
+  filter: blur(3px);
+  transition-duration: 160ms;
+  transition-delay: 0ms;
 }
 
 .shelfIndexNumber {
@@ -1156,8 +1196,9 @@
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   /* Roomy: each disk stands 22px proud of its cover's top, so the rows need more than
-     that between them to breathe. */
-  gap: clamp(80px, 10vh, 104px) clamp(36px, 4.5vw, 56px);
+     that between them to breathe, and pokes out past its cover's left edge, so the
+     columns do too. */
+  gap: clamp(80px, 10vh, 104px) clamp(48px, 7vw, 96px);
   margin-top: 56px;
   border-top: 0;
 }
@@ -1242,7 +1283,8 @@
   z-index: 1;
   width: calc(320 * var(--u));
   height: calc(232.5 * var(--u));
-  border-radius: 18px 18px 12px 12px;
+  /* Concentric with the screen: its 10 plus the 14 of bezel around it. */
+  border-radius: calc(24 * var(--u)) calc(24 * var(--u)) calc(12 * var(--u)) calc(12 * var(--u));
   background:
     linear-gradient(160deg, rgba(255, 255, 255, 0.35), transparent 40%),
     linear-gradient(0deg, rgba(0, 0, 0, 0.12), transparent 35%),
@@ -1258,7 +1300,7 @@
   left: calc(50% - 60.8 * var(--u));
   width: calc(121.6 * var(--u));
   height: calc(12 * var(--u));
-  border-radius: 0 0 10px 10px;
+  border-radius: 0 0 calc(10 * var(--u)) calc(10 * var(--u));
   background: linear-gradient(180deg, #bdb4a2, #a39a88);
 }
 
@@ -1307,10 +1349,11 @@
   color: #3a3631;
 }
 
-/* The picture's frame becomes the monitor's screen: inside the bezel, rounder, inset. */
+/* The picture's frame becomes the monitor's screen: inside the bezel, inset, its corners
+   the body's less the bezel so the two curves run parallel. */
 .entry[data-playing] .entryScreen {
   z-index: 2;
-  border-radius: calc(14 * var(--u)) / calc(18 * var(--u));
+  border-radius: calc(10 * var(--u));
   box-shadow:
     inset 0 0 0 3px #2b2926,
     0 0 0 2px rgba(0, 0, 0, 0.25);
@@ -1558,6 +1601,17 @@
     top: -14px;
     left: -9px;
     width: 62px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .shelfTagInner {
+    animation: none;
+  }
+
+  .shelfIndexFold,
+  .shelfIndex li {
+    transition: none;
   }
 }
 

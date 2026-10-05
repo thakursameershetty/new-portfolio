@@ -7,10 +7,10 @@ export const site = {
   url: "https://thakursameershetty.com",
   name: "Thakur Sameer Shetty",
   shortName: "Thakur",
-  jobTitle: "Product Designer",
-  title: "Thakur Sameer Shetty — Product Designer",
+  jobTitle: "UI/UX Designer & Developer",
+  title: "Thakur Sameer Shetty — UI/UX Designer & Developer",
   description:
-    "Making things feel right. Product designer who prototypes in code: research, interfaces and micro-interactions, from Figma to production.",
+    "Making things feel right. UI/UX designer and developer at Spotmies: I design apps and websites for startups, then build them, from Figma to production.",
   photo: "/about/id/photo.webp",
   location: { city: "Visakhapatnam", region: "Andhra Pradesh", country: "IN" },
   links: {

@@ -34,11 +34,12 @@ export const record: {
     {
       heading: "Experience",
       tone: "work",
+      years: true,
       entries: [
         {
           title: "Spotmies LLP",
           detail:
-            "Hired as a UI/UX designer; grew the role into leading full stack builds, from the first screen to the backend.",
+            "UI/UX designer at a product studio serving 40+ startups. I design client apps and websites end to end, and grew the role into building them too, from the first screen to the backend.",
           when: "Dec 2025 – now",
           timeline: { short: "Spotmies", lane: "work", from: monthOf(2025, 12), to: "now" },
         },

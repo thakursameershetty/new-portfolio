@@ -606,11 +606,11 @@ export function IdCard() {
                       <p className={clsx(styles.type, styles.position)}>
                         position:
                         <br />
-                        product designer, ui/ux
+                        ui/ux designer
                         <br />
-                        designer and full stack
+                        and full stack
                         <br />
-                        builder
+                        developer
                       </p>
                       <p className={styles.type}>expire date: never</p>
                     </div>

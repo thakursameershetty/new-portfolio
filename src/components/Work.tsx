@@ -452,6 +452,7 @@ function DiskBox({
   const boxRef = useRef<HTMLButtonElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
+  const tagRef = useRef<HTMLSpanElement>(null);
   const diskRefs = useRef<(HTMLDivElement | null)[]>([]);
   const copyRefs = useRef<(HTMLDivElement | null)[]>([]);
   const coverRefs = useRef<(HTMLDivElement | null)[]>([]);
@@ -635,6 +636,14 @@ function DiskBox({
       return;
     }
     movingRef.current = true;
+    // The pinned tag leaves with the details, before the disks head home.
+    tagRef.current?.animate(
+      [
+        { opacity: 1, transform: "none" },
+        { opacity: 0, transform: "translateY(-6px)" },
+      ],
+      { duration: 220, easing: "ease-in", fill: "forwards" },
+    );
 
     if (!scene) {
       playCue("boxClose");
@@ -956,10 +965,20 @@ function DiskBox({
         </p>
         {/* What's inside, readable without opening anything, as the box's index: each disk
             on its own line, three to a column; once it's open, the cards say it all. */}
-        {!dealt && (
+        {/* Always there, so it can fold away as the box opens and settle back in, line
+            by line, once it's shut; inert while folded. */}
+        <div
+          className={styles.shelfIndexFold}
+          data-folded={dealt || undefined}
+          aria-hidden={dealt || undefined}
+          inert={dealt || undefined}
+        >
           <ol className={styles.shelfIndex}>
             {projects.map((project, index) => (
-              <li key={project.id}>
+              <li
+                key={project.id}
+                style={{ "--i": index } as CSSProperties}
+              >
                 <span className={styles.shelfIndexNumber}>
                   {padNumber(firstNumber + index)}
                 </span>
@@ -967,7 +986,7 @@ function DiskBox({
               </li>
             ))}
           </ol>
-        )}
+        </div>
       </div>
 
       {dealt && (
@@ -975,7 +994,7 @@ function DiskBox({
           {/* Which box these are from, pinned at the top while its cards scroll by, so a
               second shelf's cards never read as more of the first's. */}
           <div aria-hidden="true" className={styles.shelfTag}>
-            <span className={styles.shelfTagInner}>
+            <span ref={tagRef} className={styles.shelfTagInner}>
               <span className={styles.shelfTagBox} />
               {padNumber(place + 1)} · {title}
               <span className={styles.shelfTagCount}>

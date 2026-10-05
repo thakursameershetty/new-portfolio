@@ -37,7 +37,86 @@
   font-weight: 500;
   line-height: 1.2;
   letter-spacing: -0.02em;
-  text-wrap: pretty;
+  text-wrap: balance;
+}
+
+/* The statement and its keys on the left, the spec card on the right; on narrow
+   screens the card drops between the statement and the keys. */
+.aboutGrid {
+  display: grid;
+  grid-template-areas:
+    "statement facts"
+    "actions facts";
+  grid-template-columns: minmax(0, 1fr) 340px;
+  grid-template-rows: auto 1fr;
+  gap: 0 64px;
+  align-items: start;
+}
+
+.aboutGrid .statement {
+  grid-area: statement;
+  font-size: clamp(28px, 3.4vw, 40px);
+}
+
+.aboutGrid .actions {
+  grid-area: actions;
+}
+
+.facts {
+  grid-area: facts;
+  margin: 0;
+  padding: 6px 22px;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 14px;
+  background: #f5f1ea;
+  color: #1a0605;
+  box-shadow:
+    0 6px 0 #b9ad9c,
+    0 14px 28px rgba(0, 0, 0, 0.45);
+}
+
+.fact {
+  display: grid;
+  grid-template-columns: 96px minmax(0, 1fr);
+  gap: 12px;
+  align-items: baseline;
+  padding: 16px 0;
+}
+
+.fact + .fact {
+  border-top: 1px dashed rgba(26, 6, 5, 0.18);
+}
+
+.factLabel {
+  font-family: var(--font-hero), monospace;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(26, 6, 5, 0.5);
+}
+
+.factValue {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+@media (max-width: 860px) {
+  .aboutGrid {
+    grid-template-areas:
+      "statement"
+      "facts"
+      "actions";
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto;
+  }
+
+  .facts {
+    max-width: 440px;
+    margin-top: 36px;
+  }
 }
 
 .statement strong {
@@ -244,6 +323,62 @@
   flex: none;
 }
 
+/* The résumé key and the page it peeks: a sheet of paper that rises out of the key,
+   tilted a touch, on hover or keyboard focus. Only where there's a real pointer; a tap
+   opens the PDF anyway. */
+.resumeWrap {
+  position: relative;
+  display: inline-flex;
+}
+
+.resumePeek {
+  position: absolute;
+  bottom: calc(100% + 18px);
+  left: -8px;
+  z-index: 5;
+  width: 280px;
+  padding: 0;
+  border-radius: 4px;
+  background: #fff;
+  box-shadow:
+    0 1px 0 rgba(0, 0, 0, 0.08),
+    0 24px 48px rgba(0, 0, 0, 0.55);
+  opacity: 0;
+  transform: translateY(16px) rotate(0deg) scale(0.92);
+  transform-origin: 30% 100%;
+  transition:
+    opacity 180ms ease,
+    transform 360ms cubic-bezier(0.34, 1.3, 0.64, 1);
+  pointer-events: none;
+}
+
+.resumePeekImage {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: inherit;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .resumeWrap:hover .resumePeek,
+  .resumeWrap:has(:focus-visible) .resumePeek {
+    opacity: 1;
+    transform: translateY(0) rotate(-3deg) scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .resumePeek {
+    transform: none;
+    transition: opacity 150ms ease;
+  }
+
+  .resumeWrap:hover .resumePeek,
+  .resumeWrap:has(:focus-visible) .resumePeek {
+    transform: rotate(-3deg);
+  }
+}
+
 .keyMeta {
   font-family: var(--font-hero), monospace;
   font-size: 11px;
@@ -284,7 +419,7 @@
 
 .group {
   display: grid;
-  grid-template-columns: 180px 1fr;
+  grid-template-columns: 200px 1fr;
   gap: 24px;
   padding: 28px 0;
   border-top: 1px solid rgba(245, 241, 234, 0.14);
@@ -324,8 +459,10 @@
 }
 
 /* How long it's run, set after the heading in its colour. */
+/* Kept whole, so a count never breaks away from its number ("11 / mos"). */
 .groupYears {
   margin-left: 10px;
+  white-space: nowrap;
   color: var(--tone-practice);
 }
 

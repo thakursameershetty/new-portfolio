@@ -10,7 +10,7 @@ import { tracks } from "@/components/about/taste";
 // floppies tossed down, and the corner music player, playing. Rendered once at build time.
 
 export const alt =
-  "Thakur Sameer Shetty, Product Designer: making things feel right. A portfolio ID card with stickers, floppy disks and a music player. thakursameershetty.com";
+  "Thakur Sameer Shetty, UI/UX Designer & Developer: making things feel right. A portfolio ID card with stickers, floppy disks and a music player. thakursameershetty.com";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -509,9 +509,9 @@ function IdCard({ photo }: { photo: string }) {
             }}
           >
             <span>position:</span>
-            <span>product designer, ui/ux</span>
-            <span>designer and full stack</span>
-            <span>builder</span>
+            <span>ui/ux designer</span>
+            <span>and full stack</span>
+            <span>developer</span>
           </div>
           <div style={{ display: "flex", marginTop: 1.9 * cq, ...typed }}>
             expire date: never
@@ -656,7 +656,7 @@ export default async function Image() {
               opacity: 0.6,
             }}
           >
-            PRODUCT DESIGNER · PROTOTYPES IN CODE
+            UI/UX DESIGNER & DEVELOPER
           </div>
         </div>
 
